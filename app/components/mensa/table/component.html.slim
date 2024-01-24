@@ -4,4 +4,4 @@
       tr = render(Mensa::Header::Component.with_collection(table.columns, table: @table))
     tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: @table))
 
-  == pagy_nav(table.pagy_details, link_extra: 'target=""') if table.pagy_details.pages > 1
+  == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"') if table.pagy_details.pages > 1
