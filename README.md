@@ -1,5 +1,15 @@
 # Mensa
-Short description and motivation.
+Awesome tables
+
+Wanted features:
+* [X] very fast
+* [X] row-links
+* [ ] sorting
+* [ ] filtering
+* [ ] group by
+* [ ] sum/max/min
+* [ ] tables without headers (and without most of the above)
+* [ ] tables backed by arrays (of ActiveModel)
 
 ## Usage
 How to use my plugin.
