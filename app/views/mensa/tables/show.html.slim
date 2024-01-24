@@ -1,16 +1,17 @@
-table.min-w-full.divide-y.divide-gray-300
-  thead.bg-gray-400
-    tr
-      - @table.columns.each do |column|
-        th.py-3.5.pl-4.pr-3.text-left.text-sm.font-semibold.text-gray-900.sm:pl-0[scope="col"]
-          = column.human_name
-
-  tbody.divide-y.divide-gray-200
-    - @table.rows.each do |row|
+turbo-frame id="#{params[:id]}"
+  table.min-w-full.divide-y.divide-gray-300
+    thead.bg-gray-400
       tr
         - @table.columns.each do |column|
-          td.whitespace-nowrap.py-4.pl-4.pr-3.text-sm.font-medium.text-gray-900.sm:pl-0
-            = column.format(:html, row)
-== pagy_nav(@table.pagy_details) if @table.pagy_details.pages > 1
+          th.py-3.5.pl-4.pr-3.text-left.text-sm.font-semibold.text-gray-900.sm:pl-0[scope="col"]
+            = column.human_name
+
+    tbody.divide-y.divide-gray-200
+      - @table.rows.each do |row|
+        tr
+          - @table.columns.each do |column|
+            td.whitespace-nowrap.py-4.pl-4.pr-3.text-sm.font-medium.text-gray-900.sm:pl-0
+              = column.format(:html, row)
+  == pagy_nav(@table.pagy_details) if @table.pagy_details.pages > 1
 
 
