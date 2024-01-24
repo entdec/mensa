@@ -1,5 +1,5 @@
 .mensa-table {
-  @apply bg-white dark:bg-gray-500 dark:border-gray-700;
+  @apply bg-white dark:bg-gray-500 dark:border-gray-700 overflow-y-auto;
 
   badge {
     @apply bg-primary-100 text-primary-600 hidden ml-3 rounded-full text-xs font-medium md:inline-block py-0.5 px-2.5;
@@ -8,15 +8,14 @@
     @apply min-w-full divide-y divide-gray-50 dark:divide-gray-800 border-0;
 
     thead {
-      @apply bg-gray-50 top-0 dark:bg-gray-900 dark:font-medium dark:text-gray-400 dark:lowercase;
+      @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
 
       tr {
-        @apply divide-x divide-gray-600 cursor-move;
+        @apply divide-x divide-gray-200 dark:divide-gray-600 cursor-move;
       }
 
       th {
-        @apply align-bottom top-0 z-10 py-3.5 pl-4 pr-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider
-           border-b border-gray-300 bg-gray-100 dark:bg-gray-700 dark:text-gray-400;
+        @apply top-0 z-10 py-3.5 pl-4 pr-3 px-6 align-bottom text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 dark:border-gray-600;
       }
     }
     tbody {
