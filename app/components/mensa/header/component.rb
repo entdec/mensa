@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
 module Mensa
-  module Table
+  module Header
     class Component < ::Mensa::ApplicationComponent
+      with_collection_parameter :column
+
       include TablesHelper
 
       attr_reader :table
+      attr_reader :column
 
-      def initialize(table:, view_context:)
+      def initialize(table:, column:)
         @table = table
-        @table.view_context = view_context
+        @column = column
       end
     end
   end

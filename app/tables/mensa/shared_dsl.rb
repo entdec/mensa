@@ -5,11 +5,11 @@ module Mensa
     included do
 
       def filter(&block)
-        @config[:filter] = block
+        config[:filter] = block
       end
 
       def order(value)
-        @config[:order] = value
+        config[:order] = value
       end
     end
   end

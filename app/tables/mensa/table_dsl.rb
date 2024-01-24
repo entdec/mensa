@@ -1,3 +1,37 @@
+# class UserTable
+#   model User # implicit from name
+#
+#   default_order [[:name, :desc], [:second, :asc]] # default: no explict ordering
+#
+#   filter do |query| # default ?
+#     where(....)
+#   end
+#
+#   render do # default Standard components
+#     html Mensa::TableComponent::Default
+#     json Mensa::JsonRenderer::Default
+#     xlsx Mensa::XlsxRenderer::Default
+#   end
+#
+#   column(:name) do
+#     attribute :name
+#     order ->(direction) { order(:name, direction)}
+#
+#     filter do
+#       collection -> { }
+#       scope -> { where(name: ...)}
+#     end
+#
+#     header_cell do # default Standard components
+#       html(sanitize: true) ->(value) { Mensa::HeaderCellComponent::Default.render(value) }
+#     end
+#
+#     body_cell do # default Standard components
+#       html ->(value) { Mensa::BodyCellComponent::Default.render(value) }
+#     end
+#   end
+# end
+
 module Mensa
   class TableDsl
     include SharedDsl
@@ -16,6 +50,10 @@ module Mensa
 
     def model(model_class)
       config[:model_class] = model_class
+    end
+
+    def link(&block)
+      config[:link] = block
     end
   end
 end

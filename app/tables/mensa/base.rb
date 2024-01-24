@@ -2,6 +2,7 @@ module Mensa
   class Base
     include Pagy::Backend
 
+    attr_accessor :view_context
     attr_reader :params
     delegate :config, to: :class
 
@@ -49,7 +50,7 @@ module Mensa
     end
 
     def rows
-      paged_scope
+      paged_scope.map { |row| Mensa::Row.new(self, view_context, row) }
     end
 
     class << self
