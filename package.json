@@ -1,0 +1,19 @@
+{
+  "name": "@entdec/mensa",
+  "version": "0.1.0",
+  "description": "",
+  "repository": "git@github.com:entdec/mensa.git",
+  "author": "Tom de Grunt <tom@degrunt.nl>",
+  "license": "MIT",
+  "files": [
+    "./frontend/**/*"
+  ],
+  "dependencies": {
+    "stimulus-use": "^0.50.0"
+  },
+  "devDependencies": {
+  },
+  "peerDependencies": {
+    "@entdec/satis": ">=1.0.60",
+  }
+}
