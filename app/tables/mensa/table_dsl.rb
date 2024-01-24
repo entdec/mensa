@@ -7,7 +7,7 @@ module Mensa
       @config = {
         columns: []
       }
-      instance_eval(&)
+      instance_eval(&) if block_given?
     end
 
     def column(name, &)

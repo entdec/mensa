@@ -3,13 +3,13 @@ module Mensa
     include SharedDsl
     attr_reader :config
 
-    def initialize(name, &block)
+    def initialize(name, &)
       @config = {
         name: name,
         filter: nil,
         order: nil
       }
-      instance_eval(&block) if block_given?
+      instance_eval(&) if block_given?
     end
   end
 end
