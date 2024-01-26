@@ -21,6 +21,8 @@ module Mensa
     end
 
     def link_attributes
+      return {} unless link
+
       { href: link, data: { controller: "satis-link",  action: "click->satis-link#follow tap->satis-link#follow" } }
     end
 
