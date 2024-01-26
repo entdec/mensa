@@ -3,4 +3,6 @@ th[scope="col"]
     .title.w-full.pr-3 = column.human_name
     .flex.items-center
       .pr-3
-        i.fa-thin.fa-sort.cursor-pointer
+        / TODO: Maybe these sorts should end up in a sortscontroller, manipulating the table view, and returning the show.html.slim?
+        = link_to helpers.table_path(params[:id], "sort": column.name), "data-turbo-frame": "_self"
+          i.fa-thin.fa-sort.cursor-pointer
