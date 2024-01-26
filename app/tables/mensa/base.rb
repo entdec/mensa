@@ -10,8 +10,15 @@ module Mensa
       @params = params
     end
 
+    # Returns all columns
     def columns
       @columns ||= config[:columns].map { |config| Mensa::Column.new(self, config) }
+    end
+
+    # Returns a column by name
+    # @param [String] name
+    def column(name)
+      columns.find { |c| c.name == name.to_sym }
     end
 
     def model
@@ -30,13 +37,10 @@ module Mensa
       return @ordered_scope if @ordered_scope
 
       @ordered_scope = filtered_scope
-    end
 
-    # private
-    def pagyd
-      return if @pagy_details && @records
+      @ordered_scope = @ordered_scope.reorder(order_hash) if params[:order]
 
-      @pagy_details, @records = ordered_scope.is_a?(Array) ? pagy_array(ordered_scope) : pagy(ordered_scope)
+      @ordered_scope
     end
 
     def paged_scope
@@ -51,6 +55,11 @@ module Mensa
 
     def rows
       paged_scope.map { |row| Mensa::Row.new(self, view_context, row) }
+    end
+
+    # Returns the current path with configuration
+    def path(order: {})
+      view_context.table_path(params[:id], order: order_hash(order))
     end
 
     class << self
@@ -75,5 +84,21 @@ module Mensa
         @config
       end
     end
+
+    private
+    def pagyd
+      return if @pagy_details && @records
+
+      @pagy_details, @records = ordered_scope.is_a?(Array) ? pagy_array(ordered_scope) : pagy(ordered_scope)
+    end
+
+    def order_hash(new_params = {})
+      return @order_hash if @order_hash
+      order_params = params[:order]&.permit!.to_h.symbolize_keys
+
+      @order_hash = order_params.reject{|name, direction| direction.blank?}.to_h
+                                .merge(new_params).reject{|name, direction| direction.blank?}
+    end
+
   end
 end
