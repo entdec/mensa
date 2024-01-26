@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 module Mensa
-  module Cell
+  class Cell
     class Component < ::Mensa::ApplicationComponent
-      with_collection_parameter :cell
+      with_collection_parameter :column
 
       include TablesHelper
 
-      attr_reader :row
-      attr_reader :cell
+      attr_reader :row, :column, :cell
 
-      def initialize(row:, cell:)
+      def initialize(row:, column:)
         @row = row
-        @cell = cell
+        @column = column
+        @cell = ::Mensa::Cell.new(column, row)
       end
     end
   end

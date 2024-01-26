@@ -10,12 +10,22 @@ module Mensa
       @record = record
     end
 
+    def value(column)
+      if record.respond_to?(column.attribute)
+        record.public_send(column.attribute)
+      elsif record.respond_to?(:[])
+        record[column.attribute]
+      else
+        "-"
+      end
+    end
+
     def link_attributes
-      {href: link, data: { controller: "satis-link",  action: "click->satis-link#follow tap->satis-link#follow" } }
+      { href: link, data: { controller: "satis-link",  action: "click->satis-link#follow tap->satis-link#follow" } }
     end
 
     def link
-      view_context.instance_exec(record, &table.config[:link])
+      view_context.instance_exec(record, &table.config[:link]) if table.config[:link]
     end
   end
 end
