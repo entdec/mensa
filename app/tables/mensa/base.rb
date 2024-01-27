@@ -1,6 +1,7 @@
 module Mensa
   class Base
     include Pagy::Backend
+    include ConfigReaders
 
     attr_accessor :view_context
     attr_reader :params
@@ -21,9 +22,8 @@ module Mensa
       columns.find { |c| c.name == name.to_sym }
     end
 
-    def model
-      config[:model]
-    end
+    config_reader :model
+    config_reader :link
 
     # Returns the records we want to display, using the Active Record Query Interface
     # By default it returns all records

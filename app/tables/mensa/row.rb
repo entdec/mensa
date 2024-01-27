@@ -27,7 +27,7 @@ module Mensa
     end
 
     def link
-      view_context.instance_exec(record, &table.config[:link]) if table.config[:link]
+      view_context.instance_exec(record, &table.link) if table.link
     end
   end
 end

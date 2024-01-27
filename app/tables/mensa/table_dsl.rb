@@ -49,14 +49,6 @@ module Mensa
     end
 
     option :model
-    # option :attribute
-
-    # def model(model_class)
-    #   config[:model_class] = model_class
-    # end
-
-    def link(&block)
-      config[:link] = block
-    end
+    option :link
   end
 end

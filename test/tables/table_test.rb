@@ -5,6 +5,8 @@ class TestTable < Mensa::Base
   config do
     column(:name)
     column(:state)
+
+    link { |test| root_path }
   end
 end
 
@@ -49,10 +51,17 @@ class TableTest < ActiveSupport::TestCase
     result = t.send(:order_hash, { name: nil })
     assert_equal({}, result)
   end
+
   test 'it sets order correctly' do
     t = TestTable.new(ActionController::Parameters.new({ order: { name: 'asc' } }))
     result = t.send(:order_hash, { state: 'asc' })
     assert_equal({ name: 'asc', state: 'asc' }, result)
+  end
 
+  test 'it returns row link' do
+    t = TestTable.new({})
+    result = t.link
+    assert_equal Proc, result.class
+    assert_equal 1, result.arity
   end
 end

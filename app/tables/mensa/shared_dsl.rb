@@ -4,8 +4,8 @@ module Mensa
 
     class_methods do
       def option(name)
-        define_method name.to_sym do |value=nil, &block|
-          if block_given?
+        define_method name do |value=nil, &block|
+          if block
             config[name.to_sym] = block
           else
             config[name.to_sym] = value
@@ -20,9 +20,7 @@ module Mensa
         config[:filter] = block
       end
 
-      def order(value)
-        config[:order] = value
-      end
+      option :order
     end
   end
 end

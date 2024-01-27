@@ -4,7 +4,7 @@ Awesome tables
 Wanted features:
 * [X] very fast
 * [X] row-links
-* [ ] sorting
+* [X] sorting
 * [ ] filtering
 * [ ] group by
 * [ ] sum/max/min
