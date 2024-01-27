@@ -48,9 +48,12 @@ module Mensa
       config[:columns] << Mensa::ColumnDsl.new(name, &).config
     end
 
-    def model(model_class)
-      config[:model_class] = model_class
-    end
+    option :model
+    # option :attribute
+
+    # def model(model_class)
+    #   config[:model_class] = model_class
+    # end
 
     def link(&block)
       config[:link] = block

@@ -22,9 +22,11 @@ module Mensa
     end
 
     def model
-      config[:model_class]
+      config[:model]
     end
 
+    # Returns the records we want to display, using the Active Record Query Interface
+    # By default it returns all records
     def scope
       model.all
     end
@@ -86,18 +88,18 @@ module Mensa
     end
 
     private
+
     def pagyd
       return if @pagy_details && @records
 
       @pagy_details, @records = ordered_scope.is_a?(Array) ? pagy_array(ordered_scope) : pagy(ordered_scope)
     end
 
+    # Though this works, perhaps moving this in column(s) is nicer
     def order_hash(new_params = {})
-      return @order_hash if @order_hash
       order_params = params[:order]&.permit!.to_h.symbolize_keys
-
-      @order_hash = order_params.reject{|name, direction| direction.blank?}.to_h
-                                .merge(new_params).reject{|name, direction| direction.blank?}
+      order_params.reject { |name, direction| direction.blank? }.to_h
+                  .merge(new_params.symbolize_keys).reject { |name, direction| direction.blank? }
     end
 
   end

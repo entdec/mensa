@@ -14,7 +14,25 @@ module Mensa
     end
 
     def attribute
-      @config[:attribute] || name
+      @config[:attribute]
+    end
+
+    def sortable?
+      @config[:sortable]
+    end
+
+    def sort_direction
+      table.params[:order]&.[](name)
+    end
+
+    def next_sort_direction
+      if sort_direction == "asc"
+        "desc"
+      elsif sort_direction == "desc"
+        nil
+      else
+        "asc"
+      end
     end
 
     def human_name

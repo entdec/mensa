@@ -6,6 +6,7 @@ module Mensa
     def initialize(name, &)
       @config = {
         name: name,
+        attribute: name,
         filter: nil,
         order: nil,
         sortable: true
@@ -13,8 +14,7 @@ module Mensa
       instance_eval(&) if block_given?
     end
 
-    def sortable(value)
-      config[:sortable] = value
-    end
+    option :sortable
+    option :attribute
   end
 end
