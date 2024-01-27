@@ -39,7 +39,8 @@ module Mensa
 
     def initialize(name, &)
       @config = {
-        columns: []
+        columns: [],
+        order: []
       }
       instance_eval(&) if block_given?
     end
@@ -50,5 +51,7 @@ module Mensa
 
     option :model
     option :link
+    option :order
+    option :column_order
   end
 end

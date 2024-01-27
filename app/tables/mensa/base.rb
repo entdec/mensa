@@ -9,11 +9,21 @@ module Mensa
 
     def initialize(params)
       @params = params
+      # FIXME: With this order will work as default order, once the table is resorted, the default should go
+      if params[:order].blank?
+        params[:order] = order
+      end
     end
 
     # Returns all columns
     def columns
-      @columns ||= config[:columns].map { |config| Mensa::Column.new(self, config) }
+      return @columns if @columns
+
+      if column_order.present?
+        column_order.map { |c| Mensa::Column.new(self, config[:columns].find {|cfg| cfg[:name] == c}) }
+      else
+        @columns = config[:columns].map { |config| Mensa::Column.new(self, config) }
+      end
     end
 
     # Returns a column by name
@@ -24,6 +34,8 @@ module Mensa
 
     config_reader :model
     config_reader :link
+    config_reader :order
+    config_reader :column_order
 
     # Returns the records we want to display, using the Active Record Query Interface
     # By default it returns all records
