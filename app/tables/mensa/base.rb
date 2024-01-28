@@ -37,8 +37,14 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {})
-      view_context.table_path(params[:id], order: order_hash(order))
+    def path(order: {}, turbo_frame_id: nil)
+      view_context.table_path(params[:id], order: order_hash(order), turbo_frame_id: turbo_frame_id)
+    end
+
+    def menu
+      Satis::Menus::Builder.build([:table, :view_menu]) do |m|
+        m.item :export, icon: "fal fa-file-export", link: nil
+      end
     end
 
     private

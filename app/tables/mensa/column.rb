@@ -14,7 +14,7 @@ module Mensa
     config_reader :sortable?
 
     def sort_direction
-      table.params[:order]&.[](name)
+      table.config[:order]&.[](name)
     end
 
     def next_sort_direction
@@ -36,6 +36,15 @@ module Mensa
         table.model.human_attribute_name name
       else
         name.to_s.humanize
+      end
+    end
+
+    def menu
+      Satis::Menus::Builder.build(:filter_menu, event: 'click') do |m|
+        if sortable?
+          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide', link: table.path(order: {name => 'asc'}), link_attributes: {"data-turbo-frame": "_self"}
+          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short', link: table.path(order: {name => 'asc'}), link_attributes: {"data-turbo-frame": "_self"}
+        end
       end
     end
   end
