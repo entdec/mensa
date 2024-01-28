@@ -32,26 +32,18 @@
 #   end
 # end
 
-module Mensa
+module Mensa::Config
   class TableDsl
-    include SharedDsl
-    attr_reader :config
+    include DslLogic
 
-    def initialize(name, &)
-      @config = {
-        columns: [],
-        order: []
-      }
-      instance_eval(&) if block_given?
-    end
-
-    def column(name, &)
-      config[:columns] << Mensa::ColumnDsl.new(name, &).config
-    end
-
-    option :model
+    option :model, default: -> { self.class.name.demodulalize.to_s.classify.constantize rescue raise "No model found for #{self.class.name}" }
+    option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :link
-    option :order
+
+    # Default sort order
+    option :order, default: []
+
+    # Order of columns in the table
     option :column_order
   end
 end

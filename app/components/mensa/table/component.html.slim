@@ -1,8 +1,8 @@
 .mensa-table
   table
     thead
-      tr = render(Mensa::Header::Component.with_collection(table.columns, table: @table))
-    tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: @table))
+      tr = render(Mensa::Header::Component.with_collection(table.columns, table: table))
+    tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
   .paging
     - if table.pagy_details.pages > 1

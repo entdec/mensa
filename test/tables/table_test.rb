@@ -2,7 +2,7 @@ require "test_helper"
 require 'pry'
 
 class TestTable < Mensa::Base
-  config do
+  definition do
     column(:name)
     column(:state)
 
@@ -53,7 +53,7 @@ class TableTest < ActiveSupport::TestCase
   end
 
   test 'it sets order correctly' do
-    t = TestTable.new(ActionController::Parameters.new({ order: { name: 'asc' } }))
+    t = TestTable.new(ActionController::Parameters.new(order: { name: 'asc' }).permit!.to_h)
     result = t.send(:order_hash, { state: 'asc' })
     assert_equal({ name: 'asc', state: 'asc' }, result)
   end

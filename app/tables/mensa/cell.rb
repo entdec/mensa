@@ -4,9 +4,9 @@ module Mensa
   class Cell
     attr_reader :column, :row
 
-    def initialize(column, row)
-      @column = column
+    def initialize(row:, column:)
       @row = row
+      @column = column
     end
 
     def value
@@ -14,7 +14,6 @@ module Mensa
     end
 
     def to_html
-      # TODO: Sanitize
       value.to_s
     end
   end

@@ -1,7 +1,8 @@
 module Mensa
   class TablesController < ::ApplicationController
     def show
-      @table = Mensa::Base.for_name(params[:id], params)
+      # TODO: Sanitize params
+      @table = Mensa.for_name(params[:id], params.permit!.to_h)
       render :show
     end
   end

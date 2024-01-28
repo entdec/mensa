@@ -3,15 +3,14 @@
 module Mensa
   class Column
     include ConfigReaders
-    attr_reader :table, :config
+    attr_reader :name, :table, :config
 
-    def initialize(table, config)
+    def initialize(name, config:, table:)
+      @name = name
       @table = table
       @config = config
     end
 
-    config_reader :name
-    config_reader :attribute
     config_reader :sortable?
 
     def sort_direction
@@ -26,6 +25,10 @@ module Mensa
       else
         "asc"
       end
+    end
+
+    def attribute
+      config[:attribute] || name
     end
 
     def human_name

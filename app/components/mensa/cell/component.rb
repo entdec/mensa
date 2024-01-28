@@ -5,14 +5,10 @@ module Mensa
     class Component < ::Mensa::ApplicationComponent
       with_collection_parameter :column
 
-      include TablesHelper
-
-      attr_reader :row, :column, :cell
+      attr_reader :cell
 
       def initialize(row:, column:)
-        @row = row
-        @column = column
-        @cell = ::Mensa::Cell.new(column, row)
+        @cell = ::Mensa::Cell.new(row: row, column: column)
       end
     end
   end
