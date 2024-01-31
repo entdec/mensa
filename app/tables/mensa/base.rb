@@ -9,6 +9,7 @@ module Mensa
 
     config_reader :model
     config_reader :link
+    config_reader :views
 
     def initialize(config = {})
       @params = config.deep_symbolize_keys

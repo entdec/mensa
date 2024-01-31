@@ -9,8 +9,6 @@ export class Mensa {
       configuration: configuration,
     }
 
-    console.log("Mensa")
-
     Mensa.setupControllers()
   }
 

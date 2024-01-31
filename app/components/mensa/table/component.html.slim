@@ -1,14 +1,16 @@
 .mensa-table
-  .bg-white.flex.dark:bg-gray-800.dark:border-gray-800.border-b.shadow-lg
+  .bg-white.flex.dark:bg-gray-800.dark:border-gray-800.border-b
     .flex-none.w-8.h-22.text-right.pt-2.text-gray-500.dark:text-gray-400
       i.fal.fa-magnifying-glass.cursor-pointer
     .flex-1
       input.border-none.ring-0.focus:ring-0.w-full.py-3.px-3.text-gray-800.dark:text-gray-400.leading-tight.dark:bg-gray-800.text-sm type="text" name="search_query" placeholder=t("search", default: "Search")
       button.cursor-pointer.w-6.h-full.text-gray-400.hidden
         i.fas.fa-xmark
-    .flex-none.w-22.h-22.pt-2.text-left.cursor-pointer
+    /.flex-none.w-22.h-22.pt-2.text-left.cursor-pointer
       .bg-primary-100.text-primary-600.hidden.mr-2.rounded-full.text-xs.font-medium.md:inline-block class="py-0.5 px-2.5"
         = table.pagy_details.count
+  - if table.views
+    = render Mensa::Views::Component.new(table: table).tap {|c| c.original_view_context = view_context }
   table
     thead
       tr = render(Mensa::Header::Component.with_collection(table.columns, table: table))

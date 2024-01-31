@@ -45,5 +45,7 @@ module Mensa::Config
 
     # Order of columns in the table
     option :column_order
+
+    option :views, default: true
   end
 end

@@ -10,13 +10,7 @@
     thead {
       @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
 
-      tr {
-        @apply divide-x divide-gray-200 dark:divide-gray-600 cursor-move;
-      }
-
-      th {
-        @apply top-0 z-10 py-3.5 pl-4 pr-3 px-6 align-bottom text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 dark:border-gray-600;
-      }
+      // tr and th moved to header
     }
     tbody {
 
@@ -31,7 +25,7 @@
       }
 
       td {
-        @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+        @apply pl-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
       }
     }
   }

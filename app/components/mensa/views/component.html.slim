@@ -1,0 +1,32 @@
+.views.p-2.shadow-lg.border-b
+  .sm:hidden
+    label.sr-only[for="tabs"]
+      | Select a tab
+    select#tabs.block.w-full.rounded-md.border-gray-300.focus:border-indigo-500.focus:ring-indigo-500[name="tabs"]
+      option
+        | All
+      option
+        | Company
+      option[selected]
+        | Team Members
+      option
+        | Billing
+  .hidden.sm:block
+    nav.flex.justify-between[aria-label="Tabs"]
+      .flex.space-x-2
+        a.bg-gray-200.text-gray-800.rounded-md.px-3.py-1.5.text-sm[href="#" aria-current="page" title=table.pagy_details.count]
+          | All
+        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+          | Company
+        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+          | Team Members
+        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+          | Billing
+        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
+          .fal.fa-plus
+      .flex.space-x-2.justify-right
+        a.px-3.py-1.5.rounded-md.border.border-gray-200.hover:bg-gray-100.space-x-2
+          i.fal.fa-magnifying-glass
+          i.fal.fa-bars-filter
+        a.px-3.py-1.5.rounded-md.border.border-gray-200.hover:bg-gray-100.space-x-2
+          i.fal.fa-columns-3
