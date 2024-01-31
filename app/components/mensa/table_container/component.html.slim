@@ -1,3 +1,1 @@
-- 3.times do |t|
-  = card.with_tab SecureRandom.uuid, title: table_name, tab_menu: table.menu do
-    turbo-frame id="#{table_name}-#{t}" src=helpers.mensa.table_path(table_name, turbo_frame_id: "#{table_name}-#{t}") target="_top" loading="lazy"
+turbo-frame id=table_name src=helpers.mensa.table_path(table_name, turbo_frame_id: table_name) target="_top" loading="lazy"
