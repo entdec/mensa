@@ -3,6 +3,7 @@ require "mensa/engine"
 
 require 'pagy'
 require 'satis'
+require 'textacular'
 
 require_relative 'mensa/configuration'
 
