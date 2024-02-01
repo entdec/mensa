@@ -1,8 +1,8 @@
 th[scope="col"]
-  .flex.items-center.h-4
-    .title.w-full.pr-3 = column.human_name
-    .flex.items-center
+  .container
+    .title = column.human_name
+    .indicators
       - if column.sortable?
-        .pr-3
+        .action
           = link_to table.path(order: {column.name => column.next_sort_direction}), "data-turbo-frame": "_self"
-            i.fa-thin.cursor-pointer class=Mensa.config.order_indicator_icons[column.sort_direction]
+            i.fa-thin class=Mensa.config.order_indicator_icons[column.sort_direction]

@@ -72,11 +72,8 @@
   &__condensed {
     table {
       tbody {
-        tr {
-        }
-
         td {
-          @apply pl-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+          @apply pl-4 py-2;
         }
       }
     }
