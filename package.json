@@ -10,11 +10,11 @@
   ],
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "stimulus-use": "^0.52.2",
-    "hotkeys-js": "^3.13.5"
+    "@rails/request.js": "^0.0.9",
+    "hotkeys-js": "^3.13.5",
+    "stimulus-use": "^0.52.2"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "peerDependencies": {
     "@entdec/satis": ">=1.0.60"
   }

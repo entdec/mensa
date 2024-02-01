@@ -1,9 +1,9 @@
-.mensa-table data-controller="mensa-table"
+.mensa-table data-controller="mensa-table" id="mensa-table1234"
   .bg-white.flex.dark:bg-gray-800.dark:border-gray-800.border-b
     .flex-none.w-8.h-22.text-right.pt-2.text-gray-500.dark:text-gray-400
       i.fal.fa-magnifying-glass.cursor-pointer
     .flex-1
-      input.border-none.ring-0.focus:ring-0.w-full.py-3.px-3.text-gray-800.dark:text-gray-400.leading-tight.dark:bg-gray-800.text-sm type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-table-target="searchInput" data-action="mensa-table#monitorSearch"
+      input.border-none.ring-0.focus:ring-0.w-full.py-3.px-3.text-gray-800.dark:text-gray-400.leading-tight.dark:bg-gray-800.text-sm type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-table-target="searchInput" data-action="mensa-table#monitorSearch keydown.enter->mensa-table#search" value=params[:query]
     .flex.space-x-2.justify-right.pr-2
       button.cursor-pointer.w-6.h-full.text-gray-400.hidden.pr-6 data-mensa-table-target="resetSearchButton" data-action="mensa-table#resetSearch"
         i.fas.fa-xmark
@@ -23,6 +23,5 @@
       tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
     .paging
-      - if table.pagy_details.pages > 1
-        == pagy_info(table.pagy_details)
-        == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+      == pagy_info(table.pagy_details)
+      == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')

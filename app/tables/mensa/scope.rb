@@ -14,7 +14,9 @@ module Mensa
     end
 
     def filtered_scope
-      scope
+      @filtered_scope = scope
+      @filtered_scope = @filtered_scope.web_search(params[:query]) if params[:query]
+      @filtered_scope
     end
 
     def ordered_scope

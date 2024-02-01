@@ -1,15 +1,16 @@
-import ApplicationController from "../../../../frontend/controllers/application_controller"
+import ApplicationController from '../../../../frontend/controllers/application_controller'
 // FIXME: Is this full path really needed?
 // import { debounce } from "../../../../frontend/utils"
 // import { useWindowResize } from "stimulus-use"
 //
 // import Sortable from "sortablejs"
+import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
   static targets = [
-    "condenseExpandIcon",
-    "resetSearchButton",
-    "searchInput"
+    'condenseExpandIcon',
+    'resetSearchButton',
+    'searchInput'
   ]
   static values = {
     resetUrl: String,
@@ -25,29 +26,42 @@ export default class TableComponentController extends ApplicationController {
 
   }
 
-  condenseExpand(event) {
-    if(this.element.classList.contains('mensa-table__condensed')) {
-      this.element.classList.remove("mensa-table__condensed")
-      this.condenseExpandIconTarget.classList.add("fa-compress")
-      this.condenseExpandIconTarget.classList.remove("fa-expand")
+  condenseExpand (event) {
+    if (this.element.classList.contains('mensa-table__condensed')) {
+      this.element.classList.remove('mensa-table__condensed')
+      this.condenseExpandIconTarget.classList.add('fa-compress')
+      this.condenseExpandIconTarget.classList.remove('fa-expand')
     } else {
-      this.element.classList.add("mensa-table__condensed")
-      this.condenseExpandIconTarget.classList.remove("fa-compress")
-      this.condenseExpandIconTarget.classList.add("fa-expand")
+      this.element.classList.add('mensa-table__condensed')
+      this.condenseExpandIconTarget.classList.remove('fa-compress')
+      this.condenseExpandIconTarget.classList.add('fa-expand')
     }
   }
 
-  monitorSearch(event) {
-    if(this.searchInputTarget.value.length >= 1) {
+  monitorSearch (event) {
+    if (this.searchInputTarget.value.length >= 1) {
       this.resetSearchButtonTarget.classList.remove('hidden')
     } else {
       this.resetSearchButtonTarget.classList.add('hidden')
     }
   }
 
-  resetSearch(event) {
+  resetSearch (event) {
     this.searchInputTarget.value = ''
     this.searchInputTarget.focus()
     this.resetSearchButtonTarget.classList.add('hidden')
+    get(`/mensa/tables/contacts`, {
+      responseKind: 'turbo-stream'
+    })
+  }
+
+  search (event) {
+    if (this.searchInputTarget.value.length < 3) {
+      return
+    }
+    let query = this.searchInputTarget.value;
+    get(`/mensa/tables/contacts?query=${query}`, {
+      responseKind: 'turbo-stream'
+    })
   }
 }
