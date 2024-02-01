@@ -19,7 +19,7 @@ export default class TableComponentController extends ApplicationController {
 
   connect () {
     super.connect()
-
+    this.monitorSearch()
     // this.boundMonitorSearchInput = this.monitorSearchInput.bind(this)
     //
     // this.searchInputTarget.addEventListener("keydown", this.boundMonitorSearchInput)
@@ -50,7 +50,12 @@ export default class TableComponentController extends ApplicationController {
     this.searchInputTarget.value = ''
     this.searchInputTarget.focus()
     this.resetSearchButtonTarget.classList.add('hidden')
-    get(`/mensa/tables/contacts`, {
+
+    let turboFrame = this.element.closest("turbo-frame")
+    let url = new URL(turboFrame.getAttribute('src'))
+    url.searchParams.delete('query')
+
+    get(url, {
       responseKind: 'turbo-stream'
     })
   }
@@ -60,7 +65,12 @@ export default class TableComponentController extends ApplicationController {
       return
     }
     let query = this.searchInputTarget.value;
-    get(`/mensa/tables/contacts?query=${query}`, {
+
+    let turboFrame = this.element.closest("turbo-frame")
+    let url = new URL(turboFrame.getAttribute('src'))
+    url.searchParams.append('query', query)
+
+    get(url, {
       responseKind: 'turbo-stream'
     })
   }

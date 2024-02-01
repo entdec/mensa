@@ -1,4 +1,4 @@
 ruby:
   @table.view_context = self
-turbo-frame id="#{params[:turbo_frame_id]}" target="_top"
+turbo-frame id="#{params[:id]}" target="_top"
   = render Mensa::Table::Component.new(table: @table, view_context: self)
