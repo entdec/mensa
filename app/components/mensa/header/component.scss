@@ -1,4 +1,7 @@
 .mensa-table {
+  &__views {
+    @apply p-2 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
+  }
   thead {
     tr {
       @apply divide-x divide-gray-200 dark:divide-gray-600
@@ -15,11 +18,24 @@
         @apply w-full pr-3;
       }
 
-      .indicators {
+      .actions {
         @apply pr-3 flex items-center;
 
         .action {
           @apply cursor-pointer;
+          .fa-arrow-down-arrow-up {
+            @apply opacity-0;
+          }
+        }
+      }
+    }
+
+    th:hover {
+      .actions {
+        .action {
+          .fa-arrow-down-arrow-up {
+            @apply opacity-100;
+          }
         }
       }
     }

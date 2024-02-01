@@ -1,4 +1,4 @@
-.views.p-2.shadow-lg.border-b
+.mensa-table__views
   .sm:hidden
     label.sr-only[for="tabs"]
       | Select a tab
@@ -13,16 +13,14 @@
         | Billing
   .hidden.sm:block
     nav.flex.justify-between[aria-label="Tabs"]
-      .flex.space-x-1.overflow-y-auto.whitespace-nowrap.scroll-p-0
-        a.bg-gray-200.text-gray-800.rounded-md.px-3.py-1.5.text-sm[href="#" aria-current="page" title=table.pagy_details.count]
-          | All
-        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
-          | Company
-        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
-          | Team Members
-        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
-          | Customers
-        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
-          | Vendors
-        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
+      .flex.space-x-2.overflow-y-auto.whitespace-nowrap.scroll-p-0
+        - table.views.each.with_index do |view, index|
+          - if index == 0
+            a.bg-gray-200.dark:bg-gray-500.hover:bg-gray-400.text-gray-800.rounded-md.px-3.py-1.5.text-sm[href="#" aria-current="page" title=table.pagy_details.count]
+              = view.name
+          - else
+            a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+              = view.name
+
+        a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
           .fal.fa-plus

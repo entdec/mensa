@@ -4,7 +4,7 @@ module Mensa
     include ConfigReaders
     include Scope
 
-    attr_accessor :view_context
+    attr_accessor :view_context, :name
     attr_reader :config, :params
 
     config_reader :model
@@ -46,6 +46,10 @@ module Mensa
       Satis::Menus::Builder.build([:table, :view_menu]) do |m|
         m.item :export, icon: "fal fa-file-export", link: nil
       end
+    end
+
+    def views
+      [Mensa::TableView.new(name: 'All')] + TableView.where(table_name: name).where(user: [nil, Current.user])
     end
 
     private

@@ -12,6 +12,7 @@ module Mensa
       def initialize(table_name, card: nil)
         @table_name = table_name
         @table = Mensa.for_name(table_name)
+        @table.name = table_name
         @table.view_context = view_context
         @card = card
       end

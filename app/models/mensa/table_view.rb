@@ -1,4 +1,5 @@
-class TableView < Satis::UserData
-  json_attribute :sort
-  json_attribute :query
+module Mensa
+  class TableView < ApplicationRecord
+    belongs_to :user, optional: true
+  end
 end

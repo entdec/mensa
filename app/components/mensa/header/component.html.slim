@@ -1,8 +1,8 @@
 th[scope="col"]
   .container
     .title = column.human_name
-    .indicators
+    .actions
       - if column.sortable?
         .action
           = link_to table.path(order: {column.name => column.next_sort_direction}), "data-turbo-frame": "_self"
-            i.fa-thin class=Mensa.config.order_indicator_icons[column.sort_direction]
+            i.fa-regular class=Mensa.config.order_indicator_icons[column.sort_direction]
