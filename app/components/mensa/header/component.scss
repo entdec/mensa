@@ -1,7 +1,4 @@
 .mensa-table {
-  &__views {
-    @apply p-2 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
-  }
   thead {
     tr {
       @apply divide-x divide-gray-200 dark:divide-gray-600

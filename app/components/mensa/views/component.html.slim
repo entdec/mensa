@@ -3,23 +3,17 @@
     label.sr-only[for="tabs"]
       | Select a tab
     select#tabs.block.w-full.rounded-md.border-gray-300.focus:border-indigo-500.focus:ring-indigo-500[name="tabs"]
-      option
-        | All
-      option
-        | Company
-      option[selected]
-        | Team Members
-      option
-        | Billing
+      - table.views.each.with_index do |view, index|
+        option = view.name
   .hidden.sm:block
     nav.flex.justify-between[aria-label="Tabs"]
       .flex.space-x-2.overflow-y-auto.whitespace-nowrap.scroll-p-0
         - table.views.each.with_index do |view, index|
           - if index == 0
-            a.bg-gray-200.dark:bg-gray-500.hover:bg-gray-400.text-gray-800.rounded-md.px-3.py-1.5.text-sm[href="#" aria-current="page" title=table.pagy_details.count]
+            a.view[href="#" aria-current="page"]
               = view.name
           - else
-            a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+            a.view.selected[href="#"]
               = view.name
 
         a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
