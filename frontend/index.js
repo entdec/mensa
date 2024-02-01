@@ -13,7 +13,22 @@ export class Mensa {
   }
 
   static setupControllers() {
+    const regularControllers = require.context("./controllers", true, /\.js$/)
     const componentControllers = require.context("../app/components/", true, /component_controller\.js$/)
+
+    regularControllers
+      .keys()
+      .map((key) => {
+        const [_, name] = /([a-z\_]+)_controller\.js$/.exec(key)
+        return [name, regularControllers(key).default]
+      })
+      .filter(([name, controller]) => {
+        return name != "application"
+      })
+      .forEach(([name, controller]) => {
+        let identifier = `${name.replace(/_/g, "-")}`
+        this.application.register(identifier, controller)
+      })
 
     componentControllers
       .keys()

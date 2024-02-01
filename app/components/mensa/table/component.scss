@@ -1,7 +1,7 @@
 .mensa-table {
-  @apply bg-white dark:bg-gray-500 dark:border-gray-700 overflow-y-auto;
+  @apply bg-white dark:bg-gray-500 dark:border-gray-700;
 
-  badge {
+  .badge {
     @apply bg-primary-100 text-primary-600 hidden ml-3 rounded-full text-xs font-medium md:inline-block py-0.5 px-2.5;
   }
   table {
@@ -25,7 +25,7 @@
       }
 
       td {
-        @apply pl-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+        @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
       }
     }
   }
@@ -69,6 +69,17 @@
     }
   }
 
+  &__condensed {
+    table {
+      tbody {
+        tr {
+        }
 
+        td {
+          @apply pl-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+        }
+      }
+    }
+  }
 
 }

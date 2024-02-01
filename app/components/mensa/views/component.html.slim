@@ -13,7 +13,7 @@
         | Billing
   .hidden.sm:block
     nav.flex.justify-between[aria-label="Tabs"]
-      .flex.space-x-2
+      .flex.space-x-1.overflow-y-auto.whitespace-nowrap.scroll-p-0
         a.bg-gray-200.text-gray-800.rounded-md.px-3.py-1.5.text-sm[href="#" aria-current="page" title=table.pagy_details.count]
           | All
         a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
@@ -21,12 +21,8 @@
         a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
           | Team Members
         a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
-          | Billing
+          | Customers
+        a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#"]
+          | Vendors
         a.text-gray-600.hover:text-gray-800.hover:bg-gray-100.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
           .fal.fa-plus
-      .flex.space-x-2.justify-right
-        a.px-3.py-1.5.rounded-md.border.border-gray-200.hover:bg-gray-100.space-x-2
-          i.fal.fa-magnifying-glass
-          i.fal.fa-bars-filter
-        a.px-3.py-1.5.rounded-md.border.border-gray-200.hover:bg-gray-100.space-x-2
-          i.fal.fa-columns-3
