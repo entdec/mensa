@@ -27,4 +27,15 @@ export default class ApplicationController extends Controller {
     }
     return false
   }
+
+  debouncedHover(element, timeout, handler) {
+    var timeoutId = null;
+    element.addEventListener(marker, 'mouseover',function() {
+      timeoutId = setTimeout(handler, timeout);
+    } );
+
+    element.addEventListener(marker, 'mouseout',function() {
+      clearTimeout(timeoutId)
+    });
+  }
 }

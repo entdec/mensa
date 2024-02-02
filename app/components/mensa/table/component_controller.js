@@ -8,13 +8,17 @@ import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
   static targets = [
+    'controlBar',
     'condenseExpandIcon',
     'resetSearchButton',
-    'searchInput'
+    'searchInput',
+    'search',
+    'filters',
+    'views',
+    'viewButtons'
   ]
   static values = {
-    resetUrl: String,
-    pager: String,
+    supportsViews: Boolean
   }
 
   connect () {
@@ -23,6 +27,37 @@ export default class TableComponentController extends ApplicationController {
     // this.boundMonitorSearchInput = this.monitorSearchInput.bind(this)
     //
     // this.searchInputTarget.addEventListener("keydown", this.boundMonitorSearchInput)
+
+  }
+
+  openFiltersAndSearch(event) {
+    if(this.supportsViewsValue) {
+      this.viewButtonsTarget.classList.remove('hidden')
+      this.searchTarget.classList.remove('hidden')
+      this.viewsTarget.classList.add('hidden')
+      this.filtersTarget.classList.remove('hidden')
+    } else {
+      this.controlBarTarget.classList.add('hidden')
+      this.viewButtonsTarget.classList.remove('hidden')
+      this.filtersTarget.classList.remove('hidden')
+    }
+  }
+
+  cancelFiltersAndSearch(event) {
+    console.log('cancel')
+    if(this.supportsViewsValue) {
+      this.searchTarget.classList.add('hidden')
+      this.viewButtonsTarget.classList.add('hidden')
+      this.filtersTarget.classList.add('hidden')
+      this.viewsTarget.classList.remove('hidden')
+    } else {
+      this.controlBarTarget.classList.remove('hidden')
+      this.viewButtonsTarget.classList.add('hidden')
+      this.filtersTarget.classList.add('hidden')
+    }
+  }
+
+  saveFiltersAndSearch(event) {
 
   }
 
@@ -51,8 +86,8 @@ export default class TableComponentController extends ApplicationController {
     this.searchInputTarget.focus()
     this.resetSearchButtonTarget.classList.add('hidden')
 
-    let turboFrame = this.element.closest("turbo-frame")
-    let url = new URL(turboFrame.getAttribute('src'))
+    let turboFrame = this.element.closest('turbo-frame')
+    let url = this.ourUrl
     url.searchParams.delete('query')
 
     get(url, {
@@ -64,14 +99,25 @@ export default class TableComponentController extends ApplicationController {
     if (this.searchInputTarget.value.length < 3) {
       return
     }
-    let query = this.searchInputTarget.value;
+    let query = this.searchInputTarget.value
 
-    let turboFrame = this.element.closest("turbo-frame")
-    let url = new URL(turboFrame.getAttribute('src'))
+    let url = this.ourUrl
     url.searchParams.append('query', query)
 
     get(url, {
       responseKind: 'turbo-stream'
     })
+  }
+
+  get ourUrl() {
+    let turboFrame = this.element.closest('turbo-frame')
+    let url
+
+    if (turboFrame && turboFrame.getAttribute('src')) {
+      url = new URL(turboFrame.getAttribute('src'))
+    } else {
+      url = new URL(window.location.href)
+    }
+    return url
   }
 }

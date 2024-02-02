@@ -46,6 +46,6 @@ module Mensa::Config
     # Order of columns in the table
     option :column_order
 
-    option :views, default: true
+    option :supports_views, default: true
   end
 end

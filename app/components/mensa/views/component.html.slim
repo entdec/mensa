@@ -1,14 +1,14 @@
-.mensa-table__views
+.mensa-table__views data-mensa-table-target="views"
   .sm:hidden
     label.sr-only[for="tabs"]
       | Select a tab
     select#tabs.block.w-full.rounded-md.border-gray-300.focus:border-indigo-500.focus:ring-indigo-500[name="tabs"]
-      - table.views.each.with_index do |view, index|
+      - table.all_views.each.with_index do |view, index|
         option = view.name
   .hidden.sm:block
     nav.flex.justify-between[aria-label="Tabs"]
       .flex.space-x-2.overflow-y-auto.whitespace-nowrap.scroll-p-0
-        - table.views.each.with_index do |view, index|
+        - table.all_views.each.with_index do |view, index|
           - if index == 0
             a.view[href="#" aria-current="page"]
               = view.name
@@ -18,3 +18,5 @@
 
         a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
           .fal.fa-plus
+      - if table.supports_views
+        = render Mensa::ControlBar::Component.new(table: table)

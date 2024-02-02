@@ -1,0 +1,15 @@
+.mensa-table__filters.hidden data-mensa-table-target="filters"
+  .sm:hidden
+    label.sr-only[for="tabs"]
+      | Select a tab
+    select#tabs.block.w-full.rounded-md.border-gray-300.focus:border-indigo-500.focus:ring-indigo-500[name="tabs"]
+      /- table.views.each.with_index do |view, index|
+        option = view.name
+  .hidden.sm:block
+    nav.flex.justify-between[aria-label="Tabs"]
+      .flex.space-x-2.overflow-y-auto.whitespace-nowrap.scroll-p-0
+        a.filter[href="#" aria-current="page"]
+          | Add filter
+
+        a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_filter", default: "New Filter")]
+          .fal.fa-plus

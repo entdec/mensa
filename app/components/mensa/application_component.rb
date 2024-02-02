@@ -5,6 +5,7 @@ module Mensa
     include ViewComponent::Slotable
     include ActionView::Helpers::TranslationHelper
     include Satis::Concerns::ContextualTranslations
+    include Mensa::ApplicationHelper
 
     attr_accessor :original_view_context
   end

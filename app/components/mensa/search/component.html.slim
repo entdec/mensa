@@ -1,0 +1,17 @@
+.mensa-table__search data-mensa-table-target="search" class="#{table.supports_views ? 'hidden' : ''}"
+  .flex
+    .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
+      i.fal.fa-magnifying-glass.cursor-pointer
+    .flex-1
+      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-table-target="searchInput" data-action="mensa-table#monitorSearch keydown.enter->mensa-table#search" value=params[:query]
+    .flex.space-x-2.justify-right.pr-2
+      button.mensa-table__search__button.hidden.pr-6 data-mensa-table-target="resetSearchButton" data-action="mensa-table#resetSearch"
+        i.fas.fa-xmark
+      .view-buttons.hidden data-mensa-table-target="viewButtons"
+        button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#cancelFiltersAndSearch"
+          | Cancel
+        button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#saveFiltersAndSearch"
+          | Save
+    - unless table.supports_views
+      = render Mensa::ControlBar::Component.new(table: table)
+

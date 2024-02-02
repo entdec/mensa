@@ -9,7 +9,7 @@ module Mensa
 
     config_reader :model
     config_reader :link
-    config_reader :views
+    config_reader :supports_views
 
     def initialize(config = {})
       @params = config.deep_symbolize_keys
@@ -48,7 +48,7 @@ module Mensa
       end
     end
 
-    def views
+    def all_views
       [Mensa::TableView.new(name: 'All')] + TableView.where(table_name: name).where(user: [nil, Current.user])
     end
 
