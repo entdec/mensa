@@ -24,10 +24,6 @@ export default class TableComponentController extends ApplicationController {
   connect () {
     super.connect()
     this.monitorSearch()
-    // this.boundMonitorSearchInput = this.monitorSearchInput.bind(this)
-    //
-    // this.searchInputTarget.addEventListener("keydown", this.boundMonitorSearchInput)
-
   }
 
   openFiltersAndSearch(event) {
