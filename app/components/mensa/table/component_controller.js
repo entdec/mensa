@@ -72,6 +72,7 @@ export default class TableComponentController extends ApplicationController {
   monitorSearch (event) {
     if (this.searchInputTarget.value.length >= 1) {
       this.resetSearchButtonTarget.classList.remove('hidden')
+      this.searchInputTarget.focus();
     } else {
       this.resetSearchButtonTarget.classList.add('hidden')
     }

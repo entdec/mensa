@@ -3,7 +3,7 @@
     .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
       i.fal.fa-magnifying-glass.cursor-pointer
     .flex-1
-      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-table-target="searchInput" data-action="mensa-table#monitorSearch keydown.enter->mensa-table#search" value=params[:query]
+      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-table-target="searchInput" data-action="mensa-table#monitorSearch keydown.enter->mensa-table#search keydown.esc->mensa-table#resetSearch" value=params[:query]
     .flex.space-x-2.justify-right.pr-2
       button.mensa-table__search__button.hidden.pr-6 data-mensa-table-target="resetSearchButton" data-action="mensa-table#resetSearch"
         i.fas.fa-xmark
