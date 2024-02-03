@@ -11,6 +11,13 @@ module Mensa
         @table = table
         @table.view_context = view_context
       end
+
+      def custom_classes
+        custom_classes = []
+        custom_classes << "mensa-table__condensed" if table.config[:view_condensed]
+
+        custom_classes.join(" ")
+      end
     end
   end
 end

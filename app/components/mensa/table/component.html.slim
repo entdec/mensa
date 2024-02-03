@@ -1,4 +1,4 @@
-.mensa-table data-mensa-table-supports-views-value="#{table.supports_views}" data-controller="mensa-table" id="mensa-table1234"
+.mensa-table class=custom_classes data-mensa-table-supports-views-value="#{table.supports_views}" data-controller="mensa-table" id="mensa-table1234"
   = render Mensa::Search::Component.new(table: table)
   = render Mensa::Filters::Component.new(table: table)
   - if table.supports_views
@@ -9,6 +9,7 @@
         tr = render(Mensa::Header::Component.with_collection(table.columns, table: table))
       tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
-    .paging
-      == pagy_info(table.pagy_details)
-      == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+    - if table.pagy_details&.pages > 1
+      .paging
+        == pagy_info(table.pagy_details)
+        == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')

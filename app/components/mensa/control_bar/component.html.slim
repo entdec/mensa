@@ -2,7 +2,9 @@
   .flex.space-x-2.justify-right
     button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#openFiltersAndSearch"
       i.fal.fa-bars-filter
-    button.cursor-pointer.w-6.h-full.text-gray-400
-      i.fal.fa-columns-3
-    button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#condenseExpand"
-      i.fal.fa-compress data-mensa-table-target="condenseExpandIcon"
+    - if sort_button?
+      button.cursor-pointer.w-6.h-full.text-gray-400
+        i.fal.fa-columns-3
+    - if condense_button?
+      button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#condenseExpand"
+        i.fal.fa-compress data-mensa-table-target="condenseExpandIcon"

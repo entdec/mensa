@@ -8,6 +8,14 @@ module Mensa
       def initialize(table:)
         @table = table
       end
+
+      def sort_button?
+        table.config[:view_colums_sorting]
+      end
+
+      def condense_button?
+        table.config[:view_condensed_toggle]
+      end
     end
   end
 end

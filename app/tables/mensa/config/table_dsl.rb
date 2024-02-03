@@ -40,12 +40,15 @@ module Mensa::Config
     option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :link
 
-    # Default sort order
-    option :order, default: []
+    # Default sort order {column: direction, column: direction}
+    option :order, default: {}
 
     # Order of columns in the table
     option :column_order
 
     option :supports_views, default: true
+    option :view_colums_sorting, default: true
+    option :view_condensed, default: false
+    option :view_condensed_toggle, default: true
   end
 end
