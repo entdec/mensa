@@ -7,7 +7,7 @@
         option = view.name
   .hidden.sm:block
     nav.flex.justify-between[aria-label="Tabs"]
-      .flex.space-x-2.overflow-y-auto.whitespace-nowrap.scroll-p-0
+      .flex.space-x-2.overflow-x-auto.whitespace-nowrap.scroll-p-0
         - table.all_views.each.with_index do |view, index|
           - if index == 0
             a.view[href="#" aria-current="page"]

@@ -21,10 +21,4 @@ export default class FiltersComponentController extends ApplicationController {
     console.log('hi')
   }
 
-  toggle(event) {
-    console.log('toggle')
-    this.listTarget.classList.toggle('hidden')
-  }
-
-
 }
