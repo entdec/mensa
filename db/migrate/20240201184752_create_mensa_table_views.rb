@@ -9,7 +9,7 @@ class CreateMensaTableViews < ActiveRecord::Migration[7.1]
 
       t.timestamps
     end
-    add_index :mensa_table_views, :table_name, unique: true
+    add_index :mensa_table_views, :table_name, unique: false
     add_index :mensa_table_views, :data, using: :gin
   end
 end
