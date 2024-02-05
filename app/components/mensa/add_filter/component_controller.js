@@ -1,4 +1,6 @@
 import ApplicationController from '../../../../frontend/controllers/application_controller'
+import { debounce } from "@entdec/satis"
+
 
 export default class AddFilterComponentController extends ApplicationController {
   static targets = [
@@ -13,6 +15,9 @@ export default class AddFilterComponentController extends ApplicationController 
 
   connect () {
     super.connect()
+
+    // This
+    this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
   }
 
   toggle (event) {
@@ -36,6 +41,10 @@ export default class AddFilterComponentController extends ApplicationController 
 
     this.toggle()
     this.toggleValuePopover()
+  }
+
+  filterValueEntered(event) {
+    console.log("hi")
   }
 
 }
