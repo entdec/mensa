@@ -12,9 +12,10 @@ module Mensa
     end
 
     config_reader :sortable?
+    config_reader :sanitize?
 
     def sort_direction
-      table.config[:order]&.[](name)
+      table.config.dig(:order, name)
     end
 
     def next_sort_direction

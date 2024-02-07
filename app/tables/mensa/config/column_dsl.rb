@@ -5,7 +5,8 @@ module Mensa::Config
     include DslLogic
 
     option :sortable, default: true
+    option :sanitize, default: true
     option :attribute
-    option :render, dsl: Mensa::Config::RenderDsl
+    dsl_option :render, Mensa::Config::RenderDsl
   end
 end
