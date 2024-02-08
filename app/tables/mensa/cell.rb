@@ -5,6 +5,8 @@ module Mensa
     include ActionView::Helpers::SanitizeHelper
     include ::ApplicationHelper
     include ActionView::Helpers::TagHelper
+    include ActionView::Helpers::UrlHelper
+    include Rails.application.routes.url_helpers
 
     attr_reader :column, :row
 
@@ -17,8 +19,9 @@ module Mensa
       @value ||= row.value(column)
     end
 
-    def to_html
-      return column.config.dig(:render, :html).call(row.record) if column.config.dig(:render, :html)
+    def to_html(context)
+      # FIXME: This executes it in "mensa", so all urls need to be prefixed with main_app
+      return context.instance_exec(row.record, &column.config.dig(:render, :html)) if column.config.dig(:render, :html)
 
       case value
       when NilClass

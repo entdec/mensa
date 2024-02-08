@@ -4,10 +4,10 @@
   - if table.supports_views
     = render Mensa::Views::Component.new(table: table).tap {|c| c.original_view_context = view_context }
   .overflow-y-auto
-    table
-      thead
-        tr = render(Mensa::Header::Component.with_collection(table.columns, table: table))
-      tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
+    .table.w-full
+      .table-header-group
+        .table-row = render(Mensa::Header::Component.with_collection(table.columns, table: table))
+      .table-row-group = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
     - if table.pagy_details&.pages > 1
       .paging
