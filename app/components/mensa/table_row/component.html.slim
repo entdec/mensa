@@ -1,2 +1,2 @@
 .table-row *row.link_attributes
-  = render(Mensa::Cell::Component.with_collection(table.columns, row: row))
+  = render(Mensa::Cell::Component.with_collection(table.columns.select(&:visible?), row: row))

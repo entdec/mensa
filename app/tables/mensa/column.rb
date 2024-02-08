@@ -40,6 +40,10 @@ module Mensa
       end
     end
 
+    def visible?
+      config[:visible]
+    end
+
     def human_name
       if table.model < ActiveRecord::Base
         table.model.human_attribute_name name

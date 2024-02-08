@@ -27,7 +27,7 @@ module Mensa
       return @ordered_scope if @ordered_scope
 
       @ordered_scope = filtered_scope
-      @ordered_scope = @ordered_scope.reorder(order_hash) if params[:order]
+      @ordered_scope = @ordered_scope.reorder(order_hash)
 
       @ordered_scope
     end
@@ -62,7 +62,7 @@ module Mensa
 
     # Though this works, perhaps moving this in column(s) is nicer
     def order_hash(new_params = {})
-      order_params = params[:order] || {}
+      order_params = params[:order] || config[:order]
       order_params.reject { |name, direction| direction.blank? }.to_h
                   .merge(new_params.symbolize_keys)
                   .reject { |name, direction| direction.blank? }

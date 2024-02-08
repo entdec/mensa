@@ -6,7 +6,7 @@
   .overflow-y-auto
     .table.w-full
       .table-header-group
-        .table-row = render(Mensa::Header::Component.with_collection(table.columns, table: table))
+        .table-row = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?), table: table))
       .table-row-group = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
     - if table.pagy_details&.pages > 1
