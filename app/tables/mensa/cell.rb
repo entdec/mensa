@@ -4,6 +4,7 @@ module Mensa
   class Cell
     include ActionView::Helpers::SanitizeHelper
     include ::ApplicationHelper
+    include ActionView::Helpers::TagHelper
 
     attr_reader :column, :row
 
