@@ -14,7 +14,7 @@ module Mensa
       if record.respond_to?(column.attribute)
         record.public_send(column.attribute)
       elsif record.respond_to?(:[])
-        record[column.attribute]
+        record[column.name]
       else
         "-"
       end

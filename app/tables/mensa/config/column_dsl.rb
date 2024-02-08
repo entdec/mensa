@@ -6,6 +6,10 @@ module Mensa::Config
 
     option :sortable, default: true
     option :sanitize, default: true
+    # Allows for sql-parts too
+    #
+    #   attribute 'EXTRACT(YEAR FROM AGE(born_on))::int as age'
+    #
     option :attribute
     dsl_option :render, Mensa::Config::RenderDsl
   end

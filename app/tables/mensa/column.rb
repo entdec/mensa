@@ -29,7 +29,15 @@ module Mensa
     end
 
     def attribute
-      config[:attribute] || name
+      return @attribute if @attribute
+
+      @attribute = if config[:attribute].to_s.downcase.include?(' as')
+        config[:attribute]
+      elsif config[:attribute].present?
+        "#{config[:attribute] || name} AS #{name}"
+      else
+        name
+      end
     end
 
     def human_name
@@ -43,8 +51,8 @@ module Mensa
     def menu
       Satis::Menus::Builder.build(:filter_menu, event: 'click') do |m|
         if sortable?
-          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide', link: table.path(order: {name => 'asc'}), link_attributes: {"data-turbo-frame": "_self"}
-          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short', link: table.path(order: {name => 'asc'}), link_attributes: {"data-turbo-frame": "_self"}
+          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide', link: table.path(order: { name => 'asc' }), link_attributes: { "data-turbo-frame": "_self" }
+          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short', link: table.path(order: { name => 'asc' }), link_attributes: { "data-turbo-frame": "_self" }
         end
       end
     end
