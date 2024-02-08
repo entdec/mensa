@@ -23,21 +23,15 @@ module Mensa
       when NilClass
         ''
       when TrueClass
-        '<i class="fa fa-check"></i>'.html_safe
+        content_tag(:i, '', class: 'fa fa-check')
       when FalseClass
-        '<i class="fa fa-xmark"></i>'.html_safe
+        content_tag(:i, '', class: 'fa fa-xmark')
       when Date
-        return dt(value) if respond_to?(:dt)
-
-        value.strftime('%d.%m.%Y')
+        respond_to?(:dt) ? dt(value) : value.strftime('%d.%m.%Y')
       when Time, DateTime
-        return ln(value) if respond_to?(:ln)
-
-        value.strftime('%d-%m-%Y %H:%M:%S')
+        respond_to?(:ln) ? ln(value) : value.strftime('%d-%m-%Y %H:%M:%S')
       else
-        return sanitize(value.to_s) if column.sanitize?
-
-        value.to_s
+        column.sanitize? ? sanitize(value.to_s) : value.to_s.html_safe
       end
     end
   end
