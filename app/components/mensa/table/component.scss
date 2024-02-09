@@ -70,9 +70,9 @@
   }
 
   &__condensed {
-    table {
-      tbody {
-        td {
+    .table {
+      .table-row-group {
+        .table-cell {
           @apply pl-4 py-2;
         }
       }
