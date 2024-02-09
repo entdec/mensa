@@ -11,8 +11,10 @@ module Mensa
     end
 
     def value(column)
-      if record.respond_to?(column.attribute)
+      if column.attribute && record.respond_to?(column.attribute)
         record.public_send(column.attribute)
+      elsif record.respond_to?(column.name)
+        record.public_send(column.name)
       elsif record.respond_to?(:[])
         record[column.name]
       else

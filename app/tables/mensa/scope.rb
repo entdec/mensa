@@ -38,7 +38,7 @@ module Mensa
       return @selected_scope if @selected_scope
 
       @selected_scope = ordered_scope
-      @selected_scope = @selected_scope.select([:id] + columns.map(&:attribute))
+      @selected_scope = @selected_scope.select([:id] + columns.map(&:attribute).compact)
 
       @selected_scope
     end

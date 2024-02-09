@@ -10,7 +10,7 @@ module Mensa
       end
 
       def sort_button?
-        table.config[:view_colums_sorting]
+        table.config[:view_columns_sorting]
       end
 
       def condense_button?

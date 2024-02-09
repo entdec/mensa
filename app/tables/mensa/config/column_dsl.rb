@@ -11,6 +11,9 @@ module Mensa::Config
     #   attribute 'EXTRACT(YEAR FROM AGE(born_on))::int as age'
     #
     option :attribute
+    # Internal columns will never be shown, but are there to be selected, to be used in methods
+    option :internal
+
     option :visible, default: :true
     dsl_option :render, Mensa::Config::RenderDsl
   end

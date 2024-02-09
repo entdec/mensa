@@ -46,8 +46,8 @@ module Mensa::Config
     # Order of columns in the table
     option :column_order
 
-    option :supports_views, default: true
-    option :view_colums_sorting, default: true
+    option :supports_views, default: false
+    option :view_columns_sorting, default: true
     option :view_condensed, default: false
     option :view_condensed_toggle, default: true
   end

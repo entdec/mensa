@@ -13,6 +13,7 @@ module Mensa
 
     config_reader :sortable?
     config_reader :sanitize?
+    config_reader :method
 
     def sort_direction
       table.config.dig(:order, name)
@@ -32,16 +33,22 @@ module Mensa
       return @attribute if @attribute
 
       @attribute = if config[:attribute].to_s.downcase.include?(' as')
-        config[:attribute]
-      elsif config[:attribute].present?
-        "#{config[:attribute] || name} AS #{name}"
-      else
-        name
-      end
+                     config[:attribute]
+                   elsif config[:attribute].present?
+                     "#{config[:attribute] || name} AS #{name}"
+                   elsif table.model.column_names.include? name.to_s
+                     name
+                   else
+                     nil
+                   end
     end
 
     def visible?
       config[:visible]
+    end
+
+    def internal?
+      config[:internal]
     end
 
     def human_name
