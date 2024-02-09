@@ -38,4 +38,21 @@ export default class ApplicationController extends Controller {
       clearTimeout(timeoutId)
     });
   }
+
+  get ourUrl() {
+    let turboFrame = this.element.closest('turbo-frame')
+    let url
+
+    if (turboFrame && turboFrame.getAttribute('src')) {
+      url = new URL(turboFrame.getAttribute('src'))
+    } else {
+      url = new URL(window.location.href)
+    }
+    return url
+  }
+
+  get turboFrameId() {
+    let turboFrame = this.element.closest('turbo-frame')
+    return turboFrame.getAttribute('id')
+  }
 }

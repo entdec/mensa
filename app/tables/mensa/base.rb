@@ -52,6 +52,12 @@ module Mensa
       [Mensa::TableView.new(name: 'All')] + TableView.where(table_name: name).where(user: [nil, Current.user])
     end
 
+    def table_id
+      return @table_id if @table_id
+
+      @table_id = params[:turbo_frame_id] || "#{name}-#{SecureRandom.base36}"
+    end
+
     private
 
     class << self

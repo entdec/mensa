@@ -1,21 +1,13 @@
 import ApplicationController from '../../../../frontend/controllers/application_controller'
-// FIXME: Is this full path really needed?
-// import { debounce } from "../../../../frontend/utils"
-// import { useWindowResize } from "stimulus-use"
-//
-// import Sortable from "sortablejs"
-import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
   static targets = [
     'controlBar',
     'condenseExpandIcon',
-    'resetSearchButton',
-    'searchInput',
-    'search',
     'filters',
     'views',
-    'viewButtons'
+    'viewButtons',
+    'search'
   ]
   static values = {
     supportsViews: Boolean
@@ -23,7 +15,6 @@ export default class TableComponentController extends ApplicationController {
 
   connect () {
     super.connect()
-    this.monitorSearch()
   }
 
   openFiltersAndSearch(event) {
@@ -40,7 +31,6 @@ export default class TableComponentController extends ApplicationController {
   }
 
   cancelFiltersAndSearch(event) {
-    console.log('cancel')
     if(this.supportsViewsValue) {
       this.searchTarget.classList.add('hidden')
       this.viewButtonsTarget.classList.add('hidden')
@@ -67,54 +57,5 @@ export default class TableComponentController extends ApplicationController {
       this.condenseExpandIconTarget.classList.remove('fa-compress')
       this.condenseExpandIconTarget.classList.add('fa-expand')
     }
-  }
-
-  monitorSearch (event) {
-    if (this.searchInputTarget.value.length >= 1) {
-      this.resetSearchButtonTarget.classList.remove('hidden')
-      this.searchInputTarget.focus();
-    } else {
-      this.resetSearchButtonTarget.classList.add('hidden')
-    }
-  }
-
-  resetSearch (event) {
-    this.searchInputTarget.value = ''
-    this.searchInputTarget.focus()
-    this.resetSearchButtonTarget.classList.add('hidden')
-
-    let turboFrame = this.element.closest('turbo-frame')
-    let url = this.ourUrl
-    url.searchParams.delete('query')
-
-    get(url, {
-      responseKind: 'turbo-stream'
-    })
-  }
-
-  search (event) {
-    if (this.searchInputTarget.value.length < 3) {
-      return
-    }
-    let query = this.searchInputTarget.value
-
-    let url = this.ourUrl
-    url.searchParams.append('query', query)
-
-    get(url, {
-      responseKind: 'turbo-stream'
-    })
-  }
-
-  get ourUrl() {
-    let turboFrame = this.element.closest('turbo-frame')
-    let url
-
-    if (turboFrame && turboFrame.getAttribute('src')) {
-      url = new URL(turboFrame.getAttribute('src'))
-    } else {
-      url = new URL(window.location.href)
-    }
-    return url
   }
 }

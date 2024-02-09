@@ -1,2 +1,2 @@
-= turbo_stream.update "mensa-table1234" do
+= turbo_stream.update @table.table_id do
   = render Mensa::Table::Component.new(table: @table, view_context: self)
