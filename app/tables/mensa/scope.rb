@@ -18,6 +18,7 @@ module Mensa
       return @filtered_scope if @filtered_scope
 
       @filtered_scope = scope
+      # See https://github.com/textacular/textacular
       @filtered_scope = @filtered_scope.web_search(params[:query]) if params[:query]
       @filtered_scope
     end
