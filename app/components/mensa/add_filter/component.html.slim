@@ -1,13 +1,13 @@
 .relative data-controller="mensa-add-filter"
-  button.relative.w-full.cursor-default.rounded-md.bg-white.py-1.5.pl-3.pr-6.text-left.text-gray-900.shadow-sm.border.border-dashed.focus:outline-none.focus:ring-2.focus:ring-primary-600.sm:text-sm.sm:leading-6 type="button" data-action="mensa-add-filter#toggle"
+  button.relative.w-full.cursor-default.rounded-md.bg-white.dark:bg-gray-800.py-1.5.pl-3.pr-6.text-left.text-gray-900.dark:text-gray-400.shadow-sm.border.border-dashed.focus:outline-none.focus:ring-2.focus:ring-primary-600.sm:text-sm.sm:leading-6 type="button" data-action="mensa-add-filter#toggle"
     span.block.truncate data-mensa-add-filter-target="description"
       | Add filter
     span.pointer-events-none.absolute.inset-y-0.right-0.flex.items-center.pr-2
       .fal.fa-plus
 
-  ul.hidden.absolute.z-10.mt-1.max-h-60.w-64.overflow-auto.rounded-md.bg-white.py-1.text-base.shadow-lg.ring-1.ring-black.ring-opacity-5.focus:outline-none.sm:text-sm data-mensa-add-filter-target="columnList"
+  ul.hidden.absolute.z-10.mt-1.max-h-60.w-64.overflow-auto.rounded-md.bg-white.dark:bg-gray-800.py-1.text-base.shadow-lg.ring-1.ring-black.ring-opacity-5.focus:outline-none.sm:text-sm data-mensa-add-filter-target="columnList"
     - table.columns.each do |column|
-      li#listbox-option-0.text-gray-900.hover:bg-gray-100.relative.cursor-default.select-none.py-2.pl-8.pr-4 data-mensa-add-filter-target="columnListItem" data-action="click->mensa-add-filter#selectColumn"
+      li#listbox-option-0.text-gray-900.dark:text-gray-400.hover:bg-gray-100.relative.cursor-default.select-none.py-2.pl-8.pr-4 data-mensa-add-filter-target="columnListItem" data-action="click->mensa-add-filter#selectColumn"
         .label.font-normal.block.truncate
           = column.human_name
         .check.hidden.text-primary-600.absolute.inset-y-0.left-0.flex.items-center.pl-3
