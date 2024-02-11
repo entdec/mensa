@@ -1,13 +1,13 @@
 .mensa-table {
   &__views {
-    @apply p-2 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
+    @apply p-2 pl-4 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
 
     a.view {
-      @apply bg-gray-200 dark:bg-gray-500 hover:bg-gray-400 text-gray-800 rounded-md px-3 py-1.5 text-sm;
+      @apply bg-gray-100 text-gray-600 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded-md px-3 py-1.5 text-sm;
     }
 
     a.view.selected {
-      @apply bg-gray-100 text-gray-600 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-200;
+      @apply bg-gray-300 text-gray-800 dark:bg-gray-500 hover:bg-gray-400;
     }
   }
 }

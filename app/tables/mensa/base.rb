@@ -4,7 +4,7 @@ module Mensa
     include ConfigReaders
     include Scope
 
-    attr_accessor :view_context, :name
+    attr_accessor :view_context, :name, :table_view
     attr_reader :config, :params
 
     config_reader :model
@@ -38,8 +38,8 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {}, turbo_frame_id: nil)
-      view_context.table_path(params[:id], order: order_hash(order), turbo_frame_id: turbo_frame_id)
+    def path(order: {}, turbo_frame_id: nil, table_view_id: nil)
+      view_context.table_path(params[:id], order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
     end
 
     def menu
