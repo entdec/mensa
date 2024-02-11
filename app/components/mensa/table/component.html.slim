@@ -9,7 +9,8 @@
         .table-row = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
       .table-row-group = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
-    - if table.pagy_details&.pages > 1
+    - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
       .paging
         == pagy_info(table.pagy_details)
-        == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+        - if table.pagy_details&.pages > 1
+          == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')

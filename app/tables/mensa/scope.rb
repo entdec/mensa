@@ -22,6 +22,14 @@ module Mensa
       # This has problems - not all table fields are searched
       @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query]
 
+      if params[:filters]
+        params[:filters].each do |column_name, value|
+          next unless column = column(column_name)
+
+          @filtered_scope = @filtered_scope.where(column.attribute_for_condition => Helper.normalize(value))
+        end
+      end
+
       @filtered_scope
     end
 
@@ -69,6 +77,14 @@ module Mensa
       order_params.reject { |name, direction| direction.blank? }.to_h
                   .merge(new_params.symbolize_keys)
                   .reject { |name, direction| direction.blank? }
+    end
+
+    module Helper
+      class << self
+        def normalize(query)
+          query.to_s.gsub(/\s(?![\&\!\|])/, '\\\\ ')
+        end
+      end
     end
   end
 end

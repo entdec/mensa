@@ -1,0 +1,8 @@
+= turbo_stream.update params[:target] do
+  label
+    = @table.column(params[:id]).human_name
+  br
+  input data-action="change->mensa-add-filter#filterValueEntered" autofocus="autofocus"
+  br
+  a
+    | Clear

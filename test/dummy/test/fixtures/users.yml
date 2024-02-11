@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+tim:
+  first_name: Tim
+  last_name: Cook
+  email: tim@apple.com
+  account: apple
+
+two:
+  first_name: Sundar
+  last_name: Pichai
+  email: sundar@google.com
+  account: google

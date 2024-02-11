@@ -32,12 +32,22 @@ module Mensa
     def attribute
       return @attribute if @attribute
 
-      @attribute = if config[:attribute].to_s.downcase.include?(' as')
-                     config[:attribute]
-                   elsif config[:attribute].present?
-                     "#{config[:attribute] || name} AS #{name}"
+      @attribute = if config[:attribute].present?
+                     "#{config[:attribute]} AS #{name}"
                    elsif table.model.column_names.include? name.to_s
-                     name
+                     name.to_s
+                   else
+                     nil
+                   end
+    end
+
+    def attribute_for_condition
+      return @attribute_for_condition if @attribute_for_condition
+
+      @attribute_for_condition = if config[:attribute].present?
+                     config[:attribute]
+                   elsif table.model.column_names.include? name.to_s
+                     name.to_s
                    else
                      nil
                    end
