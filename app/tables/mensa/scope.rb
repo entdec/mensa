@@ -19,7 +19,9 @@ module Mensa
 
       @filtered_scope = scope
       # See https://github.com/textacular/textacular
-      @filtered_scope = @filtered_scope.web_search(params[:query]) if params[:query]
+      # This has problems - not all table fields are searched
+      @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query]
+
       @filtered_scope
     end
 

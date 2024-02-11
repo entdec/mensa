@@ -25,5 +25,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rails", ">= 7.0.4"
   spec.add_dependency 'pagy', '>=6'
   spec.add_dependency 'textacular', '>=5'
-
 end

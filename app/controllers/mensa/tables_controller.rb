@@ -1,9 +1,19 @@
 module Mensa
   class TablesController < ::ApplicationController
     layout :decide_layout
+
     def show
+      config = if params[:table_view_id]
+                 @view = Mensa::TableView.find_by(id: params[:table_view_id])
+                 @view&.data || {}
+               else
+                 {}
+               end
+
       # TODO: Sanitize params
-      @table = Mensa.for_name(params[:id], params.permit!.to_h)
+      config = config.merge(params.permit!.to_h)
+
+      @table = Mensa.for_name(params[:id], config)
       @table.name = params[:id]
       respond_to do |format|
         format.turbo_stream
