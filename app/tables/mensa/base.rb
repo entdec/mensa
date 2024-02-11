@@ -49,7 +49,7 @@ module Mensa
     end
 
     def all_views
-      [Mensa::TableView.new(name: 'All')] + TableView.where(table_name: name).where(user: [nil, Current.user])
+      [Mensa::TableView.new(name: I18n.t('.mensa.views.all'))] + TableView.where(table_name: name).where(user: [nil, Current.user])
     end
 
     def table_id

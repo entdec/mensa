@@ -7,11 +7,11 @@
     .flex.space-x-2.justify-right.pr-2
       button.mensa-table__search__button.hidden.pr-6 data-mensa-search-target="resetSearchButton" data-action="mensa-search#resetSearch"
         i.fas.fa-xmark
-      .view-buttons.hidden data-mensa-table-target="viewButtons"
+      .view-buttons.space-x-2.hidden data-mensa-table-target="viewButtons"
         button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#cancelFiltersAndSearch"
-          | Cancel
+          = t('.cancel')
         button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#saveFiltersAndSearch"
-          | Save
+          = t('.save')
     - unless table.supports_views
       = render Mensa::ControlBar::Component.new(table: table)
 
