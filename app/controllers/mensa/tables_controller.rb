@@ -2,6 +2,10 @@ module Mensa
   class TablesController < ::ApplicationController
     layout :decide_layout
 
+    def index
+      render layout: 'mensa/application'
+    end
+
     def show
       config = if params[:table_view_id]
                  @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
@@ -17,7 +21,7 @@ module Mensa
       @table.name = params[:id]
       @table.table_view = @view
       respond_to do |format|
-        format.turbo_stream
+        # format.turbo_stream
         format.html
       end
     end

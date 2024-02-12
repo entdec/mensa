@@ -1,11 +1,6 @@
 require "mensa/version"
 require "mensa/engine"
-
-require 'pagy'
-require 'satis'
-require 'textacular'
-
-require_relative 'mensa/configuration'
+require "mensa/configuration"
 
 module Mensa
   extend Configurable

@@ -6,13 +6,9 @@ git_source(:entdec) { |repo_name| "git@github.com:entdec/#{repo_name}.git" }
 gemspec
 
 gem "puma"
-
-gem "sqlite3"
-
 gem "sprockets-rails"
-
 gem "satis", "~> 1", entdec: "satis", branch: "main"
 gem "pry"
-
-# Start debugger with binding.b [https://github.com/ruby/debug]
-# gem "debug", ">= 1.0.0"
+gem "capybara", "~> 3.40"
+gem "selenium-webdriver", "~> 4.17"
+gem "slim", "~> 5.2"
