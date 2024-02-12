@@ -52,6 +52,10 @@ module Mensa
       [Mensa::TableView.new(name: I18n.t('.mensa.views.all'))] + TableView.where(table_name: name).where(user: [nil, Current.user])
     end
 
+    def active_filters
+      config[:filters] || {}
+    end
+
     def table_id
       return @table_id if @table_id
 
