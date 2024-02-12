@@ -77,6 +77,8 @@ module Mensa
       order_params.reject { |name, direction| direction.blank? }.to_h
                   .merge(new_params.symbolize_keys)
                   .reject { |name, direction| direction.blank? }
+
+      order_params.transform_values {|value| value.to_s }
     end
 
     module Helper

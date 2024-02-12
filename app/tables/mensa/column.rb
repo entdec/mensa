@@ -16,7 +16,7 @@ module Mensa
     config_reader :method
 
     def sort_direction
-      table.config.dig(:order, name)
+      table.config.dig(:order, name).to_s
     end
 
     def next_sort_direction
