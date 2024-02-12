@@ -1,3 +1,6 @@
+@import '../../components/mensa/table_container/component.scss';
+@import '../../components/mensa/table/component.scss';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
