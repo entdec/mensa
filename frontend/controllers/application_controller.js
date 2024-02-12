@@ -1,45 +1,45 @@
 // application_controller.js
-import { Controller } from "@hotwired/stimulus"
+import { Controller } from '@hotwired/stimulus'
 
 export default class ApplicationController extends Controller {
-  connect() {
+  connect () {
     this.element[this.identifier] = this
   }
 
-  getController(element, identifier) {
+  getController (element, identifier) {
     return this.application.getControllerForElementAndIdentifier(element, identifier)
   }
 
-  triggerEvent(el, name, data) {
+  triggerEvent (el, name, data) {
     let event
-    if (typeof window.CustomEvent === "function") {
+    if (typeof window.CustomEvent === 'function') {
       event = new CustomEvent(name, { detail: data, cancelable: true, bubbles: true })
     } else {
-      event = document.createEvent("CustomEvent")
+      event = document.createEvent('CustomEvent')
       event.initCustomEvent(name, true, true, data)
     }
     el.dispatchEvent(event)
   }
 
-  elementScrolled(element) {
+  elementScrolled (element) {
     if (element.scrollHeight - Math.round(element.scrollTop) === element.clientHeight) {
       return true
     }
     return false
   }
 
-  debouncedHover(element, timeout, handler) {
-    var timeoutId = null;
-    element.addEventListener(marker, 'mouseover',function() {
-      timeoutId = setTimeout(handler, timeout);
-    } );
+  debouncedHover (element, timeout, handler) {
+    var timeoutId = null
+    element.addEventListener(marker, 'mouseover', function () {
+      timeoutId = setTimeout(handler, timeout)
+    })
 
-    element.addEventListener(marker, 'mouseout',function() {
+    element.addEventListener(marker, 'mouseout', function () {
       clearTimeout(timeoutId)
-    });
+    })
   }
 
-  get ourUrl() {
+  get ourUrl () {
     let turboFrame = this.element.closest('turbo-frame')
     let url
 
@@ -51,8 +51,14 @@ export default class ApplicationController extends Controller {
     return url
   }
 
-  get turboFrameId() {
+  get turboFrameId () {
     let turboFrame = this.element.closest('turbo-frame')
     return turboFrame.getAttribute('id')
   }
+
+  get turboFrame () {
+    let turboFrame = this.element.closest('turbo-frame')
+    return turboFrame
+  }
+
 }
