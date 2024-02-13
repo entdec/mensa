@@ -1,5 +1,8 @@
 nl:
   mensa:
+    add_filter:
+      component:
+        add_filter: Filter toevoegen
     views:
       all: Alles
     search:
