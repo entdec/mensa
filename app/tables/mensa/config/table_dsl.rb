@@ -47,6 +47,7 @@ module Mensa::Config
     option :column_order
 
     option :supports_views, default: false
+    option :show_header, default: true
     option :view_columns_sorting, default: true
     option :view_condensed, default: false
     option :view_condensed_toggle, default: true

@@ -14,5 +14,5 @@
 
         a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
           .fal.fa-plus
-      - if table.supports_views
+      - if table.supports_views?
         = render Mensa::ControlBar::Component.new(table: table)

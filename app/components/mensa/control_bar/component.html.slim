@@ -1,7 +1,7 @@
 .mensa-table__control_bar data-mensa-table-target="controlBar"
   .flex.space-x-2.justify-right
-    button.flex.justify-right.cursor-pointer.py-1.5.h-full.text-gray-400 class="#{table.supports_views ? 'w-8' : 'w-4'}" data-action="mensa-table#openFiltersAndSearch"
-      - if table.supports_views
+    button.flex.justify-right.cursor-pointer.py-1.5.h-full.text-gray-400 class="#{table.supports_views? ? 'w-8' : 'w-4'}" data-action="mensa-table#openFiltersAndSearch"
+      - if table.supports_views?
         i.fal.fa-magnifying-glass
       i.fal.fa-bars-filter
     - if sort_button?
