@@ -53,7 +53,7 @@ module Mensa
     end
 
     def active_filters
-      config[:filters] || {}
+      (config[:filters] || {}).map { |column_name, value| Mensa::Filter.new(value, column: column(column_name), config: config.dig(:filters, column_name), table: self) }
     end
 
     def table_id
