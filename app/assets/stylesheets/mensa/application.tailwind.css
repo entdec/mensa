@@ -1,5 +1,13 @@
-@import '../../components/mensa/table_container/component.scss';
-@import '../../components/mensa/table/component.scss';
+@import '../../../components/mensa/add_filter/component.scss';
+@import '../../../components/mensa/cell/component.scss';
+@import '../../../components/mensa/control_bar/component.scss';
+@import '../../../components/mensa/filters/component.scss';
+@import '../../../components/mensa/header/component.scss';
+@import '../../../components/mensa/search/component.scss';
+@import '../../../components/mensa/table/component.scss';
+@import '../../../components/mensa/table_container/component.scss';
+@import '../../../components/mensa/table_row/component.scss';
+@import '../../../components/mensa/views/component.scss';
 
 @tailwind base;
 @tailwind components;
@@ -18,4 +26,8 @@
     .smurrefluts {
         @apply bg-red;
     }
+}
+
+body {
+    @apply bg-blue-200;
 }
