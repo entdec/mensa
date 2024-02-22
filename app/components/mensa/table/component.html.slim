@@ -4,11 +4,11 @@
   - if table.supports_views? && table.show_header?
     = render Mensa::Views::Component.new(table: table).tap {|c| c.original_view_context = view_context }
   .overflow-y-auto
-    .table.w-full
+    table.w-full
       - if table.show_header?
-        .table-header-group
-          .table-row = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
-      .table-row-group = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
+        thead
+          tr = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
+      tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
     - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
       .paging

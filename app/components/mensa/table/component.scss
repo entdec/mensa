@@ -4,19 +4,19 @@
   .badge {
     @apply bg-primary-100 text-primary-600 hidden ml-3 rounded-full text-xs font-medium md:inline-block py-0.5 px-2.5;
   }
-  .table {
+  table {
     @apply min-w-full divide-y divide-gray-50 dark:divide-gray-800 border-0;
 
-    .table-header-group {
+    thead {
       @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
 
       // tr and th moved to header
     }
-    .table-row-group {
+    tbody {
 
       @apply divide-y divide-gray-200 dark:divide-gray-600;
 
-      .table-row {
+      tr {
         @apply cursor-pointer bg-white dark:bg-gray-800 divide-x divide-gray-400 divide-opacity-25 hover:bg-gray-100 dark:hover:bg-gray-700;
 
         &:nth-child(even) {
@@ -24,7 +24,7 @@
         }
       }
 
-      .table-cell {
+      td {
         @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
       }
     }
@@ -70,9 +70,9 @@
   }
 
   &__condensed {
-    .table {
-      .table-row-group {
-        .table-cell {
+    table {
+      tbody {
+        td {
           @apply pl-4 py-2;
         }
       }
