@@ -5,7 +5,7 @@ module Mensa
     initializer 'mensa.helper' do
       Rails.application.reloader.to_prepare do
         ActiveSupport.on_load(:action_controller) do
-          Satis.add_helper(:mensa, ::Mensa::TableContainer::Component)
+          Satis.add_helper(:mensa, ::Mensa::Table::Component)
         end
       end
     end

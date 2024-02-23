@@ -5,18 +5,22 @@ module Mensa
     class Component < ::Mensa::ApplicationComponent
       include TablesHelper
 
+      attr_reader :table_name
       attr_reader :table
+      attr_reader :card
 
-      def initialize(table:, view_context:)
-        @table = table
+      def initialize(table_name, card: nil)
+        @table_name = table_name
+        @table = Mensa.for_name(table_name)
+        @table.name = table_name
         @table.view_context = view_context
+        @card = card
       end
 
-      def custom_classes
-        custom_classes = []
-        custom_classes << "mensa-table__condensed" if table.config[:view_condensed]
-
-        custom_classes.join(" ")
+      def table_url
+        view_context.table_path(@table_name, params: params.reject do |p|
+          %[action controller id].include?(p)
+        end.permit!)
       end
     end
   end
