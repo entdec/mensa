@@ -7,8 +7,13 @@
     table.w-full
       - if table.show_header?
         thead
-          tr = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
-      tbody = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
+          tr
+            = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
+            - if table.actions?
+              th
+
+      tbody
+        = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
     - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
       .paging

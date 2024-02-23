@@ -46,6 +46,9 @@ module Mensa::Config
     # Order of columns in the table
     option :column_order
 
+    # Actions
+    option :action, dsl_hash: Mensa::Config::ActionDsl
+
     option :supports_views, default: false
     option :show_header, default: true
     option :view_columns_sorting, default: true
