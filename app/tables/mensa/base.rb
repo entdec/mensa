@@ -34,6 +34,11 @@ module Mensa
       columns.find { |c| c.name == name.to_sym }
     end
 
+    def display_columns
+      @display_columns ||= columns.select(&:visible?).reject(&:internal?)
+    end
+
+
     def rows
       paged_scope.map { |row| Mensa::Row.new(self, view_context, row) }
     end
