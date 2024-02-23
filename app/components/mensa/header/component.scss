@@ -27,7 +27,7 @@
       }
     }
 
-    .table-cell:hover {
+    th:hover {
       .actions {
         .action {
           .fa-arrow-down-arrow-up {
@@ -38,15 +38,15 @@
     }
   }
   &__condensed {
-    .table-header-group {
-      .table-cell {
+    thead {
+      th {
         @apply whitespace-nowrap py-2 pl-4 pr-3 px-0;
       }
     }
   }
   &__column_edit {
-    .table-header-group {
-      .table-cell {
+    thead {
+      th {
         @apply cursor-grab;
       }
     }

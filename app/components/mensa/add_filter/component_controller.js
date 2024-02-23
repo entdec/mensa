@@ -17,7 +17,8 @@ export default class AddFilterComponentController extends ApplicationController 
     super.connect()
 
     // This
-    this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
+    // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
+    // this.filterValueEntered = this.filterValueEntered.bind(this)
     this.selectedFilterColumn = null
   }
 
@@ -58,7 +59,6 @@ export default class AddFilterComponentController extends ApplicationController 
 
   // Called when you entered/selected a filter value
   filterValueEntered (event) {
-    console.log("yep", event.target.value)
     this.valuePopoverTarget.classList.add('hidden')
 
     let url = this.ourUrl
@@ -67,6 +67,6 @@ export default class AddFilterComponentController extends ApplicationController 
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
 
-    this.turboFrame.src = url;
+    this.turboFrame.src = url
   }
 }

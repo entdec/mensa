@@ -13,6 +13,8 @@ module Mensa
 
     config_reader :sortable?
     config_reader :sanitize?
+    config_reader :visible?
+    config_reader :internal?
     config_reader :method
 
     def sort_direction
@@ -45,20 +47,16 @@ module Mensa
       return @attribute_for_condition if @attribute_for_condition
 
       @attribute_for_condition = if config[:attribute].present?
-                     config[:attribute]
-                   elsif table.model.column_names.include? name.to_s
-                     name.to_s
-                   else
-                     nil
-                   end
+                                   config[:attribute]
+                                 elsif table.model.column_names.include? name.to_s
+                                   name.to_s
+                                 else
+                                   nil
+                                 end
     end
 
-    def visible?
-      config[:visible]
-    end
-
-    def internal?
-      config[:internal]
+    def filter?
+      config.key?(:filter)
     end
 
     def human_name

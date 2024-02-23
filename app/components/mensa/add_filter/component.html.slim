@@ -6,7 +6,7 @@
       .fal.fa-plus
 
   ul.hidden.absolute.z-10.mt-1.max-h-60.w-64.overflow-auto.rounded-md.bg-white.dark:bg-gray-800.py-1.text-base.shadow-lg.ring-1.ring-black.ring-opacity-5.focus:outline-none.sm:text-sm data-mensa-add-filter-target="filterList"
-    - table.columns.each do |column|
+    - table.columns.select(&:filter?).each do |column|
       li#listbox-option-0.text-gray-900.dark:text-gray-400.hover:bg-gray-100.relative.cursor-default.select-none.py-2.pl-8.pr-4 data-mensa-add-filter-target="filterListItem" data-action="click->mensa-add-filter#selectColumn" data-filter-column-name=column.name
         .label.font-normal.block.truncate
           = column.human_name
