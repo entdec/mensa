@@ -3,6 +3,9 @@ import { debounce } from '@entdec/satis'
 import { get } from '@rails/request.js'
 
 export default class AddFilterComponentController extends ApplicationController {
+  static outlets = [
+    "mensa-table"
+  ]
   static targets = [
     'filterList',     // all filters
     'filterListItem', // individual filters
@@ -67,6 +70,6 @@ export default class AddFilterComponentController extends ApplicationController 
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
 
-    this.turboFrame.src = url
+    this.mensaTableOutlet.turboFrameTarget.src = url
   }
 }

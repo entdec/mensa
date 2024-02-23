@@ -16,6 +16,7 @@ module Mensa
       @table = Mensa.for_name(params[:id], config)
       @table.name = params[:id]
       @table.table_view = @view
+      @table.original_view_context = helpers
       respond_to do |format|
         format.turbo_stream
         format.html

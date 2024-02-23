@@ -4,12 +4,14 @@ module Mensa
     include ConfigReaders
     include Scope
 
-    attr_accessor :view_context, :name, :table_view
+    attr_writer :original_view_context
+    attr_accessor :component, :name, :table_view
     attr_reader :config, :params
 
     config_reader :model
     config_reader :link
     config_reader :supports_views?
+    config_reader :view_condensed?
     config_reader :show_header?
 
     def initialize(config = {})
@@ -41,7 +43,7 @@ module Mensa
 
     # Returns the rows to be displayed
     def rows
-      paged_scope.map { |row| Mensa::Row.new(self, view_context, row) }
+      paged_scope.map { |row| Mensa::Row.new(self, original_view_context, row) }
     end
 
     def actions?
@@ -54,7 +56,8 @@ module Mensa
 
     # Returns the current path with configuration
     def path(order: {}, turbo_frame_id: nil, table_view_id: nil)
-      view_context.table_path(params[:id], order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
+      # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
+      original_view_context.mensa.table_path(name, order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
     end
 
     def menu
@@ -75,6 +78,10 @@ module Mensa
       return @table_id if @table_id
 
       @table_id = params[:turbo_frame_id] || "#{name}-#{SecureRandom.base36}"
+    end
+
+    def original_view_context
+      @original_view_context || component.original_view_context
     end
 
     private

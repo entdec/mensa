@@ -40,7 +40,8 @@ export default class ApplicationController extends Controller {
   }
 
   get ourUrl () {
-    let turboFrame = this.element.closest('turbo-frame')
+    // This requires the mensaTableOutlet
+    let turboFrame = this.mensaTableOutlet.turboFrameTarget
     let url
 
     if (turboFrame && turboFrame.getAttribute('src')) {

@@ -31,7 +31,7 @@ module Mensa
     end
 
     def link
-      view_context.instance_exec(record, &table.link) if table.link
+      table.original_view_context.instance_exec(record, &table.link) if table.link
     end
   end
 end

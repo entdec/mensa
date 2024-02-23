@@ -1,22 +1,17 @@
-.mensa-table class=custom_classes
-  = render Mensa::Search::Component.new(table: table)
-  = render Mensa::Filters::Component.new(table: table)
-  - if table.supports_views? && table.show_header?
-    = render Mensa::Views::Component.new(table: table).tap {|c| c.original_view_context = view_context }
-  .overflow-y-auto
-    table.w-full
-      - if table.show_header?
-        thead
-          tr
-            = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
-            - if table.actions?
-              th
+.overflow-y-auto class=(table.view_condensed? ? "mensa-table__condensed" : "") data-mensa-table-target="view"
+  table.w-full
+    - if table.show_header?
+      thead
+        tr
+          = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
+          - if table.actions?
+            th
 
-      tbody
-        = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
+    tbody
+      = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
-    - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
-      .paging
-        == pagy_info(table.pagy_details)
-        - if table.pagy_details&.pages > 1
-          == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+  - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
+    .paging
+      == pagy_info(table.pagy_details)
+      - if table.pagy_details&.pages > 1
+        == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')

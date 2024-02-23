@@ -1,4 +1,4 @@
 ruby:
-  @table.view_context = self
+  #@table.view_context = self
 turbo-frame id=@table.table_id target="_top"
-  = render Mensa::View::Component.new(table: @table, view_context: self)
+  = render Mensa::View::Component.new(@table)
