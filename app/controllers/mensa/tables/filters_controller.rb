@@ -3,6 +3,11 @@ module Mensa
     class FiltersController < ::ApplicationController
       layout false
 
+      class Filter
+        include ActiveModel::Model
+        attr_accessor :value
+      end
+
       def show
         # TODO: Sanitize params
         @table = Mensa.for_name(params[:table_id], params.permit!.to_h)

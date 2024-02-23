@@ -58,6 +58,7 @@ export default class AddFilterComponentController extends ApplicationController 
 
   // Called when you entered/selected a filter value
   filterValueEntered (event) {
+    console.log("yep", event.target.value)
     this.valuePopoverTarget.classList.add('hidden')
 
     let url = this.ourUrl
