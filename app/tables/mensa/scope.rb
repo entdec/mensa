@@ -54,18 +54,18 @@ module Mensa
     end
 
     def paged_scope
-      pagyd
+      pagy_object
       @records
     end
 
     def pagy_details
-      pagyd
+      pagy_object
       @pagy_details
     end
 
     private
 
-    def pagyd
+    def pagy_object
       return if @pagy_details && @records
 
       @pagy_details, @records = selected_scope.is_a?(Array) ? pagy_array(ordered_scope) : pagy(selected_scope)
@@ -73,12 +73,9 @@ module Mensa
 
     # Though this works, perhaps moving this in column(s) is nicer
     def order_hash(new_params = {})
-      order_params = params[:order] || config[:order]
-      order_params.reject { |name, direction| direction.blank? }.to_h
-                  .merge(new_params.symbolize_keys)
-                  .reject { |name, direction| direction.blank? }
-
-      order_params.transform_values {|value| value.to_s }
+      (params[:order] || config[:order]).merge(new_params.symbolize_keys)
+                                        .reject { |name, direction| direction.blank? }
+                                        .transform_values { |value| value.to_sym }
     end
 
     module Helper

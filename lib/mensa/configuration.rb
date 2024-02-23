@@ -29,7 +29,7 @@ module Mensa
 
     option :logger, default: Rails.logger
     option :base_controller, default: "::ApplicationController"
-    option :order_indicator_icons, default: { "asc" => "fa-arrow-up-short-wide", "desc" => "fa-arrow-down-wide-short", nil => "fa-arrow-down-arrow-up" }
+    option :order_indicator_icons, default: { asc: "fa-arrow-up-short-wide", desc: "fa-arrow-down-wide-short", nil => "fa-arrow-down-arrow-up" }
 
     def initialize
       set_defaults!

@@ -18,16 +18,16 @@ module Mensa
     config_reader :method
 
     def sort_direction
-      table.config.dig(:order, name).to_s
+      table.config.dig(:order, name)&.to_sym
     end
 
     def next_sort_direction
-      if sort_direction == "asc"
-        "desc"
-      elsif sort_direction == "desc"
+      if sort_direction == :asc
+        :desc
+      elsif sort_direction == :desc
         nil
       else
-        "asc"
+        :asc
       end
     end
 
@@ -70,8 +70,8 @@ module Mensa
     def menu
       Satis::Menus::Builder.build(:filter_menu, event: 'click') do |m|
         if sortable?
-          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide', link: table.path(order: { name => 'asc' }), link_attributes: { "data-turbo-frame": "_self" }
-          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short', link: table.path(order: { name => 'asc' }), link_attributes: { "data-turbo-frame": "_self" }
+          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
+          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
         end
       end
     end
