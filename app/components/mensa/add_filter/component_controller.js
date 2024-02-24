@@ -68,8 +68,15 @@ export default class AddFilterComponentController extends ApplicationController 
     let filters = url.searchParams.get('filters') || {}
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
-    this.descriptionTarget.innerText += event.target.value
 
-    this.mensaTableOutlet.turboFrameTarget.src = url
+    get(url, {
+      responseKind: 'turbo-stream'
+    }).then(() => {
+      // FIXME: There should be a better way to do this, possibly using
+      // this.mensaTableOutlet.filtersTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
+      setTimeout(() => {
+        this.mensaTableOutlet.filtersTarget.classList.remove('hidden')
+      }, 50)
+    })
   }
 }

@@ -1,2 +1,5 @@
+/= turbo_stream.update "filters-#{@table.table_id}" do
+  = render Mensa::Filters::Component.new(table: @table)
+
 turbo-frame id=@table.table_id target="_top"
   = render Mensa::View::Component.new(@table)

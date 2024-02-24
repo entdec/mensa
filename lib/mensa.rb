@@ -12,7 +12,9 @@ module Mensa
 
   class << self
     def for_name(name, params = {})
-      class_for_name(name).new(params)
+      instance = class_for_name(name).new(params)
+      instance.name = name
+      instance
     end
 
     def class_for_name(name)

@@ -3,7 +3,6 @@
 module Mensa
   module Filters
     class Component < ::Mensa::ApplicationComponent
-      # renders_many :views
       attr_reader :table
 
       def initialize(table:)

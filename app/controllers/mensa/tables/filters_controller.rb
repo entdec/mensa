@@ -8,10 +8,13 @@ module Mensa
         attr_accessor :value
       end
 
+      def index
+        @table = Mensa.for_name(params[:table_id], params.permit!.to_h)
+      end
+
       def show
         # TODO: Sanitize params
         @table = Mensa.for_name(params[:table_id], params.permit!.to_h)
-        @table.name = params[:id]
         respond_to do |format|
           format.turbo_stream
           format.html
