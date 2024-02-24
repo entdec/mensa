@@ -19,7 +19,6 @@ export default class AddFilterComponentController extends ApplicationController 
   connect () {
     super.connect()
 
-    // This
     // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
     // this.filterValueEntered = this.filterValueEntered.bind(this)
     this.selectedFilterColumn = null
@@ -69,6 +68,7 @@ export default class AddFilterComponentController extends ApplicationController 
     let filters = url.searchParams.get('filters') || {}
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
+    this.descriptionTarget.innerText += event.target.value
 
     this.mensaTableOutlet.turboFrameTarget.src = url
   }

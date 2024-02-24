@@ -7,13 +7,8 @@ module Mensa
 
       attr_reader :table
 
-      def initialize(table, view_context:nil)
+      def initialize(table)
         @table = table
-        # @table.view_context = view_context
-        # @table_name = table_name
-        # @table = Mensa.for_name(table_name)
-        # @table.name = table_name
-        # @table.view_context = view_context
       end
     end
   end
