@@ -16,7 +16,6 @@ module Mensa
     config_reader :visible?
     config_reader :internal?
     config_reader :method # When a method needs to be called on the model, slow!
-    config_reader :filter
 
     def sort_direction
       table.config.dig(:order, name)&.to_sym
@@ -58,6 +57,10 @@ module Mensa
 
     def filter?
       config.key?(:filter)
+    end
+
+    def filter
+      @filter ||= Mensa::Filter.new(nil, column: self, config: config[:filter], table: table)
     end
 
     def human_name

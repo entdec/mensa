@@ -10,7 +10,6 @@ module Mensa
                  {}
                end
 
-      # TODO: Sanitize params
       config = config.merge(params.permit(:id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
 
       @table = Mensa.for_name(params[:id], config)

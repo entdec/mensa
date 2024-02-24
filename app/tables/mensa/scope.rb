@@ -26,8 +26,8 @@ module Mensa
         params[:filters].each do |column_name, value|
           next unless (column = column(column_name))
 
-          @filtered_scope = if column.filter&.[](:scope)
-                              @filtered_scope.instance_exec(Helper.normalize(value), &column.filter[:scope])
+          @filtered_scope = if column.filter&.scope
+                              @filtered_scope.instance_exec(Helper.normalize(value), &column.filter.scope)
                             else
                               @filtered_scope.where(column.attribute_for_condition => Helper.normalize(value))
                             end

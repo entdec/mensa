@@ -9,12 +9,15 @@ module Mensa
       end
 
       def index
-        @table = Mensa.for_name(params[:table_id], params.permit!.to_h)
+        config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+        @table = Mensa.for_name(params[:table_id], config)
       end
 
       def show
-        # TODO: Sanitize params
-        @table = Mensa.for_name(params[:table_id], params.permit!.to_h)
+        config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+        @table = Mensa.for_name(params[:table_id], config)
+        @table.original_view_context = helpers
+        @column = @table.column(params[:id])
         respond_to do |format|
           format.turbo_stream
           format.html
