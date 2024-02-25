@@ -51,7 +51,9 @@ module Mensa
     end
 
     def actions
-      @actions ||= config[:actions]
+      return @actions if @actions
+
+      @actions ||= config[:actions].keys.map { |action_name| Mensa::Action.new(action_name, config: config.dig(:actions, action_name), table: self) }
     end
 
     # Returns the current path with configuration

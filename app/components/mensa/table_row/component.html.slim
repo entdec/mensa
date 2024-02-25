@@ -2,9 +2,4 @@ tr *row.link_attributes
   = render(Mensa::Cell::Component.with_collection(table.display_columns, row: row))
   - if table.actions?
     td.flex.space-x-2
-      - table.actions.each do |name, action|
-        a href=(action[:uri] ? instance_exec(&action[:uri]) : '')
-          - if action[:icon]
-            i.fa class=action[:icon]
-          - else
-            = name
+      = render(Mensa::RowAction::Component.with_collection(table.actions, row: row, table: table))

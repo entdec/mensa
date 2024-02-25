@@ -19,9 +19,8 @@ module Mensa
       @value ||= row.value(column)
     end
 
-    def to_html(context)
-      # FIXME: This executes it in "mensa", so all urls need to be prefixed with main_app
-      return context.instance_exec(row.record, &column.config.dig(:render, :html)) if column.config.dig(:render, :html)
+    def to_html
+      return row.table.original_view_context.instance_exec(row.record, &column.config.dig(:render, :html)) if column.config.dig(:render, :html)
 
       case value
       when NilClass

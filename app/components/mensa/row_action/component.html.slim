@@ -1,0 +1,5 @@
+a href=(action.link ? table.original_view_context.instance_exec(row.record, &action.link) : '') title=action.name *action.link_attributes
+  - if action.icon
+    i.fa class=action.icon
+  - else
+    = name
