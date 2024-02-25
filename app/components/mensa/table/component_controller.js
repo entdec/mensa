@@ -60,4 +60,8 @@ export default class TableComponentController extends ApplicationController {
       this.condenseExpandIconTarget.classList.add('fa-expand')
     }
   }
+
+  export(event) {
+
+  }
 }
