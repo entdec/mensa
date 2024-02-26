@@ -14,11 +14,12 @@ module Mensa
 
     initializer 'mensa.assets' do |app|
       app.config.assets.paths << root.join("app/javascript")
+      app.config.assets.paths << root.join("app/components")
       app.config.assets.precompile += %w[mensa_manifest]
     end
 
     initializer 'mensa.importmap', before: "importmap" do |app|
-      app.config.importmap.paths << root.join("config/initializers/importmap.rb")
+      app.config.importmap.paths << root.join("config/importmap.rb")
       app.config.importmap.cache_sweepers << root.join("app/javascript")
       app.config.importmap.cache_sweepers << root.join("app/components")
     end

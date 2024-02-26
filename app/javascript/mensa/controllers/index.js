@@ -3,16 +3,16 @@ import { application } from "controllers/application"
 // import AddFilterComponentController from 'components/add_filter/component_controller';
 // application.register('mensa-add-filter', AddFilterComponentController)
 
-import AddFilterComponentController from "mensa/add_filter/component_controller";
+import AddFilterComponentController from "mensa/components/add_filter/component_controller";
 application.register("mensa-add-filter", AddFilterComponentController);
 
-import FiltersComponentController from "mensa/filters/component_controller";
+import FiltersComponentController from "mensa/components/filters/component_controller";
 application.register("mensa-filters", FiltersComponentController);
 
-import SearchComponentController from "mensa/search/component_controller";
+import SearchComponentController from "mensa/components/search/component_controller";
 application.register("mensa-search", SearchComponentController);
 
-import TableComponentController from 'mensa/table/component_controller'
+import TableComponentController from 'mensa/components/table/component_controller'
 application.register("mensa-table", TableComponentController);
 
 // Eager load all controllers defined in the import map under controllers/**/*_controller
