@@ -40,7 +40,11 @@ export default class ApplicationController extends Controller {
   }
 
   get ourUrl () {
-    let turboFrame = this.element.closest('turbo-frame')
+    // This requires the mensaTableOutlet
+    let turboFrame = this.mensaTableOutlet?.turboFrameTarget
+    if(!turboFrame) {
+      turboFrame = this.turboFrameTarget
+    }
     let url
 
     if (turboFrame && turboFrame.getAttribute('src')) {
@@ -50,15 +54,4 @@ export default class ApplicationController extends Controller {
     }
     return url
   }
-
-  get turboFrameId () {
-    let turboFrame = this.element.closest('turbo-frame')
-    return turboFrame.getAttribute('id')
-  }
-
-  get turboFrame () {
-    let turboFrame = this.element.closest('turbo-frame')
-    return turboFrame
-  }
-
 }

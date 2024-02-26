@@ -1,16 +1,7 @@
-.mensa-table class=custom_classes data-mensa-table-supports-views-value="#{table.supports_views}" data-controller="mensa-table" id="mensa-table1234"
+.mensa-table id="table-#{table.table_id}" data-mensa-table-view-condensed-value="#{table.view_condensed?}" data-mensa-table-supports-views-value="#{table.supports_views?}" data-controller="mensa-table"
   = render Mensa::Search::Component.new(table: table)
-  = render Mensa::Filters::Component.new(table: table)
-  - if table.supports_views
-    = render Mensa::Views::Component.new(table: table).tap {|c| c.original_view_context = view_context }
-  .overflow-y-auto
-    .table.w-full
-      .table-header-group
-        .table-row = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
-      .table-row-group = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
-
-    - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
-      .paging
-        == pagy_info(table.pagy_details)
-        - if table.pagy_details&.pages > 1
-          == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+  div id="filters-#{table.table_id}"
+    = render Mensa::Filters::Component.new(table: table)
+  - if table.supports_views? && table.show_header?
+    = render Mensa::Views::Component.new(table: table)
+  turbo-frame id=table.table_id src=helpers.mensa.table_path(table.name, turbo_frame_id: table.table_id) target="_top" loading="lazy" data-mensa-table-target="turboFrame"

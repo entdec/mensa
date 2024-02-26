@@ -1,13 +1,16 @@
 import ApplicationController from '../../../../frontend/controllers/application_controller'
+import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
   static targets = [
-    'controlBar',
-    'condenseExpandIcon',
-    'filters',
-    'views',
-    'viewButtons',
-    'search'
+    'controlBar',           // Bar with buttons
+    'condenseExpandIcon',   // Icon
+    'filters',              // Tabs or list of filters
+    'views',                // Tabs or list of views
+    'viewButtons',          // Cancel and save buttons for views
+    'search',               // Search bar
+    'view',                 // View contains table element
+    'turboFrame'            // The turbo-frame
   ]
   static values = {
     supportsViews: Boolean
@@ -49,14 +52,22 @@ export default class TableComponentController extends ApplicationController {
   }
 
   condenseExpand (event) {
-    if (this.element.classList.contains('mensa-table__condensed')) {
-      this.element.classList.remove('mensa-table__condensed')
+    if (this.viewTarget.classList.contains('mensa-table__condensed')) {
+      this.viewTarget.classList.remove('mensa-table__condensed')
       this.condenseExpandIconTarget.classList.add('fa-compress')
       this.condenseExpandIconTarget.classList.remove('fa-expand')
     } else {
-      this.element.classList.add('mensa-table__condensed')
+      this.viewTarget.classList.add('mensa-table__condensed')
       this.condenseExpandIconTarget.classList.remove('fa-compress')
       this.condenseExpandIconTarget.classList.add('fa-expand')
     }
+  }
+
+  export(event) {
+    let url = this.ourUrl
+    url.pathname += ".xlsx"
+    get(url, {
+    }).then(() => {
+    })
   }
 }

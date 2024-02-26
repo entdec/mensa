@@ -1,2 +1,5 @@
-.table-row *row.link_attributes
-  = render(Mensa::Cell::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), row: row))
+tr *row.link_attributes
+  = render(Mensa::Cell::Component.with_collection(table.display_columns, row: row))
+  - if table.actions?
+    td.flex.space-x-2
+      = render(Mensa::RowAction::Component.with_collection(table.actions, row: row, table: table))

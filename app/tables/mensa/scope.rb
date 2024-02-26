@@ -24,9 +24,13 @@ module Mensa
 
       if params[:filters]
         params[:filters].each do |column_name, value|
-          next unless column = column(column_name)
+          next unless (column = column(column_name))
 
-          @filtered_scope = @filtered_scope.where(column.attribute_for_condition => Helper.normalize(value))
+          @filtered_scope = if column.filter&.scope
+                              @filtered_scope.instance_exec(Helper.normalize(value), &column.filter.scope)
+                            else
+                              @filtered_scope.where(column.attribute_for_condition => Helper.normalize(value))
+                            end
         end
       end
 
@@ -54,18 +58,18 @@ module Mensa
     end
 
     def paged_scope
-      pagyd
+      pagy_object
       @records
     end
 
     def pagy_details
-      pagyd
+      pagy_object
       @pagy_details
     end
 
     private
 
-    def pagyd
+    def pagy_object
       return if @pagy_details && @records
 
       @pagy_details, @records = selected_scope.is_a?(Array) ? pagy_array(ordered_scope) : pagy(selected_scope)
@@ -73,10 +77,9 @@ module Mensa
 
     # Though this works, perhaps moving this in column(s) is nicer
     def order_hash(new_params = {})
-      order_params = params[:order] || config[:order]
-      order_params.reject { |name, direction| direction.blank? }.to_h
-                  .merge(new_params.symbolize_keys)
-                  .reject { |name, direction| direction.blank? }
+      (params[:order] || config[:order]).merge(new_params.symbolize_keys)
+                                        .reject { |name, direction| direction.blank? }
+                                        .transform_values { |value| value.to_sym }
     end
 
     module Helper

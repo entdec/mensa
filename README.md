@@ -12,7 +12,26 @@ Wanted features:
 * [ ] tables backed by arrays (of ActiveModel)
 
 ## Usage
-How to use my plugin.
+
+Add tables in your app/tables folder, inheriting from ApplicationTable.
+This in turn should inherit from Mensa::Base.
+
+```ruby
+class UserTable < ApplicationTable
+  model User # implicit from name
+
+  order { name: :desc}
+  
+  column(:name) do
+    attribute :name
+
+    filter do
+      collection -> { }
+      scope -> { where(name: ...) }
+    end
+  end
+end
+```
 
 ## Installation
 Add this line to your application's Gemfile:

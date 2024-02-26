@@ -4,12 +4,15 @@ module Mensa
     include ConfigReaders
     include Scope
 
-    attr_accessor :view_context, :name, :table_view
+    attr_writer :original_view_context
+    attr_accessor :component, :name, :table_view
     attr_reader :config, :params
 
     config_reader :model
     config_reader :link
-    config_reader :supports_views
+    config_reader :supports_views?
+    config_reader :view_condensed?
+    config_reader :show_header?
 
     def initialize(config = {})
       @params = config.deep_symbolize_keys
@@ -33,13 +36,34 @@ module Mensa
       columns.find { |c| c.name == name.to_sym }
     end
 
+    # Returns the columns to be displayed
+    def display_columns
+      @display_columns ||= columns.select(&:visible?).reject(&:internal?)
+    end
+
+    # Returns the rows to be displayed
     def rows
-      paged_scope.map { |row| Mensa::Row.new(self, view_context, row) }
+      paged_scope.map { |row| Mensa::Row.new(self, row) }
+    end
+
+    def export_rows
+      ordered_scope.map { |row| Mensa::Row.new(self, row) }
+    end
+
+    def actions?
+      config[:actions].present?
+    end
+
+    def actions
+      return @actions if @actions
+
+      @actions ||= config[:actions].keys.map { |action_name| Mensa::Action.new(action_name, config: config.dig(:actions, action_name), table: self) }
     end
 
     # Returns the current path with configuration
     def path(order: {}, turbo_frame_id: nil, table_view_id: nil)
-      view_context.table_path(params[:id], order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
+      # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
+      original_view_context.mensa.table_path(name, order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
     end
 
     def menu
@@ -53,13 +77,17 @@ module Mensa
     end
 
     def active_filters
-      config[:filters] || {}
+      (config[:filters] || {}).map { |column_name, value| Mensa::Filter.new(value, column: column(column_name), config: config.dig(:filters, column_name), table: self) }
     end
 
     def table_id
       return @table_id if @table_id
 
       @table_id = params[:turbo_frame_id] || "#{name}-#{SecureRandom.base36}"
+    end
+
+    def original_view_context
+      @original_view_context || component.original_view_context
     end
 
     private

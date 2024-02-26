@@ -3,6 +3,9 @@ import { debounce } from '@entdec/satis'
 import { get } from '@rails/request.js'
 
 export default class AddFilterComponentController extends ApplicationController {
+  static outlets = [
+    "mensa-table"
+  ]
   static targets = [
     'filterList',     // all filters
     'filterListItem', // individual filters
@@ -16,8 +19,8 @@ export default class AddFilterComponentController extends ApplicationController 
   connect () {
     super.connect()
 
-    // This
-    this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
+    // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
+    // this.filterValueEntered = this.filterValueEntered.bind(this)
     this.selectedFilterColumn = null
   }
 
@@ -66,6 +69,14 @@ export default class AddFilterComponentController extends ApplicationController 
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
 
-    this.turboFrame.src = url;
+    get(url, {
+      responseKind: 'turbo-stream'
+    }).then(() => {
+      // FIXME: There should be a better way to do this, possibly using
+      // this.mensaTableOutlet.filtersTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
+      setTimeout(() => {
+        this.mensaTableOutlet.filtersTarget.classList.remove('hidden')
+      }, 50)
+    })
   }
 }

@@ -1,7 +1,8 @@
 require 'pagy'
 require 'satis'
-require 'slim'
 require 'textacular'
+require 'caxlsx_rails'
+require 'slim'
 require 'tailwindcss-rails'
 require "importmap-rails"
 require "turbo-rails"
@@ -24,7 +25,7 @@ module Mensa
     initializer 'mensa.helper' do
       Rails.application.reloader.to_prepare do
         ActiveSupport.on_load(:action_controller) do
-          Satis.add_helper(:mensa, ::Mensa::TableContainer::Component)
+          Satis.add_helper(:mensa, ::Mensa::Table::Component)
         end
       end
     end

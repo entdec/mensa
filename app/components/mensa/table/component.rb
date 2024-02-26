@@ -7,16 +7,9 @@ module Mensa
 
       attr_reader :table
 
-      def initialize(table:, view_context:)
-        @table = table
-        @table.view_context = view_context
-      end
-
-      def custom_classes
-        custom_classes = []
-        custom_classes << "mensa-table__condensed" if table.config[:view_condensed]
-
-        custom_classes.join(" ")
+      def initialize(table_name)
+        @table = Mensa.for_name(table_name)
+        @table.component = self
       end
     end
   end

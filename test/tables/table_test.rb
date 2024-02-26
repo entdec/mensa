@@ -32,25 +32,25 @@ class TableTest < ActiveSupport::TestCase
   end
 
   test "it returs the sort_direction for asc" do
-    t = TestTable.new({ order: { first_name: 'asc' } })
+    t = TestTable.new({ order: { first_name: :asc } })
     subject = t.column(:first_name)
-    assert_equal 'asc', subject.sort_direction
+    assert_equal :asc, subject.sort_direction
   end
 
   test "it returs the sort_direction for desc" do
-    t = TestTable.new({ order: { first_name: 'desc' } })
+    t = TestTable.new({ order: { first_name: :desc } })
     subject = t.column(:first_name)
-    assert_equal 'desc', subject.sort_direction
+    assert_equal :desc, subject.sort_direction
   end
 
   test "it returns the right path" do
     t = Mensa::Base.new({})
-    result = t.send(:order_hash, { first_name: 'asc' })
-    assert_equal({ first_name: 'asc' }, result)
+    result = t.send(:order_hash, { first_name: :asc })
+    assert_equal({ first_name: :asc }, result)
 
     t = Mensa::Base.new(result)
-    result = t.send(:order_hash, { first_name: 'desc' })
-    assert_equal({ first_name: 'desc' }, result)
+    result = t.send(:order_hash, { first_name: :desc })
+    assert_equal({ first_name: :desc }, result)
 
     t = Mensa::Base.new(result)
     result = t.send(:order_hash, { first_name: nil })
@@ -58,9 +58,9 @@ class TableTest < ActiveSupport::TestCase
   end
 
   test 'it sets order correctly' do
-    t = TestTable.new(ActionController::Parameters.new(order: { first_name: 'asc' }).permit!.to_h)
-    result = t.send(:order_hash, { last_name: 'asc' })
-    assert_equal({ first_name: 'asc', last_name: 'asc' }, result)
+    t = TestTable.new(ActionController::Parameters.new(order: { first_name: :asc }).permit!.to_h.deep_symbolize_keys)
+    result = t.send(:order_hash, { last_name: :asc })
+    assert_equal({ first_name: :asc, last_name: :asc }, result)
   end
 
   test 'it returns row link' do

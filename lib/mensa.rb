@@ -1,13 +1,15 @@
 require "mensa/version"
 require "mensa/engine"
-require "mensa/configuration"
+require 'mensa/configuration'
 
 module Mensa
   extend Configurable
 
   class << self
     def for_name(name, params = {})
-      class_for_name(name).new(params)
+      instance = class_for_name(name).new(params)
+      instance.name = name
+      instance
     end
 
     def class_for_name(name)
