@@ -34,8 +34,24 @@ module Mensa
     option :icons, default: {
       order_indicator_asc: "fa-solid fa-sort-up",
       order_indicator_desc: "fa-solid fa-sort-down",
-      order_indicator: "fa-solid fa-sort"
+      order_indicator: "fa-solid fa-sort",
+      control_bar_search: "fa-solid fa-magnifying-glass",
+      control_bar_filter: "fa-solid fa-filter",
+      control_bar_edit: "fa-solid fa-table-columns",
+      control_bar_compress: "fa-solid fa-compress",
+      control_bar_export: "fa-solid fa-file-export"
     }
+    # PRO
+    # option :icons, default: {
+    #   order_indicator_asc: "fa-regular fa-arrow-up-short-wide",
+    #   order_indicator_desc: "fa-regular fa-arrow-down-wide-short",
+    #   order_indicator: "fa-regular fa-arrow-down-arrow-up"
+    #   control_bar_search: "fa-light fa-magnifying-glass",
+    #   control_bar_filter: "fa-light fa-bars-filter",
+    #   control_bar_edit: "fa-light fa-columns-3"
+    #   control_bar_compress: "fa-light fa-compress"
+    #   control_bar_export: "fa-light fa-file-export"
+    # }
 
     option :callbacks, default: {
       # Callback is called when the export is started,
@@ -53,6 +69,10 @@ module Mensa
 
   module Configurable
     attr_writer :config
+
+    def importmap
+      @importmap = Importmap::Map.new
+    end
 
     def config
       @config ||= Configuration.new

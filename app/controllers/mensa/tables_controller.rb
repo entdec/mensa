@@ -14,14 +14,14 @@ module Mensa
                  {}
                end
 
-      config = config.merge(params.permit(:format, :id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+      config = config.merge(params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
 
       @table = Mensa.for_name(params[:id], config)
       @table.table_view = @view
       @table.original_view_context = helpers
 
       respond_to do |format|
-        # format.turbo_stream
+        format.turbo_stream
         format.html
         format.xlsx do
           Mensa::ExportJob.perform_async(current_user.id, params[:id])

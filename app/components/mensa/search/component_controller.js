@@ -1,4 +1,4 @@
-import ApplicationController from '../../../../frontend/controllers/application_controller'
+import ApplicationController from 'controllers/application_controller'
 
 import { get } from '@rails/request.js'
 
@@ -7,7 +7,9 @@ export default class SearchComponentController extends ApplicationController {
     'resetSearchButton',
     'searchInput'
   ]
-
+  static outlets = [
+    "mensa-table"
+  ]
   connect () {
     super.connect()
     this.monitorSearch()
@@ -48,7 +50,6 @@ export default class SearchComponentController extends ApplicationController {
     }
 
     url.searchParams.append('query', this.query)
-    url.searchParams.append('turbo_frame_id', this.turboFrameId)
 
     get(url, {
       responseKind: 'turbo-stream'
