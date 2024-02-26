@@ -29,7 +29,22 @@ module Mensa
 
     option :logger, default: Rails.logger
     option :base_controller, default: "::ApplicationController"
-    option :order_indicator_icons, default: { asc: "fa-arrow-up-short-wide", desc: "fa-arrow-down-wide-short", nil => "fa-arrow-down-arrow-up" }
+
+    # TODO: add all icons below
+    option :icons, default: {
+      order_indicator_asc: "fa-arrow-up-short-wide",
+      order_indicator_desc: "fa-arrow-down-wide-short",
+      order_indicator: "fa-arrow-down-arrow-up"
+    }
+
+    option :callbacks, default: {
+      # Callback is called when the export is started,
+      # the return value is passed as context to the export_complete callback
+      export_started: lambda do |user_id, table_name|
+      end,
+      export_complete: lambda do |user_id, table_name, context, attachment|
+      end
+    }
 
     def initialize
       set_defaults!

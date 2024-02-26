@@ -10,5 +10,6 @@
     - if condense_button?
       button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#condenseExpand"
         i.fal.fa-compress data-mensa-table-target="condenseExpandIcon"
+    - if table.config[:render].key?(:xlsx)
       button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#export"
         i.fal.fa-file-export data-mensa-table-target="exportIcon"

@@ -1,36 +1,47 @@
-# class UserTable
-#   model User # implicit from name
+# class UsersTable < Mensa::Base
+#   definition do
+#     model User
 #
-#   default_order [[:name, :desc], [:second, :asc]] # default: no explict ordering
-#
-#   filter do |query| # default ?
-#     where(....)
-#   end
-#
-#   render do # default Standard components
-#     html Mensa::TableComponent::Default
-#     json Mensa::JsonRenderer::Default
-#     xlsx Mensa::XlsxRenderer::Default
-#   end
-#
-#   column(:name) do
-#     attribute :name
-#     order ->(direction) { order(:name, direction)}
-#
-#     filter do
-#       collection -> { }
-#       scope -> { where(name: ...)}
+#     render do # default Standard components
+#       html # Mensa::TableComponent::Default
+#       json # Mensa::JsonRenderer::Default
+#       xlsx # Mensa::XlsxRenderer::Default
 #     end
 #
-#     header_cell do # default Standard components
-#       html(sanitize: true) ->(value) { Mensa::HeaderCellComponent::Default.render(value) }
+#     column(:first_name) do
+#       filter
+#       # render do
+#       #   html do |c|
+#       #     link_to(edit_contact_path(c)) do
+#       #       content_tag("i", nil, class: "fal fa-book")
+#       #     end
+#       #   end
+#       # end
 #     end
+#     column :last_name do
+#       filter
+#     end
+#     column :email
+#     column :phone_number
+#     column :state
+#     column :city
+#     column :created_at
 #
-#     body_cell do # default Standard components
-#       html ->(value) { Mensa::BodyCellComponent::Default.render(value) }
+#     order last_name: :asc
+#     link { |user| edit_user_path(user) }
+#
+#     supports_views true
+#
+#     action :activate do
+#       link { |user| edit_user_path(user) }
+#       icon "fa-check"
+#     end
+#     action :delete do
+#       link { |user| edit_user_path(user) }
+#       link_attributes "data-turbo-method" => "delete"
+#       icon "fa-xmark"
 #     end
 #   end
-# end
 
 module Mensa::Config
   class TableDsl
@@ -48,6 +59,8 @@ module Mensa::Config
 
     # Actions
     option :action, dsl_hash: Mensa::Config::ActionDsl
+
+    dsl_option :render, Mensa::Config::RenderDsl
 
     option :supports_views, default: false
     option :show_header, default: true

@@ -1,3 +1,8 @@
+require 'pagy'
+require 'satis'
+require 'textacular'
+require 'caxlsx_rails'
+
 module Mensa
   class Engine < ::Rails::Engine
     isolate_namespace Mensa

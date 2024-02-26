@@ -43,7 +43,11 @@ module Mensa
 
     # Returns the rows to be displayed
     def rows
-      paged_scope.map { |row| Mensa::Row.new(self, original_view_context, row) }
+      paged_scope.map { |row| Mensa::Row.new(self, row) }
+    end
+
+    def export_rows
+      ordered_scope.map { |row| Mensa::Row.new(self, row) }
     end
 
     def actions?

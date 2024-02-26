@@ -1,4 +1,5 @@
 import ApplicationController from '../../../../frontend/controllers/application_controller'
+import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
   static targets = [
@@ -62,6 +63,10 @@ export default class TableComponentController extends ApplicationController {
   }
 
   export(event) {
-
+    let url = this.ourUrl
+    url.pathname += ".xlsx"
+    get(url, {
+    }).then(() => {
+    })
   }
 }

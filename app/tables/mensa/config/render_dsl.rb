@@ -3,5 +3,6 @@ module Mensa::Config
     include DslLogic
 
     option :html
+    option :xlsx
   end
 end

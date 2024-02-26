@@ -4,9 +4,8 @@ module Mensa
   class Row
     attr_reader :table, :view_context, :record
 
-    def initialize(table, view_context, record)
+    def initialize(table, record)
       @table = table
-      @view_context = view_context
       @record = record
     end
 
