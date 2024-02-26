@@ -20,9 +20,9 @@
 
         .action {
           @apply cursor-pointer;
-          .fa-arrow-down-arrow-up {
+          /*.fa-arrow-down-arrow-up {*/
             @apply opacity-0;
-          }
+          /*}*/
         }
       }
     }
@@ -30,9 +30,9 @@
     th:hover {
       .actions {
         .action {
-          .fa-arrow-down-arrow-up {
+          /*.fa-arrow-down-arrow-up {*/
             @apply opacity-100;
-          }
+          /*}*/
         }
       }
     }

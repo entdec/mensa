@@ -5,4 +5,4 @@ th
       - if column.sortable?
         .action
           = link_to table.path(order: {column.name => column.next_sort_direction}, turbo_frame_id: table.table_id), "data-turbo-frame": "_self"
-            i.fa-regular class=Mensa.config.icons["order_indicator#{column.sort_direction.to_s.present? ? "_#{column.sort_direction.to_s}" : ""}".to_sym]
+            i class=Mensa.config.icons["order_indicator#{column.sort_direction.to_s.present? ? "_#{column.sort_direction.to_s}" : ""}".to_sym]

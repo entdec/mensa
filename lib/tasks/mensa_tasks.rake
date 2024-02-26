@@ -9,6 +9,7 @@ task :tailwind_watch do
     -i #{Mensa::Engine.root.join("app/assets/stylesheets/mensa/application.tailwind.css")} \
     -o #{Mensa::Engine.root.join("app/assets/builds/mensa.css")} \
     -c #{Mensa::Engine.root.join("config/tailwind.config.js")} \
+    --postcss #{Mensa::Engine.root.join("app/assets/config/postcss.config.js")} \
     --minify \
     -w"
 end

@@ -32,9 +32,9 @@ module Mensa
 
     # TODO: add all icons below
     option :icons, default: {
-      order_indicator_asc: "fa-arrow-up-short-wide",
-      order_indicator_desc: "fa-arrow-down-wide-short",
-      order_indicator: "fa-arrow-down-arrow-up"
+      order_indicator_asc: "fa-solid fa-sort-up",
+      order_indicator_desc: "fa-solid fa-sort-down",
+      order_indicator: "fa-solid fa-sort"
     }
 
     option :callbacks, default: {
