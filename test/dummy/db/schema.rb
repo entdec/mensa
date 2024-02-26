@@ -10,25 +10,38 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_02_11_142139) do
+ActiveRecord::Schema[7.1].define(version: 2024_02_26_210136) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "customers", force: :cascade do |t|
+  create_table "customers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "mensa_table_views", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "table_name"
+    t.string "name"
+    t.jsonb "data"
+    t.uuid "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["data"], name: "index_mensa_table_views_on_data", using: :gin
+    t.index ["table_name"], name: "index_mensa_table_views_on_table_name"
+    t.index ["user_id"], name: "index_mensa_table_views_on_user_id"
+  end
+
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
     t.string "email"
-    t.bigint "customer_id", null: false
+    t.uuid "customer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["customer_id"], name: "index_users_on_customer_id"
   end
 
+  add_foreign_key "mensa_table_views", "users"
   add_foreign_key "users", "customers"
 end

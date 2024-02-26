@@ -8,5 +8,7 @@ class UsersTable < Mensa::Base
     column(:first_name)
     column(:last_name)
     column(:email)
+
+    supports_views true
   end
 end
