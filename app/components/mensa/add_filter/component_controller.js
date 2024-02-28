@@ -1,4 +1,4 @@
-import ApplicationController from 'controllers/application_controller'
+import ApplicationController from 'mensa/controllers/application_controller'
 // import { debounce } from '@entdec/satis'
 import { get } from '@rails/request.js'
 
