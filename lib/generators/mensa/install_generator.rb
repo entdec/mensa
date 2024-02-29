@@ -16,5 +16,14 @@ module Mensa
     def copy_migrations
       rake "mensa:install:migrations"
     end
+
+    def add_content_to_tailwind_confing
+      inject_into_file "config/tailwind.config.js", before: "],\n  theme: {" do
+        "  // Mensa content\n" +
+          %w[/app/views/**/* /app/helpers/**/* /app/controllers/**/* /app/components/**/* /app/javascript/**/*.js /app/assets/**/mensa.css].map { |path| "    \"#{Mensa::Engine.root}#{path}\"" }.join(",\n") +
+          ",\n  "
+      end
+    end
+
   end
 end
