@@ -9,13 +9,3 @@
 @import '../../../components/mensa/table_row/component.scss';
 @import '../../../components/mensa/view/component.scss';
 @import '../../../components/mensa/views/component.scss';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-}
-
-@layer base {
-}
