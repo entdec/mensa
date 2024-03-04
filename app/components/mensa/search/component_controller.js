@@ -1,4 +1,4 @@
-import ApplicationController from '../../../../frontend/controllers/application_controller'
+import ApplicationController from 'mensa/controllers/application_controller'
 
 import { get } from '@rails/request.js'
 

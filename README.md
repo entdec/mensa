@@ -50,8 +50,16 @@ Or install it yourself as:
 $ gem install mensa
 ```
 
+Always use `bundle` to install the gem. Next use the install generator to install migrations, add an initializer and do other setup:
+```bash
+$  bin/rails g satis:install
+```
+
 ## Contributing
+```
 Contribution directions go here.
+
+
 
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

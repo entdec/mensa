@@ -1,6 +1,7 @@
 require "mensa/version"
 require "mensa/engine"
 require 'mensa/configuration'
+require "importmap-rails"
 
 module Mensa
   extend Configurable

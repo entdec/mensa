@@ -1,4 +1,4 @@
 module Mensa
-  class ApplicationController < ::Mensa.config.base_controller.constantize
+  class ApplicationController < ActionController::Base#::Mensa.config.base_controller.constantize
   end
 end

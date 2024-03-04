@@ -14,6 +14,13 @@ Gem::Specification.new do |spec|
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   # spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
 
+  spec.post_install_message = <<~MESSAGE
+      Mensa requires additional setup. Please run the following
+      command to install the necessary files:
+
+      bin/rails mensa:install:migrations
+    MESSAGE
+
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/entdec/mensa"
   spec.metadata["changelog_uri"] = "https://github.com/entdec/mensa/CHANGELOG"
@@ -23,7 +30,13 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency 'caxlsx_rails', '~> 0'
-  spec.add_dependency "rails", ">= 7.0.4"
+  spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency 'pagy', '>=6'
   spec.add_dependency 'textacular', '>=5'
+
+  spec.add_dependency 'slim'
+  spec.add_dependency 'tailwindcss-rails'
+  spec.add_dependency 'importmap-rails'
+  spec.add_dependency 'turbo-rails'
+  spec.add_dependency 'stimulus-rails'
 end

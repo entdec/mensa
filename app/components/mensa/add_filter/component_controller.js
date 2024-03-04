@@ -1,5 +1,5 @@
-import ApplicationController from '../../../../frontend/controllers/application_controller'
-import { debounce } from '@entdec/satis'
+import ApplicationController from 'mensa/controllers/application_controller'
+// import { debounce } from '@entdec/satis'
 import { get } from '@rails/request.js'
 
 export default class AddFilterComponentController extends ApplicationController {

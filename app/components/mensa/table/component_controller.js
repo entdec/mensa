@@ -1,4 +1,4 @@
-import ApplicationController from '../../../../frontend/controllers/application_controller'
+import ApplicationController from 'mensa/controllers/application_controller'
 import { get } from '@rails/request.js'
 
 export default class TableComponentController extends ApplicationController {
@@ -17,6 +17,7 @@ export default class TableComponentController extends ApplicationController {
   }
 
   connect () {
+    console.log("mensa-table controller")
     super.connect()
   }
 

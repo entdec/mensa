@@ -2,14 +2,14 @@
   .flex.space-x-2.justify-right
     button.flex.justify-right.cursor-pointer.py-1.5.h-full.text-gray-400 class="#{table.supports_views? ? 'w-8' : 'w-4'}" data-action="mensa-table#openFiltersAndSearch"
       - if table.supports_views?
-        i.fal.fa-magnifying-glass
-      i.fal.fa-bars-filter
+        i class=Mensa.config.icons[:control_bar_search]
+      i class=Mensa.config.icons[:control_bar_filter]
     - if sort_button?
       button.cursor-pointer.w-6.h-full.text-gray-400
-        i.fal.fa-columns-3
+        i class=Mensa.config.icons[:control_bar_edit]
     - if condense_button?
       button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#condenseExpand"
-        i.fal.fa-compress data-mensa-table-target="condenseExpandIcon"
+        i data-mensa-table-target="condenseExpandIcon" class=Mensa.config.icons[:control_bar_compress]
     - if table.config[:render]&.key?(:xlsx)
       button.cursor-pointer.w-6.h-full.text-gray-400 data-action="mensa-table#export"
-        i.fal.fa-file-export data-mensa-table-target="exportIcon"
+        i data-mensa-table-target="exportIcon" class=Mensa.config.icons[:control_bar_export]

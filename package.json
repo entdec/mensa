@@ -11,11 +11,15 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@rails/request.js": "^0.0.9",
-    "hotkeys-js": "^3.13.5"
+    "hotkeys-js": "^3.13.5",
+    "lru-cache": "^9.1.1",
+    "postcss": "^8.4.35",
+    "postcss-import": "^16.0.1",
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {},
   "peerDependencies": {
-    "@hotwired/turbo-rails": "^8.0.3",
-    "@entdec/satis": ">=1.0.60"
+    "@entdec/satis": ">=1.0.60",
+    "@hotwired/turbo-rails": "^8.0.3"
   }
 }
