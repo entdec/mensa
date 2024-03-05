@@ -1,15 +1,13 @@
-# desc "Explaining what the task does"
-# task :mensa do
-#   # Task goes here
-# end
+namespace :mensa do
+  namespace :tailwindcss do
+    desc "Configure your Tailwind CSS"
+    task :config do
+      Rails::Generators.invoke("mensa:tailwind_config", ["--force"])
+    end
+  end
+end
 
-task :tailwind_watch do
-  require 'tailwindcss-rails'
-  system "#{Tailwindcss::Engine.root.join("exe/tailwindcss")} \
-    -i #{Mensa::Engine.root.join("app/assets/stylesheets/mensa/application.tailwind.css")} \
-    -o #{Mensa::Engine.root.join("app/assets/builds/mensa.css")} \
-    -c #{Mensa::Engine.root.join("config/tailwind.config.js")} \
-    --postcss #{Mensa::Engine.root.join("app/assets/config/postcss.config.js")} \
-    --minify \
-    -w"
+if Rake::Task.task_defined?("tailwindcss:build")
+  Rake::Task["tailwindcss:build"].enhance(["mensa:tailwindcss:config"])
+  Rake::Task["tailwindcss:watch"].enhance(["mensa:tailwindcss:config"])
 end
