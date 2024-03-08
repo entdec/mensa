@@ -68,6 +68,7 @@ export default class AddFilterComponentController extends ApplicationController 
     let filters = url.searchParams.get('filters') || {}
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
+    debugger
 
     get(url, {
       responseKind: 'turbo-stream'
@@ -78,5 +79,7 @@ export default class AddFilterComponentController extends ApplicationController 
         this.mensaTableOutlet.filtersTarget.classList.remove('hidden')
       }, 50)
     })
+    event.preventDefault()
+    return false
   }
 }

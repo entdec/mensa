@@ -52,7 +52,7 @@ $ gem install mensa
 
 Always use `bundle` to install the gem. Next use the install generator to install migrations, add an initializer and do other setup:
 ```bash
-$  bin/rails g satis:install
+$  bin/rails g mensa:install
 ```
 
 ## Contributing

@@ -13,6 +13,7 @@ module Mensa
         @table = Mensa.for_name(params[:table_id], config)
       end
 
+      # Returns the filter information on the column-name
       def show
         config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
         @table = Mensa.for_name(params[:table_id], config)

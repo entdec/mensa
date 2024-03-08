@@ -60,7 +60,9 @@ module Mensa
     end
 
     def filter
-      @filter ||= Mensa::Filter.new(nil, column: self, config: config[:filter], table: table)
+      return unless filter?
+
+      @filter ||= Mensa::Filter.new(nil, column: self, config: config[:filter] || {}, table: table)
     end
 
     def human_name

@@ -15,6 +15,8 @@ module Mensa
     end
 
     def collection
+      return unless config&.key?(:collection)
+
       if config[:collection].is_a? Proc
         table.original_view_context.instance_exec(&config[:collection])
       else

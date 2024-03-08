@@ -1,0 +1,13 @@
+.sts-table {
+    &__add_filter {
+        @apply relative;
+
+        &__popover_container {
+            @apply p-2 absolute z-10 mt-1 max-h-60 w-64 overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+
+            &__clear {
+                @apply text-gray-600 dark:text-gray-400 no-underline;
+            }
+        }
+    }
+}

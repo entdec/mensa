@@ -4,5 +4,5 @@
       = f.input :value, collection: @column.filter.collection, input_html: { "data-action"=> "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered", autofocus: "autofocus" }, label: @column.human_name
     - else
       = f.input :value, input_html: { "data-action"=> "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered", autofocus: "autofocus" }, label: @column.human_name
-  a.no-underline
+  a.sts-table__add_filter__popover_container__clear
     | Clear
