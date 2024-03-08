@@ -17,7 +17,6 @@ export default class TableComponentController extends ApplicationController {
   }
 
   connect () {
-    console.log("mensa-table controller")
     super.connect()
   }
 

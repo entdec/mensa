@@ -1,0 +1,13 @@
+.mensa-table {
+  &__search {
+    @apply dark:bg-gray-800 dark:border-gray-800 border-b p-2;
+
+    &__button {
+      @apply cursor-pointer w-6 h-full text-gray-400;
+    }
+    
+    &__input {
+      @apply h-6 w-full border-0 bg-transparent pl-11 pr-4 text-gray-600 dark:text-gray-400 placeholder:text-gray-400 focus:ring-0 text-sm;
+    }
+  }
+}

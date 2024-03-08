@@ -3,7 +3,8 @@
     .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
       i.fal.fa-magnifying-glass.cursor-pointer
     .flex-1
-      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query]
+      // FIXME: Can't get the style applied to the input?! - Hence the class
+      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query] class="text-gray-600 dark:text-gray-400 text-sm bg-transparent focus:ring-0 border-0"
     .flex.space-x-2.justify-right.pr-2
       button.mensa-table__search__button.hidden.pr-6 data-mensa-search-target="resetSearchButton" data-action="mensa-search#resetSearch"
         i.fas.fa-xmark
