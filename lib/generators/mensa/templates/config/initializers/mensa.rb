@@ -16,6 +16,7 @@ Mensa.setup do |config|
     control_bar_filter: "fa-solid fa-filter",
     control_bar_edit: "fa-solid fa-table-columns",
     control_bar_compress: "fa-solid fa-compress",
-    control_bar_export: "fa-solid fa-file-export"
+    control_bar_export: "fa-solid fa-file-export",
+    search: "fa-solid fa-magnifying-glass",
   }
 end

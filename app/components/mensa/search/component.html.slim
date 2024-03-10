@@ -1,7 +1,7 @@
 .mensa-table__search data-mensa-table-target="search" data-controller="mensa-search" data-mensa-search-target="search" class="#{table.supports_views? ? 'hidden' : ''}"  data-mensa-search-mensa-table-outlet=".mensa-table#table-#{table.table_id}"
   .flex
     .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
-      i.fal.fa-magnifying-glass.cursor-pointer
+      i.cursor-pointer class=Mensa.config.icons[:search]
     .flex-1
       input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query]
     .flex.space-x-2.justify-right.pr-2

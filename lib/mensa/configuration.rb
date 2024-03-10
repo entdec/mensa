@@ -39,18 +39,20 @@ module Mensa
       control_bar_filter: "fa-solid fa-filter",
       control_bar_edit: "fa-solid fa-table-columns",
       control_bar_compress: "fa-solid fa-compress",
-      control_bar_export: "fa-solid fa-file-export"
+      control_bar_export: "fa-solid fa-file-export",
+      search: "fa-solid fa-magnifying-glass"
     }
     # PRO
     # option :icons, default: {
     #   order_indicator_asc: "fa-regular fa-arrow-up-short-wide",
     #   order_indicator_desc: "fa-regular fa-arrow-down-wide-short",
-    #   order_indicator: "fa-regular fa-arrow-down-arrow-up"
+    #   order_indicator: "fa-regular fa-arrow-down-arrow-up",
     #   control_bar_search: "fa-light fa-magnifying-glass",
     #   control_bar_filter: "fa-light fa-bars-filter",
-    #   control_bar_edit: "fa-light fa-columns-3"
-    #   control_bar_compress: "fa-light fa-compress"
-    #   control_bar_export: "fa-light fa-file-export"
+    #   control_bar_edit: "fa-light fa-columns-3",
+    #   control_bar_compress: "fa-light fa-compress",
+    #   control_bar_export: "fa-light fa-file-export",
+    #   search: "fa-light fa-magnifying-glass"
     # }
 
     option :callbacks, default: {
