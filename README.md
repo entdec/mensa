@@ -5,10 +5,11 @@ Wanted features:
 * [X] very fast
 * [X] row-links
 * [X] sorting
-* [ ] filtering
+* [X] tables without headers (and without most of the above)
+* [ ] filtering (of multiple columns, single is done)
+* [ ] view selection and exports per view
 * [ ] group by
 * [ ] sum/max/min
-* [ ] tables without headers (and without most of the above)
 * [ ] tables backed by arrays (of ActiveModel)
 
 ## Usage
