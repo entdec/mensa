@@ -72,10 +72,6 @@ module Mensa
   module Configurable
     attr_writer :config
 
-    def importmap
-      @importmap = Importmap::Map.new
-    end
-
     def config
       @config ||= Configuration.new
     end
