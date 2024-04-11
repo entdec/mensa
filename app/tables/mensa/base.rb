@@ -85,7 +85,7 @@ module Mensa
     def table_id
       return @table_id if @table_id
 
-      @table_id = params[:turbo_frame_id] || "#{name}-#{SecureRandom.base36}"
+      @table_id = params[:turbo_frame_id] || "#{name.to_s.gsub("/", "__")}-#{SecureRandom.base36}"
     end
 
     def original_view_context
