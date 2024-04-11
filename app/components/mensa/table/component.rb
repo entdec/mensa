@@ -7,8 +7,8 @@ module Mensa
 
       attr_reader :table
 
-      def initialize(table_name, **options)
-        @table = Mensa.for_name(table_name)
+      def initialize(table_name, config = {}, **options)
+        @table = Mensa.for_name(table_name, config)
         @table.component = self
       end
     end

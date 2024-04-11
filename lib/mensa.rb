@@ -7,8 +7,8 @@ module Mensa
   extend Configurable
 
   class << self
-    def for_name(name, params = {})
-      instance = class_for_name(name).new(params)
+    def for_name(name, config = {})
+      instance = class_for_name(name).new(config)
       instance.name = name
       instance
     end
