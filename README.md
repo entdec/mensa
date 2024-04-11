@@ -26,13 +26,18 @@ class UserTable < ApplicationTable
     order { name: :desc}
     
     column(:name) do
-      attribute :name
+      attribute :name # Optional, we can deduct this from the column name
 
       filter do
         collection -> { }
         scope -> { where(name: ...) }
       end
     end
+
+    column(:nr_of_roles) do
+      attribute "roles_count" # We use a database column here
+    end
+
   end
 end
 ```
