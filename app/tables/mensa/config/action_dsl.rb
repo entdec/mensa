@@ -5,7 +5,7 @@ module Mensa::Config
     include DslLogic
 
     option :icon
-    # option :if
+    option :show, default: ->(record) { true }
     option :link
     option :link_attributes, default: {}
   end

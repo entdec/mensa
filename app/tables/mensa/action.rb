@@ -21,5 +21,6 @@ module Mensa
     config_reader :link
     config_reader :link_attributes
     config_reader :icon
+    config_reader :show
   end
 end

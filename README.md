@@ -44,6 +44,20 @@ You can show your tables on the page using the following:
   = sts.table :users
 ```
 
+### Fast
+
+Mensa selects only the data it needs, based on the columns. Sometimes it needs additional columns to do it's work, but you don't want them displayed.
+This can be done by adding `internal true` to the column definition.
+
+```ruby
+column :born_on do
+  internal true # Needed for age below
+end
+column :age do
+  attribute "EXTRACT(YEAR FROM AGE(born_on))::int"
+end
+```
+
 ## Installation
 Add this line to your application's Gemfile:
 
