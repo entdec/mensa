@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors     = ["Tom de Grunt"]
   spec.email       = ["tom@degrunt.nl"]
   spec.homepage    = "https://github.com/entdec/mensa"
-  spec.summary     = "Fancy tables."
-  spec.description = "Fancy tables for fancy people"
+  spec.summary     = "Fast and awesome tables"
+  spec.description = "Fast and awesome tables, with pagination, sorting, filtering and custom views."
   spec.license     = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"

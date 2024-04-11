@@ -1,11 +1,12 @@
 # Mensa
-Awesome tables
+Fast and awesome tables, with pagination, sorting, filtering and custom views.
 
 Wanted features:
 * [X] very fast
 * [X] row-links
 * [X] sorting
 * [X] tables without headers (and without most of the above)
+* [ ] column sorting
 * [ ] filtering (of multiple columns, single is done)
 * [ ] view selection and exports per view
 * [ ] group by
@@ -19,19 +20,28 @@ This in turn should inherit from Mensa::Base.
 
 ```ruby
 class UserTable < ApplicationTable
-  model User # implicit from name
+  definition do
+    model User # implicit from name
 
-  order { name: :desc}
-  
-  column(:name) do
-    attribute :name
+    order { name: :desc}
+    
+    column(:name) do
+      attribute :name
 
-    filter do
-      collection -> { }
-      scope -> { where(name: ...) }
+      filter do
+        collection -> { }
+        scope -> { where(name: ...) }
+      end
     end
   end
 end
+```
+
+Currently mensa depends on satis, but that is something we might remove in a future version.
+You can show your tables on the page using the following:
+
+```slim
+  = sts.table :users
 ```
 
 ## Installation

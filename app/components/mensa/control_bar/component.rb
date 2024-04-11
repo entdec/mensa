@@ -9,12 +9,12 @@ module Mensa
         @table = table
       end
 
-      def sort_button?
-        table.config[:view_columns_sorting]
+      def view_columns_sorting?
+        table.view_columns_sorting?
       end
 
-      def condense_button?
-        table.config[:view_condensed_toggle]
+      def view_condensed_toggle?
+        table.view_condensed_toggle?
       end
     end
   end

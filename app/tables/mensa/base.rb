@@ -12,6 +12,8 @@ module Mensa
     config_reader :link
     config_reader :supports_views?
     config_reader :view_condensed?
+    config_reader :view_condensed_toggle?
+    config_reader :view_columns_sorting?
     config_reader :show_header?
 
     def initialize(config = {})
