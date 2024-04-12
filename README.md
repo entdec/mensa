@@ -13,6 +13,10 @@ Wanted features:
 * [ ] sum/max/min
 * [ ] tables backed by arrays (of ActiveModel)
 
+Todo:
+* [ ] Hide filter icon in case there are no filters
+* [ ] Search only works on table columns
+
 ## Usage
 
 Add tables in your app/tables folder, inheriting from ApplicationTable.
@@ -52,6 +56,10 @@ class UserTable < ApplicationTable
 
     link { |user| edit_user_path(user) }
     supports_views true # This table supports custom views
+    show_header true
+    view_columns_sorting false # Disabled for now
+    view_condensed false # Default false
+    view_condensed_toggle true # Whether to show the toggle, default true
   end
 end
 ```
