@@ -54,12 +54,6 @@ module Mensa
       @selected_scope = ordered_scope
       @selected_scope = @selected_scope.select([:id] + columns.map(&:attribute).compact)
 
-      Rails.logger.debug("*" * 80)
-      Rails.logger.debug("Selected scope")
-      Rails.logger.debug(@selected_scope.to_sql)
-      Rails.logger.debug("*" * 80)
-
-
       @selected_scope
     end
 

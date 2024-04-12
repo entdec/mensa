@@ -23,11 +23,15 @@ class UserTable < ApplicationTable
   definition do
     model User # implicit from name
 
-    order { name: :desc}
+    order name: :desc
     
     column(:name) do
       attribute :name # Optional, we can deduct this from the column name
-
+      sortable true
+      sanitize true
+      internal false
+      method nil
+      visible true
       filter do
         collection -> { }
         scope -> { where(name: ...) }
@@ -38,6 +42,16 @@ class UserTable < ApplicationTable
       attribute "roles_count" # We use a database column here
     end
 
+    # You can add one or more actions to a row
+    action :delete do
+      link { |user| user_path(user) }
+      icon "fa fa-trash"
+      link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}
+      show ->(user) { true }
+    end
+
+    link { |user| edit_user_path(user) }
+    supports_views true # This table supports custom views
   end
 end
 ```
