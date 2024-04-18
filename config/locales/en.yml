@@ -1,8 +1,11 @@
 en:
   mensa:
-    views:
-      all: All
+    add_filter:
+      component:
+        add_filter: Add filter
     search:
       component:
-        save: Save
         cancel: Cancel
+        save: Save
+    views:
+      all: All

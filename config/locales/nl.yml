@@ -3,9 +3,9 @@ nl:
     add_filter:
       component:
         add_filter: Filter toevoegen
-    views:
-      all: Alles
     search:
       component:
-        save: Bewaar
         cancel: Annuleer
+        save: Bewaar
+    views:
+      all: Alles
