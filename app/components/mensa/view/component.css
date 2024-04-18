@@ -32,6 +32,16 @@
     }
   }
 
+  &__condensed {
+    table {
+      tbody {
+        td {
+          @apply pl-4 py-2;
+        }
+      }
+    }
+  }
+
   .paging {
     @apply flex items-center justify-between border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6;
 
@@ -61,16 +71,6 @@
 
         input {
           @apply bg-gray-100 border-none rounded-md;
-        }
-      }
-    }
-
-    &__condensed {
-      table {
-        tbody {
-          td {
-            @apply pl-4 py-2;
-          }
         }
       }
     }
