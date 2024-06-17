@@ -17,7 +17,7 @@ module Mensa
     config_reader :show_header?
 
     def initialize(config = {})
-      @params = config.deep_symbolize_keys
+      @params = config.to_h.deep_symbolize_keys
       @config = self.class.definition.merge(@params || {})
     end
 
