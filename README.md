@@ -1,21 +1,24 @@
 # Mensa
+
 Fast and awesome tables, with pagination, sorting, filtering and custom views.
 
 Wanted features:
-* [X] very fast
-* [X] row-links
-* [X] sorting
-* [X] tables without headers (and without most of the above)
-* [ ] column sorting
-* [ ] filtering (of multiple columns, single is done)
-* [ ] view selection and exports per view
-* [ ] group by
-* [ ] sum/max/min
-* [ ] tables backed by arrays (of ActiveModel)
+
+- [x] very fast
+- [x] row-links
+- [x] sorting
+- [x] tables without headers (and without most of the above)
+- [ ] column sorting
+- [ ] filtering (of multiple columns, single is done)
+- [ ] view selection and exports per view
+- [ ] group by
+- [ ] sum/max/min
+- [ ] tables backed by arrays (of ActiveModel)
 
 Todo:
-* [ ] Hide filter icon in case there are no filters
-* [ ] Search only works on table columns
+
+- [ ] Hide filter icon in case there are no filters
+- [ ] Search only works on table columns
 
 ## Usage
 
@@ -28,7 +31,7 @@ class UserTable < ApplicationTable
     model User # implicit from name
 
     order name: :desc
-    
+
     column(:name) do
       attribute :name # Optional, we can deduct this from the column name
       sortable true
@@ -49,7 +52,7 @@ class UserTable < ApplicationTable
     # You can add one or more actions to a row
     action :delete do
       link { |user| user_path(user) }
-      icon "fa fa-trash"
+      icon "fa-regular fa-trash"
       link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}
       show ->(user) { true }
     end
@@ -86,6 +89,7 @@ end
 ```
 
 ## Installation
+
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -93,21 +97,25 @@ gem "mensa"
 ```
 
 And then execute:
+
 ```bash
 $ bundle
 ```
 
 Or install it yourself as:
+
 ```bash
 $ gem install mensa
 ```
 
 Always use `bundle` to install the gem. Next use the install generator to install migrations, add an initializer and do other setup:
+
 ```bash
 $  bin/rails g mensa:install
 ```
 
 ## Contributing
+
 ```
 Contribution directions go here.
 
@@ -115,3 +123,4 @@ Contribution directions go here.
 
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+```
