@@ -31,6 +31,7 @@
 #     link { |user| edit_user_path(user) }
 #
 #     supports_views true
+#     supports_filters true
 #
 #     action :activate do
 #       link { |user| edit_user_path(user) }
@@ -63,6 +64,7 @@ module Mensa::Config
     dsl_option :render, Mensa::Config::RenderDsl
 
     option :supports_views, default: false
+    option :supports_filters, default: true
     option :show_header, default: true
     option :view_columns_sorting, default: true
     option :view_condensed, default: false
