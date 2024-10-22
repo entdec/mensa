@@ -14,4 +14,4 @@
     .paging
       == pagy_info(table.pagy_details)
       - if table.pagy_details&.pages > 1
-        == pagy_nav(table.pagy_details, link_extra: 'data-turbo-frame="_self"')
+        == pagy_nav(table.pagy_details, anchor_string: 'data-turbo-frame="_self"')
