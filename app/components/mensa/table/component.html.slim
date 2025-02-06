@@ -4,4 +4,4 @@
     = render Mensa::Filters::Component.new(table: table)
   - if table.supports_views? && table.show_header?
     = render Mensa::Views::Component.new(table: table)
-  turbo-frame id=table.table_id src=helpers.mensa.table_path(table.name, turbo_frame_id: table.table_id) target="_top" loading="lazy" data-mensa-table-target="turboFrame"
+  turbo-frame id=table.table_id src=helpers.mensa.table_path(table.name, {turbo_frame_id: table.table_id}.merge(params)) target="_top" loading="lazy" data-mensa-table-target="turboFrame"
