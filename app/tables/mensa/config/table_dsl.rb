@@ -64,6 +64,7 @@ module Mensa::Config
     dsl_option :render, Mensa::Config::RenderDsl
 
     option :supports_views, default: false
+    option :supports_custom_views, default: false
     option :supports_filters, default: true
     option :show_header, default: true
     option :view_columns_sorting, default: true

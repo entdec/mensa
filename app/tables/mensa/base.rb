@@ -11,6 +11,7 @@ module Mensa
     config_reader :model
     config_reader :link
     config_reader :supports_views?
+    config_reader :supports_custom_views?
     config_reader :supports_filters?
     config_reader :view_condensed?
     config_reader :view_condensed_toggle?

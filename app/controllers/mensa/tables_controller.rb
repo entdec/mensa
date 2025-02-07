@@ -25,7 +25,7 @@ module Mensa
         format.turbo_stream
         format.html
         format.xlsx do
-          Mensa::ExportJob.perform_async(current_user.id, params[:id])
+          Mensa::ExportJob.perform_later(current_user.id, params[:id])
           head 200
         end
       end

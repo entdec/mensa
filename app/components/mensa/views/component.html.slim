@@ -12,7 +12,7 @@
           = link_to(table.path(table_view_id: view.id, turbo_frame_id: table.table_id), "data-turbo-frame": table.table_id, class: "view #{(view == table.table_view) || (!view.persisted? && table.table_view.blank?) ? 'selected' : ''}") do
             = view.name
 
-        a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
-          .fal.fa-plus
-      - if table.supports_views?
-        = render Mensa::ControlBar::Component.new(table: table)
+        - if table.supports_custom_views?
+          a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.py-1.5.text-sm[href="#" title=t("new_view", default: "New view")]
+            .fal.fa-plus
+      = render Mensa::ControlBar::Component.new(table: table)
