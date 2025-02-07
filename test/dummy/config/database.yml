@@ -1,6 +1,6 @@
 default: &default
   adapter: postgresql
-  # username: postgres
+  username: postgres
   encoding: utf8
   pool: 5
   timeout: 5000
