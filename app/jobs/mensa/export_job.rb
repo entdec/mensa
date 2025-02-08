@@ -1,3 +1,5 @@
+require "securerandom"
+
 module Mensa
   class ExportJob < ApplicationJob
     queue_as :default
@@ -7,9 +9,11 @@ module Mensa
     # export_complete: lambda do |user_id, table_name, attachment|
     # end
 
-    def perform(user_id, table_name)
+    def perform(user, table_name)
       table = Mensa.for_name(table_name)
-      context = Mensa.config.callbacks[:export_started].call(user_id, table_name)
+      return unless table.exportable?
+
+      context = Mensa.config.callbacks[:export_started].call(user, table_name)
 
       styles = []
       default_style = { b: true, bg_color: '3B82F6', fg_color: 'FFFFFF', border: { style: :thin, color: '000000' }, sz: 8,
@@ -82,10 +86,26 @@ module Mensa
         sheet.auto_filter = Axlsx.cell_range([first_cell, last_cell], false)
       end
 
-      attachment = { io: p.to_stream,
-                     content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "#{table_name}_export_#{Time.current.strftime("%Y-%m-%d-%H:%M:%S")}.xlsx" }
+      base_filename = "#{table_name}_export_#{Time.current.strftime("%Y-%m-%d-%H:%M:%S")}"
+      enc = nil
+      password = nil
+      if table.export_with_password?
+        password = SecureRandom.hex(6)
+        enc = Zip::TraditionalEncrypter.new(password)
+      end
+      stringio = Zip::OutputStream.write_buffer(encrypter: enc) do |zio|
+        zio.put_next_entry("#{base_filename}.xlsx")
+        zio.write p.to_stream.read
+      end
+      stringio.rewind
 
-      Mensa.config.callbacks[:export_completed].call(user_id, table_name, context, attachment)
+      attachment = { io: stringio,
+                     content_type: 'application/zip', filename: "#{base_filename}.zip" }
+      if password.present?
+        attachment[:password] = password
+      end
+
+      Mensa.config.callbacks[:export_completed].call(user, table_name, context, attachment)
     end
   end
 end

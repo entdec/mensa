@@ -52,6 +52,9 @@ module Mensa::Config
     option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :link
 
+    option :exportable, default: true
+    option :export_with_password, default: false
+
     # Default sort order {column: direction, column: direction}
     option :order, default: {}
 

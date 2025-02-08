@@ -17,6 +17,8 @@ module Mensa
     config_reader :view_condensed_toggle?
     config_reader :view_columns_sorting?
     config_reader :show_header?
+    config_reader :exportable?
+    config_reader :export_with_password?
 
     def initialize(config = {})
       @params = config.to_h.deep_symbolize_keys
