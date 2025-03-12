@@ -35,9 +35,9 @@ module Mensa
       when NilClass
         ''
       when TrueClass
-        content_tag(:i, '', class: 'fa-regular fa-check')
+        content_tag(:i, '', class: 'fa-solid fa-check')
       when FalseClass
-        content_tag(:i, '', class: 'fa-regular fa-xmark')
+        content_tag(:i, '', class: 'fa-solid fa-xmark')
       when Date
         respond_to?(:dt) ? dt(value) : value.strftime('%d.%m.%Y')
       when Time, DateTime
