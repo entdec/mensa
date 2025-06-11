@@ -13,6 +13,8 @@
 /node_modules/
 
 
-app/assets/stylesheets/application.tailwind.css
+test/dummy/app/assets/stylesheets/application.tailwind.css
 config/tailwind.config.js
 app/assets/builds
+test/dummy/config/tailwind.config.js
+
