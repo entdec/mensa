@@ -1,12 +1,9 @@
-/ = sts.card :users, title: "Users", content_padding: false do |card|
-.grid.grid-cols-1
-  div
-    h1 Users
-    = sts.table :users
-  div
-    h1 Customers
-    = sts.table :customers
+.grid.grid-cols-1.gap-4
+  .col-span-1
+    = sts.card :users, title: "Users", content_padding: false do |card|
+      = sts.table :users
+  .col-span-1
+    = sts.card :customers, title: "Customers", content_padding: false do |card|
+      = sts.table :customers
 
-/button data-controller="alert" data-action="alert#alert"
-  | Click me
 
