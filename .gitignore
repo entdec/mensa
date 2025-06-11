@@ -11,3 +11,8 @@
 /test/dummy/app/assets/builds/
 /test/dummy/tmp/
 /node_modules/
+
+
+app/assets/stylesheets/application.tailwind.css
+config/tailwind.config.js
+app/assets/builds

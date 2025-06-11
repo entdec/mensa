@@ -4,17 +4,16 @@
   "name": "mensa",
   "dockerComposeFile": "compose.yaml",
   "service": "rails-app",
-  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceFolder": "/workspaces/mensa",
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/rails/devcontainer/features/activestorage": {},
+    "ghcr.io/devcontainers/features/github-cli:1": { },
+    "ghcr.io/rails/devcontainer/features/activestorage": { },
     "ghcr.io/rails/devcontainer/features/postgres-client": {
       "version": "17"
     },
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {},
-    "ghcr.io/devcontainers-extra/features/mkcert:1": {}
+    "ghcr.io/devcontainers/features/node:1": { },
+    "ghcr.io/duduribeiro/devcontainer-features/tmux:1": { }
   },
   "containerEnv": {
     "CAPYBARA_SERVER_PORT": "45678",

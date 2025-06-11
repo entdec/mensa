@@ -7,7 +7,7 @@ gemspec
 
 gem "puma"
 gem "sprockets-rails"
-gem "satis", "~> 1", entdec: "satis", branch: "main"
+gem "satis", "~> 2", entdec: "satis", branch: "main"
 gem "pry"
 gem "capybara", "~> 3.40"
 gem "selenium-webdriver", "~> 4.17"
