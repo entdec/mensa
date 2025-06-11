@@ -8,13 +8,6 @@ module.exports = {
     './app/javascript/**/*.js',
     './app/components/**/*.slim',
     './app/views/**/*.{erb,haml,html,slim}',
-    // Mensa content
-    "../../app/views/**/*",
-    "../../app/helpers/**/*",
-    "../../app/controllers/**/*",
-    "../../app/components/**/*",
-    "../../app/javascript/**/*.js",
-    "../../app/assets/**/*.css",
   ],
   theme: {
     extend: {
