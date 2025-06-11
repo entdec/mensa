@@ -17,7 +17,7 @@ Wanted features:
 
 Todo:
 
-- [ ] Hide filter icon in case there are no filters
+- [X] Hide filter icon in case there are no filters
 - [ ] Search only works on table columns
 
 ## Usage
