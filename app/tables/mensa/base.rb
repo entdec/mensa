@@ -56,6 +56,10 @@ module Mensa
       ordered_scope.map { |row| Mensa::Row.new(self, row) }
     end
 
+    def filters?
+     columns.any?(&:filter?)
+    end
+
     def actions?
       config[:actions].present?
     end
