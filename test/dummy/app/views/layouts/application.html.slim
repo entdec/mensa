@@ -1,11 +1,11 @@
 doctype html
 html
   head
-    title Dummy
+    title Mensa
     meta name="viewport" content="width=device-width,initial-scale=1"
     = csrf_meta_tags
     = csp_meta_tag
-    = stylesheet_link_tag "mensa"
+    = stylesheet_link_tag "tailwind"
     = javascript_importmap_tags "mensa"
-  body
+  body.mx-10.my-10.bg-gray-100
     = yield
