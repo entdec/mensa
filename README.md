@@ -74,6 +74,11 @@ You can show your tables on the page using the following:
   = sts.table :users
 ```
 
+#### Views
+
+Initial support for views is there, but pretty rudementary:
+`Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: "guest"}})`
+
 ### Fast
 
 Mensa selects only the data it needs, based on the columns. Sometimes it needs additional columns to do it's work, but you don't want them displayed.
