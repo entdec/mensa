@@ -6,6 +6,9 @@ class CustomersTable < Mensa::Base
     model Customer
 
     column(:name)
+    column(:stock_symbol)
+    column(:country)
+    column(:isin)
     column(:updated_at)
   end
 end
