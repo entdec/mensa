@@ -40,7 +40,8 @@ module Mensa
       control_bar_edit: "fa-solid fa-table-columns",
       control_bar_compress: "fa-solid fa-compress",
       control_bar_export: "fa-solid fa-file-export",
-      search: "fa-solid fa-magnifying-glass"
+      search: "fa-solid fa-magnifying-glass",
+      filters_add_filter: "fa-solid fa-plus",
     }
     # PRO
     # option :icons, default: {
