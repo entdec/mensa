@@ -1,8 +1,8 @@
 .grid.grid-cols-1.gap-4
   .col-span-1
     = sts.card :users, title: "Users", content_padding: false do |card|
+      - card.with_action do 
+        = link_to "Customers", customers_path, class: "button btn-primary"
       = sts.table :users
 
-  .col-span-1
-    = link_to "Customers", customers_path, class: "button btn-primary"
 
