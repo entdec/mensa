@@ -1,11 +1,11 @@
 module Mensa
   class Base
-    include Pagy::Backend
+    include Pagy::Method
     include ConfigReaders
     include Scope
 
     attr_writer :original_view_context
-    attr_accessor :component, :name, :table_view
+    attr_accessor :component, :name, :table_view, :request
     attr_reader :config, :params
 
     config_reader :model

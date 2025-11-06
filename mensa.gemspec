@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'caxlsx_rails', '~> 0'
   spec.add_dependency "rails", ">= 7.1"
-  spec.add_dependency 'pagy', '>=6'
+  spec.add_dependency 'pagy', '>=43'
   spec.add_dependency 'textacular', '>=5'
 
   spec.add_dependency 'slim'

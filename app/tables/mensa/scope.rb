@@ -72,7 +72,7 @@ module Mensa
     def pagy_object
       return if @pagy_details && @records
 
-      @pagy_details, @records = selected_scope.is_a?(Array) ? pagy_array(ordered_scope, anchor_string: 'data-turbo-frame="_self"') : pagy(selected_scope, anchor_string: 'data-turbo-frame="_self"')
+      @pagy_details, @records = selected_scope.is_a?(Array) ? pagy(:offset, ordered_scope, anchor_string: 'data-turbo-frame="_self"') : pagy(:offset, selected_scope, anchor_string: 'data-turbo-frame="_self"')
     end
 
     # Though this works, perhaps moving this in column(s) is nicer

@@ -76,18 +76,16 @@ You can show your tables on the page using the following:
 
 #### Views
 
-Initial support for views is there, but pretty rudementary:
+Initial support for views is there, but pretty rudimentary:
 `Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: "guest"}})`
 
 ### Fast
 
 Mensa selects only the data it needs, based on the columns. Sometimes it needs additional columns to do it's work, but you don't want them displayed.
-This can be done by adding `internal true` to the column definition.
+This can be done by adding `internal true` to the column definition, or shorter: use `internal` instead
 
 ```ruby
-column :born_on do
-  internal true # Needed for age below
-end
+internal :born_on 
 column :age do
   attribute "EXTRACT(YEAR FROM AGE(born_on))::int"
 end

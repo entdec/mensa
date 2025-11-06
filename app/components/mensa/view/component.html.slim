@@ -10,8 +10,8 @@
     tbody
       = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
 
-  - if table.pagy_details&.pages > 1 || table.pagy_details.count == 0
+  - if table.pagy_details&.last > 1 || table.pagy_details.count == 0
     .paging
-      == pagy_info(table.pagy_details)
-      - if table.pagy_details&.pages > 1
-        == pagy_nav(table.pagy_details, anchor_string: 'data-turbo-frame="_self"')
+      == table.pagy_details.info_tag
+      - if table.pagy_details&.last > 1
+        == table.pagy_details.series_nav(anchor_string: 'data-turbo-frame="_self"')

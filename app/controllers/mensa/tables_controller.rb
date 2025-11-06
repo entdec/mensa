@@ -18,6 +18,7 @@ module Mensa
       config = config.merge(params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
 
       @table = Mensa.for_name(params[:id], config)
+      @table.request = request
       @table.table_view = @view
       @table.original_view_context = helpers
 
