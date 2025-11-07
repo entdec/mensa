@@ -8,7 +8,7 @@ module Mensa
     attr_accessor :component, :name, :table_view, :request
     attr_reader :config, :params
 
-    config_reader :model
+    config_reader :model, proc: true
     config_reader :link
     config_reader :supports_views?
     config_reader :supports_custom_views?

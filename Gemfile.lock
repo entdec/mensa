@@ -17,7 +17,7 @@ GIT
 PATH
   remote: .
   specs:
-    mensa (0.1.17)
+    mensa (0.2.0)
       caxlsx_rails (~> 0)
       importmap-rails
       pagy (>= 43)

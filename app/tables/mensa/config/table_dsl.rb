@@ -48,7 +48,7 @@ module Mensa::Config
   class TableDsl
     include DslLogic
 
-    option :model, default: -> { self.class.name.demodulize.to_s.classify.constantize rescue raise "No model found for #{self.class.name}" }
+    option :model, default: -> { self.class.name.demodulize.to_s.classify.gsub("Table","").singularize.constantize rescue raise "No model found for #{self.class.name}" }
     option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :internal, dsl_hash: Mensa::Config::ColumnDsl, default: {internal: true}
     option :link
