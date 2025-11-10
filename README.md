@@ -51,6 +51,7 @@ class UserTable < ApplicationTable
 
     # You can add one or more actions to a row
     action :delete do
+      title "Delete row"
       link { |user| user_path(user) }
       icon "fa-regular fa-trash"
       link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}

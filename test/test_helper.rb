@@ -24,11 +24,12 @@ class TestTable < Mensa::Base
     column(:name) do
       attribute 'CONCAT(first_name, last_name)'
     end
-    column(:role) do
-      filter
-    end
 
     link { |test| root_path }
+
+    action :edit do
+      link { |test| root_path }
+    end
   end
 end
 

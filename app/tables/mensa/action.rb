@@ -18,9 +18,11 @@ module Mensa
       @config = config
     end
 
-    config_reader :link
+    config_reader :title
+    config_reader :link, call: false
     config_reader :link_attributes
     config_reader :icon
-    config_reader :show
+    config_reader :show, call: false
+
   end
 end

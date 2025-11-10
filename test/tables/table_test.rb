@@ -1,20 +1,6 @@
 require "test_helper"
 require 'pry'
 
-class TestTable < Mensa::Base
-  definition do
-    model User
-
-    column(:first_name)
-    column(:last_name)
-    column(:name) do
-      attribute 'CONCAT(first_name, last_name)'
-    end
-
-    link { |test| root_path }
-  end
-end
-
 class TableTest < ActiveSupport::TestCase
   test "it returns the right column" do
     t = TestTable.new({})
