@@ -9,8 +9,12 @@ Wanted features:
 - [x] sorting
 - [x] tables without headers (and without most of the above)
 - [ ] column sorting
-- [ ] filtering (of multiple columns, single is done)
+- [x] filtering of multiple columns
+- [ ] editing of existing filters
 - [ ] view selection and exports per view
+
+optionally:
+
 - [ ] group by
 - [ ] sum/max/min
 - [ ] tables backed by arrays (of ActiveModel)
@@ -37,7 +41,6 @@ class UserTable < ApplicationTable
       sortable true
       sanitize true
       internal false
-      method nil
       visible true
       filter do
         collection -> { }
@@ -78,7 +81,7 @@ You can show your tables on the page using the following:
 #### Views
 
 Initial support for views is there, but pretty rudimentary:
-`Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: "guest"}})`
+`Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: {value: "guest"}}})`
 
 ### Fast
 
