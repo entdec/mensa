@@ -56,7 +56,7 @@ module Mensa::Config
       #   config[:render] = Mensa::RenderDsl.new(name, &).config
       # end
       #
-      # by calling define_dsl :render, Mensa::RenderDsl
+      # by calling option :render, dsl: Mensa::RenderDsl
       #
       def dsl_option(option_name, klass)
         define_method(option_name) do |name = nil, &block|
@@ -64,6 +64,10 @@ module Mensa::Config
         end
       end
 
+      ###
+      # Define a DSL hash
+      # by calling option :action, dsl: Mensa::ActionDsl
+      #
       def dsl_hash(option_name, klass, config_name:)
         config_name = config_name || option_name.to_s.pluralize.to_sym
 
