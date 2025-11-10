@@ -1,5 +1,5 @@
 = turbo_stream.update "filters-#{@table.table_id}" do
-  = render Mensa::Filters::Component.new(table: @table)
+  = render Mensa::FilterList::Component.new(table: @table)
 
 = turbo_stream.update @table.table_id do
   = render Mensa::View::Component.new(@table)

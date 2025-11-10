@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Mensa
-  module Filters
+  module FilterList
     class Component < ::Mensa::ApplicationComponent
       attr_reader :table
 

@@ -16,7 +16,7 @@ export default class AddFilterComponentController extends ApplicationController 
     supportsViews: Boolean
   }
 
-  connect () {
+  connect() {
     super.connect()
 
     // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
@@ -25,12 +25,12 @@ export default class AddFilterComponentController extends ApplicationController 
   }
 
   // Called when you click add-filter
-  toggle (event) {
+  toggle(event) {
     this.filterListTarget.classList.toggle('hidden')
   }
 
   // Called when you selected a column
-  openValuePopover (event) {
+  openValuePopover(event) {
     let url = this.ourUrl
     url.pathname += `/filters/${this.selectedFilterColumn}`
     url.searchParams.append('target', this.valuePopoverTarget.id)
@@ -43,7 +43,7 @@ export default class AddFilterComponentController extends ApplicationController 
   }
 
   // Called when you select a column from the "dropdown"
-  selectColumn (event) {
+  selectColumn(event) {
     this.filterListItemTargets.forEach((lt) => {
       let check = lt.querySelector('.check')
       check.classList.add('hidden')
@@ -60,22 +60,26 @@ export default class AddFilterComponentController extends ApplicationController 
   }
 
   // Called when you entered/selected a filter value
-  filterValueEntered (event) {
+  filterValueEntered(event) {
     this.valuePopoverTarget.classList.add('hidden')
 
     let url = this.ourUrl
 
     let filters = url.searchParams.get('filters') || {}
+    this.mensaTableOutlet.mensaFilterOutlets.forEach((filterOutlet) => {
+      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][value]`, filterOutlet.valueValue)
+      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][operator]`, filterOutlet.operatorValue)
+    })
     // FIXME: Needs better way of getting value
-    url.searchParams.append(`filters[${this.selectedFilterColumn}]`, event.target.value)
+    url.searchParams.append(`filters[${this.selectedFilterColumn}][value]`, event.target.value)
 
     get(url, {
       responseKind: 'turbo-stream'
     }).then(() => {
       // FIXME: There should be a better way to do this, possibly using
-      // this.mensaTableOutlet.filtersTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
+      // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
       setTimeout(() => {
-        this.mensaTableOutlet.filtersTarget.classList.remove('hidden')
+        this.mensaTableOutlet.filterListTarget.classList.remove('hidden')
       }, 50)
     })
     event.preventDefault()

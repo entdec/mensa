@@ -1,7 +1,7 @@
-.mensa-table id="table-#{table.table_id}" data-mensa-table-view-condensed-value="#{table.view_condensed?}" data-mensa-table-supports-views-value="#{table.supports_views?}" data-controller="mensa-table"
+.mensa-table id="table-#{table.table_id}" data-mensa-table-view-condensed-value="#{table.view_condensed?}" data-mensa-table-supports-views-value="#{table.supports_views?}" data-controller="mensa-table" data-mensa-table-mensa-filter-outlet="[data-controller='mensa-filter']"
   = render Mensa::Search::Component.new(table: table)
   div id="filters-#{table.table_id}"
-    = render Mensa::Filters::Component.new(table: table)
+    = render Mensa::FilterList::Component.new(table: table)
   - if table.supports_views? && table.show_header?
     = render Mensa::Views::Component.new(table: table)
   turbo-frame id=table.table_id src=helpers.mensa.table_path(table.name, {turbo_frame_id: table.table_id}.merge(params)) target="_top" loading="lazy" data-mensa-table-target="turboFrame"

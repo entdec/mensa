@@ -1,6 +1,6 @@
 import ApplicationController from 'mensa/controllers/application_controller'
 
-export default class FiltersComponentController extends ApplicationController {
+export default class FilterListComponentController extends ApplicationController {
   static targets = [
     'list',
   ]
@@ -8,7 +8,7 @@ export default class FiltersComponentController extends ApplicationController {
     supportsViews: Boolean
   }
 
-  connect () {
+  connect() {
     super.connect()
   }
 }

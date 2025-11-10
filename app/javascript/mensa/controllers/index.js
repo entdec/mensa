@@ -6,8 +6,11 @@ import { application } from "mensa/controllers/application"
 import AddFilterComponentController from "mensa/components/add_filter/component_controller";
 application.register("mensa-add-filter", AddFilterComponentController);
 
-import FiltersComponentController from "mensa/components/filters/component_controller";
-application.register("mensa-filters", FiltersComponentController);
+import FilterComponentController from "mensa/components/filter/component_controller";
+application.register("mensa-filter", FilterComponentController);
+
+import FilterListComponentController from "mensa/components/filter_list/component_controller";
+application.register("mensa-filter-list", FilterListComponentController);
 
 import SearchComponentController from "mensa/components/search/component_controller";
 application.register("mensa-search", SearchComponentController);
