@@ -13,3 +13,33 @@ if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
   ActiveSupport::TestCase.file_fixture_path = File.expand_path("fixtures", __dir__) + "/files"
   ActiveSupport::TestCase.fixtures :all
 end
+
+
+class TestTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:last_name)
+    column(:name) do
+      attribute 'CONCAT(first_name, last_name)'
+    end
+    column(:role) do
+      filter
+    end
+
+    link { |test| root_path }
+  end
+end
+
+
+class CustomerTable < Mensa::Base
+  definition do
+    column(:name)
+    column(:country) do
+      filter
+    end
+
+    link { |test| root_path }
+  end
+end

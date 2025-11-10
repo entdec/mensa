@@ -31,8 +31,6 @@ module Mensa
 
     # Returns all columns
     def columns
-      return @columns if @columns
-
       @columns ||= column_order.map { |column_name| Mensa::Column.new(column_name, config: config.dig(:columns, column_name), table: self) }
     end
 
@@ -56,6 +54,7 @@ module Mensa
       ordered_scope.map { |row| Mensa::Row.new(self, row) }
     end
 
+    # Returns true if the table has filters
     def filters?
      columns.any?(&:filter?)
     end
@@ -87,7 +86,7 @@ module Mensa
     end
 
     def active_filters
-      (config[:filters] || {}).map { |column_name, value| Mensa::Filter.new(value, column: column(column_name), config: config.dig(:filters, column_name), table: self) }
+      (config[:filters] || {}).map { |column_name, filter_config| Mensa::Filter.new(column: column(column_name), config: filter_config, table: self) }
     end
 
     def table_id

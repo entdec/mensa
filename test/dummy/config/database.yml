@@ -4,6 +4,10 @@ default: &default
   encoding: utf8
   pool: 5
   timeout: 5000
+  username: postgres
+  password: postgres
+  host: <%= ENV.fetch("DB_HOST") { "postgres" } %>
+
 
 development:
   <<: *default

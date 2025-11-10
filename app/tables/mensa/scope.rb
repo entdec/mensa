@@ -22,16 +22,20 @@ module Mensa
       # This has problems - not all table fields are searched
       @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query]
 
-      if params[:filters]
-        params[:filters].each do |column_name, value|
-          next unless (column = column(column_name))
-
-          @filtered_scope = if column.filter&.scope
-                              @filtered_scope.instance_exec(Helper.normalize(value), &column.filter.scope)
+      active_filters.each do |filter|
+        @filtered_scope = if filter.scope
+                            @filtered_scope.instance_exec(Helper.normalize(filter.value), &filter.scope)
+                          else
+                            case filter.operator
+                            when :matches
+                              @filtered_scope.where("#{filter.column.attribute_for_condition} LIKE ?", "%#{Helper.normalize(filter.value)}%")
+                            when :equals
+                              @filtered_scope.where(filter.column.attribute_for_condition => Helper.normalize(filter.value))
                             else
-                              @filtered_scope.where(column.attribute_for_condition => Helper.normalize(value))
+                              # Ignore unknown operators
+                              @filtered_scope
                             end
-        end
+                          end
       end
 
       @filtered_scope

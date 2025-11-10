@@ -3,12 +3,13 @@
 module Mensa
   class Filter
     include ConfigReaders
-    attr_reader :column, :value, :config, :table
+    attr_reader :column, :config, :table
 
+    config_reader :operator
+    config_reader :value
     config_reader :scope
 
-    def initialize(value, column:, config:, table:)
-      @value = value
+    def initialize(column:, config:, table:)
       @column = column
       @config = config
       @table = table

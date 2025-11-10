@@ -55,6 +55,7 @@ module Mensa
                                  end
     end
 
+    # Returns true if the column supports filtering
     def filter?
       config.key?(:filter)
     end
@@ -62,7 +63,7 @@ module Mensa
     def filter
       return unless filter?
 
-      @filter ||= Mensa::Filter.new(nil, column: self, config: config[:filter] || {}, table: table)
+      @filter ||= Mensa::Filter.new(column: self, config: table.config.dig(:filters, name) || {}, table: table)
     end
 
     def human_name

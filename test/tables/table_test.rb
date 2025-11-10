@@ -4,7 +4,7 @@ require 'pry'
 class TestTable < Mensa::Base
   definition do
     model User
-    
+
     column(:first_name)
     column(:last_name)
     column(:name) do
@@ -16,7 +16,7 @@ class TestTable < Mensa::Base
 end
 
 class TableTest < ActiveSupport::TestCase
-  test "it retuns the right column" do
+  test "it returns the right column" do
     t = TestTable.new({})
     subject = t.column(:first_name)
     assert_equal :first_name, subject.name
@@ -25,19 +25,19 @@ class TableTest < ActiveSupport::TestCase
     assert_equal :last_name, subject.name
   end
 
-  test "it returs the sort_direction for nil" do
+  test "it returns the sort_direction for nil" do
     t = TestTable.new({})
     subject = t.column(:first_name)
     assert_nil subject.sort_direction
   end
 
-  test "it returs the sort_direction for asc" do
+  test "it returns the sort_direction for asc" do
     t = TestTable.new({ order: { first_name: :asc } })
     subject = t.column(:first_name)
     assert_equal :asc, subject.sort_direction
   end
 
-  test "it returs the sort_direction for desc" do
+  test "it returns the sort_direction for desc" do
     t = TestTable.new({ order: { first_name: :desc } })
     subject = t.column(:first_name)
     assert_equal :desc, subject.sort_direction
