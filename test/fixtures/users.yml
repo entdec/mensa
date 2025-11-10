@@ -1,0 +1,237 @@
+asml_user:
+  email: "peter.wennink@asml.com"
+  first_name: "Peter"
+  last_name: "Wennink"
+  role: "admin"
+  customer: asml
+
+sap_user:
+  email: "christian.klein@sap.com"
+  first_name: "Christian"
+  last_name: "Klein"
+  role: "guest"
+  customer: sap
+
+ahold_user:
+  email: "frans.muller@aholddelhaize.com"
+  first_name: "Frans"
+  last_name: "Muller"
+  role: "user"
+  customer: ahold
+
+philips_user:
+  email: "roy.jakobs@philips.com"
+  first_name: "Roy"
+  last_name: "Jakobs"
+  role: "user"
+  customer: philips
+
+esa_user:
+  email: "josef.aschbacher@esa.int"
+  first_name: "Josef"
+  last_name: "Aschbacher"
+  role: "user"
+  customer: esa
+
+rheinmetall_user:
+  email: "armin.papperger@rheinmetall.com"
+  first_name: "Armin"
+  last_name: "Papperger"
+  role: "user"
+  customer: rheinmetall
+
+airbus_user:
+  email: "guillaume.faury@airbus.com"
+  first_name: "Guillaume"
+  last_name: "Faury"
+  role: "user"
+  customer: airbus
+
+vw_user:
+  email: "herbert@vw.de"
+  first_name: "Herbert"
+  last_name: "Diess"
+  role: "user"
+  customer: vw
+
+bmw_user:
+  email: "oliver.zipse@bmw.com"
+  first_name: "Oliver"
+  last_name: "Zipse"
+  role: "user"
+  customer: bmw
+
+mercedes_user:
+  email: "ola.kallenius@mercedes-benz.com"
+  first_name: "Ola"
+  last_name: "Källenius"
+  role: "user"
+  customer: mercedes
+
+audi_user:
+  email: "gernot.doellner@audi.de"
+  first_name: "Gernot"
+  last_name: "Döllner"
+  role: "user"
+  customer: audi
+
+porsche_user:
+  email: "oliver.blume@porsche.de"
+  first_name: "Oliver"
+  last_name: "Blume"
+  role: "user"
+  customer: porsche
+
+ferrari_user:
+  email: "benedetto.vigna@ferrari.com"
+  first_name: "Benedetto"
+  last_name: "Vigna"
+  role: "user"
+  customer: ferrari
+
+shell_user:
+  email: "wael.sawan@shell.com"
+  first_name: "Wael"
+  last_name: "Sawan"
+  role: "user"
+  customer: shell
+
+siemens_user:
+  email: "roland.busch@siemens.com"
+  first_name: "Roland"
+  last_name: "Busch"
+  role: "user"
+  customer: siemens
+
+nestle_user:
+  email: "mark.schneider@nestle.com"
+  first_name: "Mark"
+  last_name: "Schneider"
+  role: "user"
+  customer: nestle
+
+unilever_user:
+  email: "hein.schumacher@unilever.com"
+  first_name: "Hein"
+  last_name: "Schumacher"
+  role: "user"
+  customer: unilever
+
+total_user:
+  email: "patrick.pouyanne@total.com"
+  first_name: "Patrick"
+  last_name: "Pouyanné"
+  role: "user"
+  customer: total
+
+bp_user:
+  email: "murray.auchincloss@bp.com"
+  first_name: "Murray"
+  last_name: "Auchincloss"
+  role: "user"
+  customer: bp
+
+glencore_user:
+  email: "gary.nagle@glencore.com"
+  first_name: "Gary"
+  last_name: "Nagle"
+  role: "user"
+  customer: glencore
+
+enel_user:
+  email: "flavio.cattaneo@enel.com"
+  first_name: "Flavio"
+  last_name: "Cattaneo"
+  role: "user"
+  customer: enel
+
+vodafone_user:
+  email: "margherita.della.valle@vodafone.com"
+  first_name: "Margherita"
+  last_name: "Della Valle"
+  role: "user"
+  customer: vodafone
+
+loreal_user:
+  email: "nicolas.hieronimus@loreal.com"
+  first_name: "Nicolas"
+  last_name: "Hieronimus"
+  role: "user"
+  customer: loreal
+
+axa_user:
+  email: "thomas.buberl@axa.com"
+  first_name: "Thomas"
+  last_name: "Buberl"
+  role: "user"
+  customer: axa
+
+credit_agricole_user:
+  email: "philippe.brasac@credit-agricole.com"
+  first_name: "Philippe"
+  last_name: "Brassac"
+  role: "user"
+  customer: credit_agricole
+
+barclays_user:
+  email: "cs.venkatakrishnan@barclays.com"
+  first_name: "C.S."
+  last_name: "Venkatakrishnan"
+  role: "user"
+  customer: barclays
+
+santander_user:
+  email: "ana.botin@santander.com"
+  first_name: "Ana"
+  last_name: "Botín"
+  role: "user"
+  customer: santander
+
+intesa_user:
+  email: "carlo.messina@intesasanpaolo.com"
+  first_name: "Carlo"
+  last_name: "Messina"
+  role: "user"
+  customer: intesa
+
+volvo_user:
+  email: "martin.lundstedt@volvo.com"
+  first_name: "Martin"
+  last_name: "Lundstedt"
+  role: "user"
+  customer: volvo
+
+ericsson_user:
+  email: "borje.ekholm@ericsson.com"
+  first_name: "Börje"
+  last_name: "Ekholm"
+  role: "user"
+  customer: ericsson
+
+adecco_user:
+  email: "denis.machuel@adeccogroup.com"
+  first_name: "Denis"
+  last_name: "Machuel"
+  role: "user"
+  customer: adecco
+
+danone_user:
+  email: "antoine.de-saint-affrique@danone.com"
+  first_name: "Antoine"
+  last_name: "de Saint-Affrique"
+  role: "user"
+  customer: danone
+
+heineken_user:
+  email: "dolf.vandenbrink@heineken.com"
+  first_name: "Dolf"
+  last_name: "van den Brink"
+  role: "user"
+  customer: heineken
+
+carlsberg_user:
+  email: "jacob.aarup-andersen@carlsberg.com"
+  first_name: "Jacob"
+  last_name: "Aarup-Andersen"
+  role: "user"
+  customer: carlsberg

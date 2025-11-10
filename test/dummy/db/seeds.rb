@@ -4,7 +4,7 @@ end
 
 asml = Customer.find_or_create_by!(name: "ASML") do |c|
   c.stock_symbol = "ASML"
-  c.country = "Netherlands"
+  c.country = "NL"
   c.isin = "NL0010273215"
 end
 User.find_or_create_by!(email: "peter.wennink@asml.com") do |user|
@@ -16,7 +16,7 @@ end
 
 sap = Customer.find_or_create_by!(name: "SAP") do |c|
   c.stock_symbol = "SAP"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0007164600"
 end
 User.find_or_create_by!(email: "christian.klein@sap.com") do |user|
@@ -28,7 +28,7 @@ end
 
 ahold = Customer.find_or_create_by!(name: "Ahold Delhaize") do |c|
   c.stock_symbol = "AD"
-  c.country = "Netherlands"
+  c.country = "NL"
   c.isin = "NL0011794037"
 end
 User.find_or_create_by!(email: "frans.muller@aholddelhaize.com") do |user|
@@ -40,7 +40,7 @@ end
 
 philips = Customer.find_or_create_by!(name: "Philips") do |c|
   c.stock_symbol = "PHIA"
-  c.country = "Netherlands"
+  c.country = "NL"
   c.isin = "NL0000009538"
 end
 User.find_or_create_by!(email: "roy.jakobs@philips.com") do |user|
@@ -52,7 +52,7 @@ end
 
 esa = Customer.find_or_create_by!(name: "ESA") do |c|
   c.stock_symbol = nil
-  c.country = "France"
+  c.country = "FR"
   c.isin = nil
 end
 User.find_or_create_by!(email: "josef.aschbacher@esa.int") do |user|
@@ -64,7 +64,7 @@ end
 
 rheinmetall = Customer.find_or_create_by!(name: "Rheinmetall") do |c|
   c.stock_symbol = "RHM"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0007030009"
 end
 User.find_or_create_by!(email: "armin.papperger@rheinmetall.com") do |user|
@@ -76,7 +76,7 @@ end
 
 airbus = Customer.find_or_create_by!(name: "Airbus") do |c|
   c.stock_symbol = "AIR"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "NL0000235190"
 end
 User.find_or_create_by!(email: "guillaume.faury@airbus.com") do |user|
@@ -88,7 +88,7 @@ end
 
 vw = Customer.find_or_create_by!(name: "VW") do |c|
   c.stock_symbol = "VOW3"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0007664039"
 end
 User.find_or_create_by!(email: "herbert@vw.de") do |user|
@@ -100,7 +100,7 @@ end
 
 bmw = Customer.find_or_create_by!(name: "BMW") do |c|
   c.stock_symbol = "BMW"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0005190003"
 end
 User.find_or_create_by!(email: "oliver.zipse@bmw.com") do |user|
@@ -112,7 +112,7 @@ end
 
 mercedes = Customer.find_or_create_by!(name: "Mercedes") do |c|
   c.stock_symbol = "MBG"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0007100000"
 end
 User.find_or_create_by!(email: "ola.kallenius@mercedes-benz.com") do |user|
@@ -124,7 +124,7 @@ end
 
 audi = Customer.find_or_create_by!(name: "Audi") do |c|
   c.stock_symbol = nil
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = nil
 end
 User.find_or_create_by!(email: "gernot.doellner@audi.de") do |user|
@@ -136,7 +136,7 @@ end
 
 porsche = Customer.find_or_create_by!(name: "Porsche") do |c|
   c.stock_symbol = "P911"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE000PAG9113"
 end
 User.find_or_create_by!(email: "oliver.blume@porsche.de") do |user|
@@ -148,7 +148,7 @@ end
 
 ferrari = Customer.find_or_create_by!(name: "Ferrari") do |c|
   c.stock_symbol = "RACE"
-  c.country = "Italy"
+  c.country = "IT"
   c.isin = "NL0011585146"
 end
 User.find_or_create_by!(email: "benedetto.vigna@ferrari.com") do |user|
@@ -160,7 +160,7 @@ end
 
 shell = Customer.find_or_create_by!(name: "Shell") do |c|
   c.stock_symbol = "SHEL"
-  c.country = "UK"
+  c.country = "GB"
   c.isin = "GB00BP6MXD84"
 end
 User.find_or_create_by!(email: "wael.sawan@shell.com") do |user|
@@ -172,7 +172,7 @@ end
 
 siemens = Customer.find_or_create_by!(name: "Siemens") do |c|
   c.stock_symbol = "SIE"
-  c.country = "Germany"
+  c.country = "DE"
   c.isin = "DE0007236101"
 end
 User.find_or_create_by!(email: "roland.busch@siemens.com") do |user|
@@ -184,7 +184,7 @@ end
 
 nestle = Customer.find_or_create_by!(name: "Nestlé") do |c|
   c.stock_symbol = "NESN"
-  c.country = "Switzerland"
+  c.country = "CH"
   c.isin = "CH0038863350"
 end
 User.find_or_create_by!(email: "mark.schneider@nestle.com") do |user|
@@ -196,7 +196,7 @@ end
 
 unilever = Customer.find_or_create_by!(name: "Unilever") do |c|
   c.stock_symbol = "ULVR"
-  c.country = "UK"
+  c.country = "GB"
   c.isin = "GB00B10RZP78"
 end
 User.find_or_create_by!(email: "hein.schumacher@unilever.com") do |user|
@@ -208,7 +208,7 @@ end
 
 total = Customer.find_or_create_by!(name: "TotalEnergies") do |c|
   c.stock_symbol = "TTE"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "FR0000120271"
 end
 User.find_or_create_by!(email: "patrick.pouyanne@total.com") do |user|
@@ -220,7 +220,7 @@ end
 
 bp = Customer.find_or_create_by!(name: "BP") do |c|
   c.stock_symbol = "BP"
-  c.country = "UK"
+  c.country = "GB"
   c.isin = "GB0007980591"
 end
 User.find_or_create_by!(email: "murray.auchincloss@bp.com") do |user|
@@ -232,7 +232,7 @@ end
 
 glencore = Customer.find_or_create_by!(name: "Glencore") do |c|
   c.stock_symbol = "GLEN"
-  c.country = "Switzerland"
+  c.country = "CH"
   c.isin = "JE00B4T3BW64"
 end
 User.find_or_create_by!(email: "gary.nagle@glencore.com") do |user|
@@ -244,7 +244,7 @@ end
 
 enel = Customer.find_or_create_by!(name: "Enel") do |c|
   c.stock_symbol = "ENEL"
-  c.country = "Italy"
+  c.country = "IT"
   c.isin = "IT0003128367"
 end
 User.find_or_create_by!(email: "flavio.cattaneo@enel.com") do |user|
@@ -256,7 +256,7 @@ end
 
 vodafone = Customer.find_or_create_by!(name: "Vodafone") do |c|
   c.stock_symbol = "VOD"
-  c.country = "UK"
+  c.country = "GB"
   c.isin = "GB00BH4HKS39"
 end
 User.find_or_create_by!(email: "margherita.della.valle@vodafone.com") do |user|
@@ -268,7 +268,7 @@ end
 
 loreal = Customer.find_or_create_by!(name: "L'Oréal") do |c|
   c.stock_symbol = "OR"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "FR0000120321"
 end
 User.find_or_create_by!(email: "nicolas.hieronimus@loreal.com") do |user|
@@ -280,7 +280,7 @@ end
 
 axa = Customer.find_or_create_by!(name: "AXA") do |c|
   c.stock_symbol = "CS"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "FR0000120628"
 end
 User.find_or_create_by!(email: "thomas.buberl@axa.com") do |user|
@@ -292,7 +292,7 @@ end
 
 credit_agricole = Customer.find_or_create_by!(name: "Crédit Agricole") do |c|
   c.stock_symbol = "ACA"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "FR0000045072"
 end
 User.find_or_create_by!(email: "philippe.brasac@credit-agricole.com") do |user|
@@ -304,7 +304,7 @@ end
 
 barclays = Customer.find_or_create_by!(name: "Barclays") do |c|
   c.stock_symbol = "BARC"
-  c.country = "UK"
+  c.country = "GB"
   c.isin = "GB0031348658"
 end
 User.find_or_create_by!(email: "cs.venkatakrishnan@barclays.com") do |user|
@@ -316,7 +316,7 @@ end
 
 santander = Customer.find_or_create_by!(name: "Banco Santander") do |c|
   c.stock_symbol = "SAN"
-  c.country = "Spain"
+  c.country = "ES"
   c.isin = "ES0113900J37"
 end
 User.find_or_create_by!(email: "ana.botin@santander.com") do |user|
@@ -328,7 +328,7 @@ end
 
 intesa = Customer.find_or_create_by!(name: "Intesa Sanpaolo") do |c|
   c.stock_symbol = "ISP"
-  c.country = "Italy"
+  c.country = "IT"
   c.isin = "IT0000072618"
 end
 User.find_or_create_by!(email: "carlo.messina@intesasanpaolo.com") do |user|
@@ -340,7 +340,7 @@ end
 
 volvo = Customer.find_or_create_by!(name: "Volvo") do |c|
   c.stock_symbol = "VOLV-B"
-  c.country = "Sweden"
+  c.country = "SE"
   c.isin = "SE0000115446"
 end
 User.find_or_create_by!(email: "martin.lundstedt@volvo.com") do |user|
@@ -352,7 +352,7 @@ end
 
 ericsson = Customer.find_or_create_by!(name: "Ericsson") do |c|
   c.stock_symbol = "ERIC-B"
-  c.country = "Sweden"
+  c.country = "SE"
   c.isin = "SE0000108656"
 end
 User.find_or_create_by!(email: "borje.ekholm@ericsson.com") do |user|
@@ -364,7 +364,7 @@ end
 
 adecco = Customer.find_or_create_by!(name: "Adecco") do |c|
   c.stock_symbol = "ADEN"
-  c.country = "Switzerland"
+  c.country = "CH"
   c.isin = "CH0012138605"
 end
 User.find_or_create_by!(email: "denis.machuel@adeccogroup.com") do |user|
@@ -376,7 +376,7 @@ end
 
 danone = Customer.find_or_create_by!(name: "Danone") do |c|
   c.stock_symbol = "BN"
-  c.country = "France"
+  c.country = "FR"
   c.isin = "FR0000120644"
 end
 User.find_or_create_by!(email: "antoine.de-saint-affrique@danone.com") do |user|
@@ -388,7 +388,7 @@ end
 
 heineken = Customer.find_or_create_by!(name: "Heineken") do |c|
   c.stock_symbol = "HEIA"
-  c.country = "Netherlands"
+  c.country = "NL"
   c.isin = "NL0000009165"
 end
 User.find_or_create_by!(email: "dolf.vandenbrink@heineken.com") do |user|
@@ -400,7 +400,7 @@ end
 
 carlsberg = Customer.find_or_create_by!(name: "Carlsberg") do |c|
   c.stock_symbol = "CARL-B"
-  c.country = "Denmark"
+  c.country = "DK"
   c.isin = "DK0010181676"
 end
 User.find_or_create_by!(email: "jacob.aarup-andersen@carlsberg.com") do |user|
@@ -421,9 +421,9 @@ Mensa::TableView.find_or_create_by!(table_name: "users", name: "Users") do |tabl
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "customers", name: "Dutch") do |table|
-   table.data= {filters: {country: "Netherlands"}}
+   table.data= {filters: {country: "NL"}}
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "customers", name: "German") do |table|
-   table.data= {filters: {country: "Germany"}}
+   table.data= {filters: {country: "DE"}}
 end
