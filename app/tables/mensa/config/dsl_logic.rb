@@ -29,6 +29,8 @@ module Mensa::Config
         end
       end
 
+      private
+
       ###
       # Define a accessor method
       #

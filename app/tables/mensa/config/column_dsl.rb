@@ -13,11 +13,11 @@ module Mensa::Config
     option :attribute
     # Internal columns will never be shown, but are there to be selected, to be used in methods
     # Mensa doesn't select the whole records, to only select what we need
-    option :internal
+    option :internal, default: false
     option :method
 
     option :visible, default: true
-    dsl_option :render, Mensa::Config::RenderDsl
-    dsl_option :filter, Mensa::Config::FilterDsl
+    option :render, dsl: Mensa::Config::RenderDsl
+    option :filter, dsl: Mensa::Config::FilterDsl
   end
 end

@@ -2,7 +2,7 @@ require "test_helper"
 require 'pry'
 
 class ColumnTest < ActiveSupport::TestCase
-  test "it returns the quoted atribute" do
+  test "it returns the quoted attribute" do
     t = TestTable.new({})
     subject = t.column(:first_name)
     assert_equal 'first_name', subject.attribute

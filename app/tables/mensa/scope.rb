@@ -22,20 +22,9 @@ module Mensa
       # This has problems - not all table fields are searched
       @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query]
 
+      # Use inject
       active_filters.each do |filter|
-        @filtered_scope = if filter.scope
-                            @filtered_scope.instance_exec(Helper.normalize(filter.value), &filter.scope)
-                          else
-                            case filter.operator
-                            when :matches
-                              @filtered_scope.where("#{filter.column.attribute_for_condition} LIKE ?", "%#{Helper.normalize(filter.value)}%")
-                            when :equals
-                              @filtered_scope.where(filter.column.attribute_for_condition => Helper.normalize(filter.value))
-                            else
-                              # Ignore unknown operators
-                              @filtered_scope
-                            end
-                          end
+        @filtered_scope = filter.filter_scope(@filtered_scope)
       end
 
       @filtered_scope
@@ -84,14 +73,6 @@ module Mensa
       (params[:order] || config[:order]).merge(new_params.symbolize_keys)
                                         .reject { |name, direction| direction.blank? }
                                         .transform_values { |value| value.to_sym }
-    end
-
-    module Helper
-      class << self
-        def normalize(query)
-          query.to_s.gsub(/\s(?![\&\!\|])/, '\\\\ ')
-        end
-      end
     end
   end
 end

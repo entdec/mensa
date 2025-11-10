@@ -7,8 +7,8 @@ module Mensa
 
     def initialize(name, config:, table:)
       @name = name
+      @config = self.class.definition.merge(config || {})
       @table = table
-      @config = config
     end
 
     config_reader :sortable?
@@ -80,6 +80,13 @@ module Mensa
           m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
           m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
         end
+      end
+    end
+
+    private
+    class << self
+      def definition(&)
+        @definition ||= Mensa::Config::ColumnDsl.new(self.name, &).config
       end
     end
   end

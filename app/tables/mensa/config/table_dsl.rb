@@ -63,9 +63,9 @@ module Mensa::Config
     option :column_order
 
     # Actions
-    option :action, dsl_hash: Mensa::Config::ActionDsl
+    option :action, dsl: Mensa::Config::ActionDsl
 
-    dsl_option :render, Mensa::Config::RenderDsl
+    option :render, dsl: Mensa::Config::RenderDsl
 
     option :supports_views, default: false
     option :supports_custom_views, default: false
