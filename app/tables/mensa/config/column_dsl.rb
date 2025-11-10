@@ -16,7 +16,7 @@ module Mensa::Config
     option :internal
     option :method
 
-    option :visible, default: :true
+    option :visible, default: true
     dsl_option :render, Mensa::Config::RenderDsl
     dsl_option :filter, Mensa::Config::FilterDsl
   end
