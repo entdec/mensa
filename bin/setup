@@ -58,7 +58,7 @@ FileUtils.chdir APP_ROOT do
   system! "bin/rails log:clear tmp:clear"
 
   puts "\n== Configuring tailwindcss =="
-  system! "bin/rails app:tailwindcss:build"
+  system! "bin/rails app:tailwindcss:config && pushd test/dummy && bin/rails tailwindcss:build && popd"
 
   puts "\n== Done, welcome to Mensa =="
   puts "To start the application, run 'bin/overmind s'"

@@ -1,7 +1,7 @@
 name: "mensa"
 
 services:
-  rails-app:
+  app:
     cpu_count: 2
     build:
       context: ..

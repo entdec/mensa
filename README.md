@@ -114,17 +114,15 @@ end
 ### Coding
 
 - Checkout this repo
-- Setup your direnv:
+- Setup your direnv, add the following to your `.envrc`:
 
   ```
   export BUNDLE_RUBYGEMS__PKG__GITHUB__COM=ghp_xxxxxxw
   export RBENV_VERSION=$(cat .ruby-version)
   ```
-
-- Open with Visual Studio Code (or with any other editor)
+- Run `direnv allow`
+- Open with Visual Studio Code (or with any other editor) and reopen in container.
 - Run `bin/overmind s`
-
-
 
 ### Docs
 

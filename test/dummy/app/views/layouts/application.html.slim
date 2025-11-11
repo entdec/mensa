@@ -7,5 +7,10 @@ html
     = csp_meta_tag
     = stylesheet_link_tag "tailwind"
     = javascript_importmap_tags "mensa"
+    = javascript_include_tag asset_url("fontawesome.js"), defer: true
+    = javascript_include_tag asset_url("regular.js"), defer: true
+    = javascript_include_tag asset_url("brands.js"), defer: true
+    = javascript_include_tag asset_url("solid.js"), defer: true
+
   body.mx-10.my-10.bg-gray-100
     = yield

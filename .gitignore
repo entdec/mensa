@@ -18,3 +18,5 @@ config/tailwind.config.js
 app/assets/builds
 test/dummy/config/tailwind.config.js
 .envrc
+
+**/**/.DS_Store
