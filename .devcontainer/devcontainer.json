@@ -3,7 +3,7 @@
 {
   "name": "mensa",
   "dockerComposeFile": "compose.yaml",
-  "service": "rails-app",
+  "service": "app",
   "workspaceFolder": "/workspaces/mensa",
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {

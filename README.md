@@ -114,12 +114,15 @@ end
 ### Coding
 
 - Checkout this repo
-- Setup your direnv
-- Open with vscode
-- Run bin/rails db:setup
-- Run npm install
-- Run bin/rails app:tailwindcss:config
-- Run bin/overmind s
+- Setup your direnv:
+
+  ```
+  export BUNDLE_RUBYGEMS__PKG__GITHUB__COM=ghp_xxxxxxw
+  export RBENV_VERSION=$(cat .ruby-version)
+  ```
+
+- Open with Visual Studio Code (or with any other editor)
+- Run `bin/overmind s`
 
 
 
