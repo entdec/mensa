@@ -3,28 +3,31 @@
 Fast and awesome tables, with pagination, sorting, filtering and custom views.
 
 ![table](./docs/table.png)
+![filters](./docs/filters.png)
 
-Wanted features:
+Features:
 
 - [x] very fast
 - [x] row-links
 - [x] sorting
 - [x] tables without headers (and without most of the above)
-- [ ] column sorting
 - [x] filtering of multiple columns
+- [X] Hide filter icon in case there are no filters
+
+Still to do:
+- [ ] column sorting
 - [ ] editing of existing filters
 - [ ] view selection and exports per view
 
-optionally:
+Optionally:
 
 - [ ] group by
 - [ ] sum/max/min
 - [ ] tables backed by arrays (of ActiveModel)
 
-Todo:
+Todo/Fixme:
 
-- [X] Hide filter icon in case there are no filters
-- [ ] Search only works on table columns
+- [ ] Search only works on table text columns
 
 ## Usage
 
