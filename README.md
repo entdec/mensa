@@ -2,6 +2,8 @@
 
 Fast and awesome tables, with pagination, sorting, filtering and custom views.
 
+![table](./docs/table.png)
+
 Wanted features:
 
 - [x] very fast
@@ -67,6 +69,15 @@ class UserTable < ApplicationTable
     view_columns_sorting false # Disabled for now
     view_condensed false # Default false
     view_condensed_toggle true # Whether to show the toggle, default true
+
+    # Add system views
+    view :concept do
+      name "Concept"
+      filter :state do
+        operator :equals
+        value "concept"
+      end
+    end
   end
 end
 ```
@@ -95,7 +106,21 @@ column :age do
 end
 ```
 
-## Documentation
+## Development
+
+### Coding
+
+- Checkout this repo
+- Setup your direnv
+- Open with vscode
+- Run bin/rails db:setup
+- Run npm install
+- Run bin/rails app:tailwindcss:config
+- Run bin/overmind s
+
+
+
+### Docs
 
 Using the following in your view will render Mensa::Table::Component
 ```slim

@@ -7,12 +7,13 @@ gemspec
 
 gem "puma"
 gem "sprockets-rails"
-gem "satis", "~> 2", entdec: "satis", branch: "main"
+gem "satis", "~> 2"
 gem "pry"
 gem "capybara", "~> 3.40"
 gem "selenium-webdriver", "~> 4.17"
 gem "slim", "~> 5.2"
 gem "debug"
+gem "overmind", require: false
 
 group :development, :test do
   gem "standard", require: false

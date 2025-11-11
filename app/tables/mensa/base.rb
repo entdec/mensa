@@ -56,7 +56,7 @@ module Mensa
 
     def system_views
       [Mensa::SystemView.new(:all, config: {name: I18n.t("mensa.views.all")}, table: self)] +
-        config[:views].keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
+        (config[:views] || {}).keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
     end
 
     # Returns true if the table has filters
