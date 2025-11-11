@@ -9,5 +9,7 @@ class CustomersTable < Mensa::Base
     column(:country)
     column(:isin)
     column(:updated_at)
+
+    link { |customer| edit_customer_path(customer) }
   end
 end

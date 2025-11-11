@@ -1,4 +1,6 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
-import { application } from 'controllers/application'
 
-import "mensa"
+// import "satis"
+// import "mensa"
+
+import { application } from 'controllers/application'

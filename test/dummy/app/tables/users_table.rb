@@ -12,9 +12,19 @@ class UsersTable < Mensa::Base
         collection -> { User.ROLES }
       end
     end
+    column :customer_id do
+      internal true
+    end
     column(:customer_name) do
       attribute "customers.name"
+      render do
+        html do |user|
+          link_to user.customer.name, url_for(user.customer) if user.customer
+        end
+      end
     end
+
+    link { |user| edit_user_path(user) }
 
     supports_views true
   end

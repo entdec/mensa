@@ -6,6 +6,7 @@ html
     = csrf_meta_tags
     = csp_meta_tag
     = stylesheet_link_tag "tailwind"
+    = javascript_importmap_tags 'satis'
     = javascript_importmap_tags "mensa"
     = javascript_include_tag asset_url("fontawesome.js"), defer: true
     = javascript_include_tag asset_url("regular.js"), defer: true
