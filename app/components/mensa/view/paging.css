@@ -1,6 +1,6 @@
 .mensa-table {
   .paging {
-    @apply flex items-center justify-between border-t border-gray-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6;
+    @apply flex items-center justify-between border-t border-gray-100 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6 text-sm;
 
     .pagy {
       @apply isolate inline-flex -space-x-px text-gray-500 dark:text-gray-400;
