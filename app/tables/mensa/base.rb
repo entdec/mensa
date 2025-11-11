@@ -54,9 +54,14 @@ module Mensa
       ordered_scope.map { |row| Mensa::Row.new(self, row) }
     end
 
+    def system_views
+      [Mensa::SystemView.new(:all, config: {name: I18n.t("mensa.views.all")}, table: self)] +
+        config[:views].keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
+    end
+
     # Returns true if the table has filters
     def filters?
-     columns.any?(&:filter?)
+      columns.any?(&:filter?)
     end
 
     def actions?
@@ -82,7 +87,9 @@ module Mensa
     end
 
     def all_views
-      [Mensa::TableView.new(name: I18n.t('.mensa.views.all'))] + TableView.where(table_name: name).where(user: [nil, Current.user])
+      views = system_views
+      views += TableView.where(table_name: name).where(user: [nil, Current.user])
+      views
     end
 
     def active_filters
@@ -103,7 +110,7 @@ module Mensa
 
     class << self
       def definition(&)
-        @definition ||= Mensa::Config::TableDsl.new(self.name, &).config
+        @definition ||= Mensa::Config::TableDsl.new(name, &).config
       end
     end
   end

@@ -74,5 +74,7 @@ module Mensa::Config
     option :view_columns_sorting, default: true
     option :view_condensed, default: false
     option :view_condensed_toggle, default: true
+
+    option :view, dsl_hash: Mensa::Config::ViewDsl
   end
 end

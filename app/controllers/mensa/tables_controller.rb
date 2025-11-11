@@ -2,17 +2,15 @@ module Mensa
   class TablesController < ::ApplicationController
     layout :decide_layout
 
-    def index
-      render layout: 'mensa/application'
-    end
-
     def show
-      config = if params[:table_view_id]
-                 @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
-                 @view&.data || {}
-               else
-                 {}
-               end
+      @table = Mensa.for_name(params[:id])
+
+      config = {}
+      if params[:table_view_id]
+        @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
+        @view ||= @table.system_views.find { |v| v.id == params[:table_view_id].to_sym }
+        config = @view&.data
+      end
 
       config = config.merge(params.permit!.to_h)
       config = config.merge(params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
@@ -33,7 +31,7 @@ module Mensa
     end
 
     def decide_layout
-      return false if params[:turbo_frame_id]
+      false if params[:turbo_frame_id]
     end
   end
 end

@@ -95,6 +95,21 @@ column :age do
 end
 ```
 
+## Documentation
+
+Using the following in your view will render Mensa::Table::Component
+```slim
+  = sts.table :users
+```
+
+The Mensa::Table::Component will render:
+- Mensa::Search::Component
+- Mensa::FilterList::Component
+- Mensa::Views::Component
+  - renders a views list
+  - Mensa::ControlBar::Component
+- turbo-frame with the actual table you see  (which is rendered by Mensa::View::Component)
+
 ## Installation
 
 Add this line to your application's Gemfile:

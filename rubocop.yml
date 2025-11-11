@@ -1,0 +1,94 @@
+# https://www.fastruby.io/blog/ruby/code-quality/how-we-use-rubocop-and-standardrb.html
+
+require:
+  - standard
+
+plugins:
+  - rubocop-rails
+
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - node_modules/**/*
+    - public/**/*
+    - vendor/**/*
+
+Rails:
+  Enabled: true # enable rubocop-rails cops
+
+# https://gorails.com/episodes/organizing-rails-model-files
+Layout/ClassStructure:
+  Enabled: true
+  AutoCorrect: true
+  Categories:
+    module_inclusion:
+      - include
+      - prepend
+      - extend
+    attributes:
+      - attribute
+      - attr_reader
+      - attr_writer
+      - attr_accessor
+      - alias_attribute
+      - delegate
+      - enum
+    associations:
+      - belongs_to
+      - has_one
+      - has_many
+      - has_and_belongs_to_many
+    validations:
+      - validates
+      - validate
+      - validates_with
+    callbacks:
+      - before_validation
+      - before_save
+      - before_create
+      - before_destroy
+      - after_initialize
+      - after_create
+      - after_save
+      - after_destroy
+      - after_commit
+      - after_create_commit
+      - after_update_commit
+      - after_destroy_commit
+      - around_create
+    other_macros:
+      - acts_as_paranoid
+      - audited
+      - devise
+      - has_paper_trail
+      - serialize
+    scopes:
+      - default_scope
+      - scope
+    controller_actions:
+      - before_action
+      - skip_before_action
+    controller_rescue:
+      - rescue_from
+  ExpectedOrder:
+    - module_inclusion
+    - constants
+    - attributes
+    - enums
+    - associations
+    - validations
+    - callbacks
+    - other_macros
+    - scopes
+    - controller_macros
+    - controller_actions
+    - controller_action_caching
+    - controller_rescue
+    - class_methods
+    - initializer
+    - public_methods
+    - protected_methods
+    - private_methods

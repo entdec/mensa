@@ -18,6 +18,9 @@ application.register("mensa-search", SearchComponentController);
 import TableComponentController from 'mensa/components/table/component_controller'
 application.register("mensa-table", TableComponentController);
 
+import ViewsComponentController from 'mensa/components/views/component_controller'
+application.register("mensa-views", ViewsComponentController);
+
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 // import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 // eagerLoadControllersFrom("controllers", application)

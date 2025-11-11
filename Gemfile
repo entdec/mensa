@@ -13,3 +13,10 @@ gem "capybara", "~> 3.40"
 gem "selenium-webdriver", "~> 4.17"
 gem "slim", "~> 5.2"
 gem "debug"
+
+group :development, :test do
+  gem "standard", require: false
+  gem "rubocop-rails", require: false
+  gem "ruby-lsp", require: false
+  gem "ruby-lsp-rails", require: false
+end

@@ -8,21 +8,19 @@ module Mensa
   #   link_attributes "data-turbo-method" => "delete"
   #   icon "fa-xmark"
   # end
-  class Action
+  class SystemView
     include ConfigReaders
 
-    attr_reader :name, :table, :config
+    attr_reader :id, :config
 
-    def initialize(name, config:, table:)
-      @name = name
+    def initialize(id, config:, table:)
+      @id = id
       @table = table
       @config = config
     end
 
-    config_reader :title
-    config_reader :link, call: false
-    config_reader :link_attributes
-    config_reader :icon
-    config_reader :show, call: false
+    config_reader :name
+
+    alias_method :data, :config
   end
 end
