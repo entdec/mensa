@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class UsersTable < Mensa::Base
-
   definition do
     model User
 
@@ -15,7 +14,6 @@ class UsersTable < Mensa::Base
     end
     column(:customer_name) do
       attribute "customers.name"
-
     end
 
     supports_views true
@@ -26,5 +24,4 @@ class UsersTable < Mensa::Base
   def scope
     User.all.left_joins(:customer)
   end
-
 end

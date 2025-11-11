@@ -89,9 +89,12 @@ You can show your tables on the page using the following:
   = sts.table :users
 ```
 
-#### Views
+#### Custom views
 
-Initial support for views is there, but pretty rudimentary:
+Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
+
+Initial support for custom-views is there, but pretty rudimentary:
+
 `Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: {value: "guest"}}})`
 
 ### Fast
