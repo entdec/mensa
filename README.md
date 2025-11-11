@@ -18,6 +18,7 @@ Still to do:
 - [ ] column sorting
 - [ ] editing of existing filters
 - [ ] view selection and exports per view
+- [ ] multiple selection of rows
 
 Optionally:
 
