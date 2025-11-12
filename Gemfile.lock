@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.2.2)
+    mensa (0.2.3)
       caxlsx_rails (~> 0)
       importmap-rails
       pagy (>= 43)
@@ -220,6 +220,8 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.4)
+    rack-mini-profiler (4.0.1)
+      rack (>= 1.2.0)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -410,6 +412,7 @@ DEPENDENCIES
   overmind
   pry
   puma
+  rack-mini-profiler
   rubocop-rails
   ruby-lsp
   ruby-lsp-rails

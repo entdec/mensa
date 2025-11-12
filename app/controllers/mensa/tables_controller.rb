@@ -9,7 +9,7 @@ module Mensa
       if params[:table_view_id]
         @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
         @view ||= @table.system_views.find { |v| v.id == params[:table_view_id].to_sym }
-        config = @view&.data
+        config = @view&.config
       end
 
       config = config.merge(params.permit!.to_h)

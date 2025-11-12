@@ -11,5 +11,7 @@ class CustomersTable < Mensa::Base
     column(:updated_at)
 
     link { |customer| edit_customer_path(customer) }
+
+    supports_views true
   end
 end

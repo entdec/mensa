@@ -20,7 +20,6 @@ module Mensa
     end
 
     config_reader :name
-
-    alias_method :data, :config
+    config_reader :description
   end
 end

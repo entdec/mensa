@@ -11,3 +11,12 @@
     }
   }
 }
+
+.tippy-box[data-theme~='mensa'] {
+  @apply bg-gray-200 text-gray-800 dark:text-gray-400;
+}
+
+.tippy-box[data-theme~='mensa'] .tippy-arrow {
+  @apply text-gray-200;
+}
+

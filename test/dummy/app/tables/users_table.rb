@@ -19,7 +19,7 @@ class UsersTable < Mensa::Base
       attribute "customers.name"
       render do
         html do |user|
-          link_to user.customer.name, url_for(user.customer) if user.customer
+          link_to user.customer_name, customer_path(user.customer_id) if user.customer_id
         end
       end
     end
@@ -32,6 +32,6 @@ class UsersTable < Mensa::Base
   private
 
   def scope
-    User.all.left_joins(:customer)
+    User.all.left_outer_joins(:customer)
   end
 end

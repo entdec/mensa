@@ -425,5 +425,6 @@ Mensa::TableView.find_or_create_by!(table_name: "customers", name: "Dutch") do |
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "customers", name: "German") do |table|
+  table.description = "Customers from Germany"
   table.data = {filters: {country: {value: "DE"}}}
 end

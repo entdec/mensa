@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_12_140046) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_12_143558) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,12 +25,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_12_140046) do
 
   create_table "mensa_table_views", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.jsonb "data"
+    t.jsonb "config"
     t.string "name"
     t.string "table_name"
     t.datetime "updated_at", null: false
     t.uuid "user_id"
-    t.index ["data"], name: "index_mensa_table_views_on_data", using: :gin
+    t.string "description"
+    t.index ["config"], name: "index_mensa_table_views_on_config", using: :gin
     t.index ["table_name"], name: "index_mensa_table_views_on_table_name"
     t.index ["user_id"], name: "index_mensa_table_views_on_user_id"
   end

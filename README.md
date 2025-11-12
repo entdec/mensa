@@ -141,6 +141,10 @@ The Mensa::Table::Component will render:
 - Mensa::Views::Component
   - renders a views list
   - Mensa::ControlBar::Component
+    - search icon
+    - filter icon
+    - condensed toggle
+    - export icon
 - turbo-frame with the actual table you see  (which is rendered by Mensa::View::Component)
 
 ## Installation
