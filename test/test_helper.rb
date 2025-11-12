@@ -14,7 +14,6 @@ if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
   ActiveSupport::TestCase.fixtures :all
 end
 
-
 class TestTable < Mensa::Base
   definition do
     model User
@@ -22,10 +21,13 @@ class TestTable < Mensa::Base
     column(:first_name)
     column(:last_name)
     column(:name) do
-      attribute 'CONCAT(first_name, last_name)'
+      attribute "CONCAT(first_name, last_name)"
     end
     column(:role) do
       filter
+    end
+    column :customer_id do
+      internal true
     end
 
     link { |test| root_path }
@@ -35,7 +37,6 @@ class TestTable < Mensa::Base
     end
   end
 end
-
 
 class CustomerTable < Mensa::Base
   definition do

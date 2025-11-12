@@ -3,7 +3,10 @@
 module Mensa
   class Column
     include ConfigReaders
-    attr_reader :name, :table, :config
+
+    defined_by Mensa::Config::ColumnDsl
+
+    attr_reader :name, :table
 
     def initialize(name, config:, table:)
       @name = name
@@ -35,24 +38,24 @@ module Mensa
       return @attribute if @attribute
 
       @attribute = if config[:attribute].present?
-                     "#{config[:attribute]} AS #{name}"
-                   elsif table.model.column_names.include? name.to_s
-                     name.to_s
-                   else
-                     nil
-                   end
+        "#{config[:attribute]} AS #{name}"
+      elsif table.model.column_names.include? name.to_s
+        name.to_s
+      else
+        nil
+      end
     end
 
     def attribute_for_condition
       return @attribute_for_condition if @attribute_for_condition
 
       @attribute_for_condition = if config[:attribute].present?
-                                   config[:attribute]
-                                 elsif table.model.column_names.include? name.to_s
-                                   name.to_s
-                                 else
-                                   nil
-                                 end
+        config[:attribute]
+      elsif table.model.column_names.include? name.to_s
+        name.to_s
+      else
+        nil
+      end
     end
 
     # Returns true if the column supports filtering
@@ -75,18 +78,11 @@ module Mensa
     end
 
     def menu
-      Satis::Menus::Builder.build(:filter_menu, event: 'click') do |m|
+      Satis::Menus::Builder.build(:filter_menu, event: "click") do |m|
         if sortable?
-          m.item :sort_ascending, icon: 'fa-solid fa-arrow-up-short-wide'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
-          m.item :sort_descending, icon: 'fa-solid fa-arrow-down-wide-short'.freeze, link: table.path(order: { name => :asc }), link_attributes: { "data-turbo-frame": "_self" }
+          m.item :sort_ascending, icon: "fa-solid fa-arrow-up-short-wide", link: table.path(order: {name => :asc}), link_attributes: {"data-turbo-frame": "_self"}
+          m.item :sort_descending, icon: "fa-solid fa-arrow-down-wide-short", link: table.path(order: {name => :asc}), link_attributes: {"data-turbo-frame": "_self"}
         end
-      end
-    end
-
-    private
-    class << self
-      def definition(&)
-        @definition ||= Mensa::Config::ColumnDsl.new(self.name, &).config
       end
     end
   end

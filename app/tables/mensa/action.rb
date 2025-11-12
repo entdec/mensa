@@ -11,7 +11,9 @@ module Mensa
   class Action
     include ConfigReaders
 
-    attr_reader :name, :table, :config
+    defined_by Mensa::Config::ActionDsl
+
+    attr_reader :name, :table
 
     def initialize(name, config:, table:)
       @name = name

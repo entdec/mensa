@@ -2,11 +2,13 @@ module Mensa
   class Base
     include Pagy::Method
     include ConfigReaders
+
+    defined_by Mensa::Config::TableDsl
     include Scope
 
     attr_writer :original_view_context
     attr_accessor :component, :name, :table_view, :request
-    attr_reader :config, :params
+    attr_reader :params
 
     config_reader :model
     config_reader :link, call: false
@@ -104,14 +106,6 @@ module Mensa
 
     def original_view_context
       @original_view_context || component.original_view_context
-    end
-
-    private
-
-    class << self
-      def definition(&)
-        @definition ||= Mensa::Config::TableDsl.new(name, &).config
-      end
     end
   end
 end

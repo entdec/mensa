@@ -71,8 +71,8 @@ module Mensa
     # Though this works, perhaps moving this in column(s) is nicer
     def order_hash(new_params = {})
       (params[:order] || config[:order]).merge(new_params.symbolize_keys)
-                                        .reject { |name, direction| direction.blank? }
-                                        .transform_values { |value| value.to_sym }
+        .compact_blank
+        .transform_values { |value| value.to_sym }
     end
   end
 end

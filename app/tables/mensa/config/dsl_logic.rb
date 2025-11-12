@@ -65,11 +65,11 @@ module Mensa::Config
       end
 
       ###
-      # Define a DSL hash
-      # by calling option :action, dsl: Mensa::ActionDsl
+      # Define a DSL that builds a hash
+      # by calling option :action, dsl_hash: Mensa::ActionDsl
       #
       def dsl_hash(option_name, klass, config_name:)
-        config_name = config_name || option_name.to_s.pluralize.to_sym
+        config_name ||= option_name.to_s.pluralize.to_sym
 
         @default_config ||= {}
         @default_config[option_name.to_sym] = {}
@@ -80,8 +80,12 @@ module Mensa::Config
         end
       end
 
+      ###
+      # Define a DSL that builds an array
+      # by calling option :action, dsl_array: Mensa::ActionDsl
+      #
       def dsl_array(option_name, klass, config_name: option_name.to_s.pluralize.to_sym)
-        config_name = config_name || option_name.to_s.pluralize.to_sym
+        config_name ||= option_name.to_s.pluralize.to_sym
 
         @default_config ||= {}
         @default_config[name.to_sym] = []

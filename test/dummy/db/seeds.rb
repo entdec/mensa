@@ -411,20 +411,20 @@ User.find_or_create_by!(email: "jacob.aarup-andersen@carlsberg.com") do |user|
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "users", name: "Admins") do |table|
-  table.data = {filters: {role: {value: "admin"}}}
+  table.config = {filters: {role: {value: "admin"}}}
 end
 Mensa::TableView.find_or_create_by!(table_name: "users", name: "Guests") do |table|
-  table.data = {filters: {role: {value: "guest"}}}
+  table.config = {filters: {role: {value: "guest"}}}
 end
 Mensa::TableView.find_or_create_by!(table_name: "users", name: "Users") do |table|
-  table.data = {filters: {role: {value: "user"}}}
+  table.config = {filters: {role: {value: "user"}}}
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "customers", name: "Dutch") do |table|
-  table.data = {filters: {country: {value: "NL"}}}
+  table.config = {filters: {country: {value: "NL"}}}
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "customers", name: "German") do |table|
   table.description = "Customers from Germany"
-  table.data = {filters: {country: {value: "DE"}}}
+  table.config = {filters: {country: {value: "DE"}}}
 end
