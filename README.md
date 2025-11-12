@@ -99,7 +99,7 @@ Custom views are views not defined by the developer (SystemViews) but by the end
 
 Initial support for custom-views is there, but pretty rudimentary:
 
-`Mensa::TableView.create(table: "users", name: "Guests", data: {filters: {role: {value: "guest"}}})`
+`Mensa::TableView.create(table: "users", name: "Guests", config: {filters: {role: {value: "guest"}}})`
 
 ### Fast
 
