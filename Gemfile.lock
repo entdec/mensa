@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.2.3)
+    mensa (0.2.4)
       caxlsx_rails (~> 0)
       importmap-rails
       pagy (>= 43)
