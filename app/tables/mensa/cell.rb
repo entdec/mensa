@@ -24,7 +24,7 @@ module Mensa
       if proc
         row.table.original_view_context.instance_exec(row.record, &proc)
       else
-        send("to_#{format}".to_sym)
+        send(:"to_#{format}")
       end
     end
 
@@ -33,15 +33,15 @@ module Mensa
     def to_html
       case value
       when NilClass
-        ''
+        ""
       when TrueClass
-        content_tag(:i, '', class: 'fa-solid fa-check')
+        content_tag(:i, "", class: "fa-solid fa-check")
       when FalseClass
-        content_tag(:i, '', class: 'fa-solid fa-xmark')
+        content_tag(:i, "", class: "fa-solid fa-xmark")
       when Date
-        respond_to?(:dt) ? dt(value) : value.strftime('%d.%m.%Y')
+        respond_to?(:dt) ? dt(value) : value.strftime("%d.%m.%Y")
       when Time, DateTime
-        respond_to?(:ln) ? ln(value) : value.strftime('%d-%m-%Y %H:%M:%S')
+        respond_to?(:ln) ? ln(value) : value.strftime("%d-%m-%Y %H:%M:%S")
       else
         column.sanitize? ? sanitize(value.to_s) : value.to_s.html_safe
       end
