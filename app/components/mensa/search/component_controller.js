@@ -29,7 +29,7 @@ export default class SearchComponentController extends ApplicationController {
     this.resetSearchButtonTarget.classList.add("hidden")
 
     let turboFrame = this.element.closest("turbo-frame")
-    let url = this.ourUrl
+    let url = this.mensaTableOutlet.ourUrl
     url.searchParams.delete("query")
 
     get(url, {
@@ -45,7 +45,7 @@ export default class SearchComponentController extends ApplicationController {
     }
 
     // FIXME: This doesn't prevent searching twice on enter, the turbo-frame URL doesn't change
-    let url = this.ourUrl
+    let url = this.mensaTableOutlet.ourUrl
     if (url.searchParams.get("query") === this.query) {
       return
     }

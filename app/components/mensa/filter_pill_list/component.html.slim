@@ -1,0 +1,8 @@
+.mensa-table__filters.hidden data-mensa-table-target="filterList"
+  .block
+    nav
+      .flex.space-x-2.overflow-none.whitespace-nowrap.scroll-p-0[aria-label="Tabs"]
+        / existing filters first
+        = render Mensa::FilterPill::Component.with_collection(table.active_filters)
+
+        = render Mensa::AddFilter::Component.new(table: table)

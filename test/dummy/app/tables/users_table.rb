@@ -4,6 +4,11 @@ class UsersTable < Mensa::Base
   definition do
     model User
 
+    render do
+      html
+      xlsx
+    end
+
     column(:first_name)
     column(:last_name)
     column(:email)
@@ -28,6 +33,10 @@ class UsersTable < Mensa::Base
     link { |user| edit_user_path(user) }
 
     supports_views true
+
+    # view :default do
+    #   name "All Users"
+    # end
   end
 
   private

@@ -23,7 +23,7 @@ module Mensa
         format.html
         format.xlsx do
           Mensa::ExportJob.perform_later(current_user, params[:id])
-          head 200
+          head :ok
         end
       end
     end

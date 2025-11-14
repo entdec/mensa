@@ -2,15 +2,15 @@
 import { Controller } from '@hotwired/stimulus'
 
 export default class ApplicationController extends Controller {
-  connect () {
+  connect() {
     this.element[this.identifier] = this
   }
 
-  getController (element, identifier) {
+  getController(element, identifier) {
     return this.application.getControllerForElementAndIdentifier(element, identifier)
   }
 
-  triggerEvent (el, name, data) {
+  triggerEvent(el, name, data) {
     let event
     if (typeof window.CustomEvent === 'function') {
       event = new CustomEvent(name, { detail: data, cancelable: true, bubbles: true })
@@ -21,14 +21,14 @@ export default class ApplicationController extends Controller {
     el.dispatchEvent(event)
   }
 
-  elementScrolled (element) {
+  elementScrolled(element) {
     if (element.scrollHeight - Math.round(element.scrollTop) === element.clientHeight) {
       return true
     }
     return false
   }
 
-  debouncedHover (element, timeout, handler) {
+  debouncedHover(element, timeout, handler) {
     var timeoutId = null
     element.addEventListener(marker, 'mouseover', function () {
       timeoutId = setTimeout(handler, timeout)
@@ -37,21 +37,5 @@ export default class ApplicationController extends Controller {
     element.addEventListener(marker, 'mouseout', function () {
       clearTimeout(timeoutId)
     })
-  }
-
-  get ourUrl () {
-    // This requires the mensaTableOutlet
-    let turboFrame = this.mensaTableOutlet?.turboFrameTarget
-    if(!turboFrame) {
-      turboFrame = this.turboFrameTarget
-    }
-    let url
-
-    if (turboFrame && turboFrame.getAttribute('src')) {
-      url = new URL(turboFrame.getAttribute('src'))
-    } else {
-      url = new URL(window.location.href)
-    }
-    return url
   }
 }

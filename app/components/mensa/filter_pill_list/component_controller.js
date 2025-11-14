@@ -1,6 +1,6 @@
 import ApplicationController from 'mensa/controllers/application_controller'
 
-export default class FilterListComponentController extends ApplicationController {
+export default class FilterPillListComponentController extends ApplicationController {
   static targets = [
     'list',
   ]

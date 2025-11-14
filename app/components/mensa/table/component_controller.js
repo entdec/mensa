@@ -2,7 +2,7 @@ import ApplicationController from "mensa/controllers/application_controller";
 import { get } from "@rails/request.js";
 
 export default class TableComponentController extends ApplicationController {
-  static outlets = ["mensa-filter"]
+  static outlets = ["mensa-filter-pill"]
 
   static targets = [
     "controlBar", // Bar with buttons
@@ -79,5 +79,16 @@ export default class TableComponentController extends ApplicationController {
     let url = this.ourUrl;
     url.pathname += ".xlsx";
     get(url, {}).then(() => { });
+  }
+
+  get ourUrl() {
+    let url
+
+    if (this.turboFrameTarget?.getAttribute('src')) {
+      url = new URL(this.turboFrameTarget.getAttribute('src'))
+    } else {
+      url = new URL(window.location.href)
+    }
+    return url
   }
 }

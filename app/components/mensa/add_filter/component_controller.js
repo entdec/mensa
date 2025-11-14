@@ -31,7 +31,7 @@ export default class AddFilterComponentController extends ApplicationController 
 
   // Called when you selected a column
   openValuePopover(event) {
-    let url = this.ourUrl
+    let url = this.mensaTableOutlet.ourUrl
     url.pathname += `/filters/${this.selectedFilterColumn}`
     url.searchParams.append('target', this.valuePopoverTarget.id)
 
@@ -63,10 +63,10 @@ export default class AddFilterComponentController extends ApplicationController 
   filterValueEntered(event) {
     this.valuePopoverTarget.classList.add('hidden')
 
-    let url = this.ourUrl
+    let url = this.mensaTableOutlet.ourUrl
 
     let filters = url.searchParams.get('filters') || {}
-    this.mensaTableOutlet.mensaFilterOutlets.forEach((filterOutlet) => {
+    this.mensaTableOutlet.mensaFilterPillOutlets.forEach((filterOutlet) => {
       url.searchParams.append(`filters[${filterOutlet.columnNameValue}][value]`, filterOutlet.valueValue)
       url.searchParams.append(`filters[${filterOutlet.columnNameValue}][operator]`, filterOutlet.operatorValue)
     })

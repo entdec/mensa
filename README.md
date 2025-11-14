@@ -145,7 +145,9 @@ Using the following in your view will render Mensa::Table::Component
 
 The Mensa::Table::Component will render:
 - Mensa::Search::Component
-- Mensa::FilterList::Component
+- Mensa::FilterPillList::Component
+  - Mensa::FilterPill::Component
+  - Mensa::AddFilter::Component
 - Mensa::Views::Component
   - renders a views list
   - Mensa::ControlBar::Component
