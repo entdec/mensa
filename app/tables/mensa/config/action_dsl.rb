@@ -4,7 +4,7 @@ module Mensa::Config
   class ActionDsl
     include DslLogic
 
-    option :title, default: ->() { name }
+    option :title, default: -> { name }
     option :icon
     option :show, default: ->(record) { true }
     option :link

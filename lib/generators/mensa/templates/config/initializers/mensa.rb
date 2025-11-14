@@ -18,6 +18,6 @@ Mensa.setup do |config|
     control_bar_compress: "fa-solid fa-compress",
     control_bar_export: "fa-solid fa-file-export",
     search: "fa-solid fa-magnifying-glass",
-    filters_add_filter: "fa-solid fa-plus",
+    filters_add_filter: "fa-solid fa-plus"
   }
 end

@@ -3,7 +3,7 @@ class User < ApplicationRecord
 
   class << self
     def ROLES
-      [ 'admin', 'user', 'guest' ]
+      ["admin", "user", "guest"]
     end
   end
 end

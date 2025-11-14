@@ -41,7 +41,7 @@ module Mensa
       control_bar_compress: "fa-solid fa-compress",
       control_bar_export: "fa-solid fa-file-export",
       search: "fa-solid fa-magnifying-glass",
-      filters_add_filter: "fa-solid fa-plus",
+      filters_add_filter: "fa-solid fa-plus"
     }
     # PRO
     # option :icons, default: {
@@ -81,11 +81,10 @@ module Mensa
       yield(config)
     end
 
-    alias setup configure
+    alias_method :setup, :configure
 
     def reset_config!
       @config = Configuration.new
     end
   end
-
 end

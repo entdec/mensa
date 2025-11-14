@@ -41,8 +41,6 @@ module Mensa
         "#{config[:attribute]} AS #{name}"
       elsif table.model.column_names.include? name.to_s
         name.to_s
-      else
-        nil
       end
     end
 
@@ -53,8 +51,6 @@ module Mensa
         config[:attribute]
       elsif table.model.column_names.include? name.to_s
         name.to_s
-      else
-        nil
       end
     end
 

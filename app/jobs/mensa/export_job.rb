@@ -16,28 +16,27 @@ module Mensa
       context = Mensa.config.callbacks[:export_started].call(user, table_name)
 
       styles = []
-      default_style = { b: true, bg_color: '3B82F6', fg_color: 'FFFFFF', border: { style: :thin, color: '000000' }, sz: 8,
-                        alignment: { vertical: :bottom, horizontal: :left } }
+      default_style = {b: true, bg_color: "3B82F6", fg_color: "FFFFFF", border: {style: :thin, color: "000000"}, sz: 8,
+                       alignment: {vertical: :bottom, horizontal: :left}}
 
       p = Axlsx::Package.new
       p.use_shared_strings = true
 
       wb = p.workbook
 
-      wrap_text = wb.styles.add_style({ format_code: "@", alignment: { horizontal: :left, vertical: :top, wrap_text: true } })
-      nowrap_text = wb.styles.add_style({ format_code: "@", alignment: { horizontal: :left, vertical: :top, wrap_text: false } })
-      number_format = wb.styles.add_style format_code: '#'
-      datetime_format = wb.styles.add_style format_code: "dddd, d mmmm yyyy hh:mm:ss"
-      date_format = wb.styles.add_style format_code: "dddd, d mmmm yyyy"
+      wb.styles.add_style({format_code: "@", alignment: {horizontal: :left, vertical: :top, wrap_text: true}})
+      nowrap_text = wb.styles.add_style({format_code: "@", alignment: {horizontal: :left, vertical: :top, wrap_text: false}})
+      wb.styles.add_style format_code: "#"
+      wb.styles.add_style format_code: "dddd, d mmmm yyyy hh:mm:ss"
+      wb.styles.add_style format_code: "dddd, d mmmm yyyy"
 
       # custom_styles = ActionTable.config.format_config.each_with_object({}) { |(key, value), hash| hash[key] = value[:xlsx_style] if value.key?(:xlsx_style) }
-      custom_style = {}
 
       wb.add_worksheet(name: table_name.first(31)) do |sheet|
         column_widths = []
         # TODO: Separate display columns for export?
         table.display_columns.map.with_index do |column, index|
-          styles[index] = sheet.styles.add_style(default_style) #.merge(column.export_style || {}))
+          styles[index] = sheet.styles.add_style(default_style) # .merge(column.export_style || {}))
           # width = column.export_style.delete(:width)
           # column_widths[index] = width if width
         end
@@ -99,8 +98,8 @@ module Mensa
       end
       stringio.rewind
 
-      attachment = { io: stringio,
-                     content_type: 'application/zip', filename: "#{base_filename}.zip" }
+      attachment = {io: stringio,
+                    content_type: "application/zip", filename: "#{base_filename}.zip"}
       if password.present?
         attachment[:password] = password
       end
