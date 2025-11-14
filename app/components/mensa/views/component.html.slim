@@ -9,7 +9,7 @@
     nav.flex.justify-between[aria-label="Tabs"]
       .flex.space-x-2.overflow-x-auto.whitespace-nowrap.scroll-p-0
         - table.all_views.each.with_index do |view, index|
-          = link_to(table.path(table_view_id: view.id, turbo_frame_id: table.table_id), "data-turbo-frame": table.table_id, class: "view #{(view.id == table.table_view&.id || view.id == :all && table.table_view.blank?) ? 'selected' : ''}", data: {"mensa-views-target": "view", action: "mensa-views#select", "tippy-content": view.description}) do
+          = link_to(table.path(table_view_id: view.id, turbo_frame_id: table.table_id), "data-turbo-frame": table.table_id, class: "view #{(view.id == table.table_view&.id || view.id == :default && table.table_view.blank?) ? 'selected' : ''}", data: {"mensa-views-target": "view", action: "mensa-views#select", "tippy-content": view.description}) do
             = view.name
 
         - if table.supports_custom_views?

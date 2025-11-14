@@ -19,6 +19,7 @@ class UsersTable < Mensa::Base
       attribute "customers.name"
       render do
         html do |user|
+          # You should not use customer_path(user.customer) here, that causes additional queries.
           link_to user.customer_name, customer_path(user.customer_id) if user.customer_id
         end
       end
