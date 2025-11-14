@@ -3,9 +3,12 @@
 module Mensa
   class Filter
     include ConfigReaders
-    attr_reader :column, :config, :table
 
-    config_reader :operator
+    defined_by Mensa::Config::FilterDsl
+
+    attr_reader :column, :table
+
+    config_reader :operator, cast: :to_sym
     config_reader :value
     config_reader :scope
 
@@ -29,32 +32,26 @@ module Mensa
       "#{column.human_name}: #{value}"
     end
 
-    def filter_scope(to_be_filtered_scope)
+    def filter_scope(record_scope)
       if scope
-        to_be_filtered_scope.instance_exec(normalize(value), &scope)
+        record_scope.instance_exec(normalize(value), &scope)
       else
         case operator
         when :matches
-          to_be_filtered_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
+          record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         when :equals
-          to_be_filtered_scope.where(column.attribute_for_condition => normalize(value))
+          record_scope.where(column.attribute_for_condition => normalize(value))
         else
           # Ignore unknown operators
-          to_be_filtered_scope
+          record_scope
         end
       end
     end
 
     private
 
-    class << self
-      def definition(&)
-        @definition ||= Mensa::Config::FilterDsl.new(self.name, &).config
-      end
-    end
-
     def normalize(query)
-      query.to_s.gsub(/\s(?![\&\!\|])/, '\\\\ ')
+      query.to_s.gsub(/\s(?![&!|])/, '\\\\ ')
     end
   end
 end

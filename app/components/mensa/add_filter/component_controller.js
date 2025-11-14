@@ -72,6 +72,7 @@ export default class AddFilterComponentController extends ApplicationController 
     })
     // FIXME: Needs better way of getting value
     url.searchParams.append(`filters[${this.selectedFilterColumn}][value]`, event.target.value)
+    url.searchParams.append(`filters[${this.selectedFilterColumn}][operator]`, 'equals')
 
     get(url, {
       responseKind: 'turbo-stream'

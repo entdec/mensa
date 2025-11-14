@@ -66,7 +66,7 @@ module Mensa
     def filter
       return unless filter?
 
-      @filter ||= Mensa::Filter.new(column: self, config: table.config.dig(:filters, name) || {}, table: table)
+      @filter ||= Mensa::Filter.new(column: self, config: table.config.dig(:columns, name, :filter) || {}, table: table)
     end
 
     def human_name

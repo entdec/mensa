@@ -1,3 +1,3 @@
 Mensa.setup do |config|
-  config.base_controller = 'ActionController::Base'
+  config.base_controller = "::ApplicationController"
 end

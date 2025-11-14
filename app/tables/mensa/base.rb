@@ -66,6 +66,11 @@ module Mensa
       columns.any?(&:filter?)
     end
 
+    # Returns the active filters
+    def active_filters
+      (config[:filters] || {}).map { |column_name, filter_config| Mensa::Filter.new(column: column(column_name), config: filter_config, table: self) }
+    end
+
     def actions?
       config[:actions].present?
     end
@@ -92,10 +97,6 @@ module Mensa
       views = system_views
       views += TableView.where(table_name: name).where(user: [nil, Current.user])
       views
-    end
-
-    def active_filters
-      (config[:filters] || {}).map { |column_name, filter_config| Mensa::Filter.new(column: column(column_name), config: filter_config, table: self) }
     end
 
     def table_id

@@ -29,6 +29,7 @@ Optionally:
 Todo/Fixme:
 
 - [ ] Search only works on table text columns
+- [ ] Clicking on table to go to page two, click on row link (go to a customer/user) and then click back. Pagination stops working.
 
 ## Usage
 

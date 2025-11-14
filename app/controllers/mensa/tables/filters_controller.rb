@@ -5,7 +5,8 @@ module Mensa
 
       class Filter
         include ActiveModel::Model
-        attr_accessor :value
+
+        attr_accessor :column, :value
       end
 
       def index

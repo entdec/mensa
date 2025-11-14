@@ -1,7 +1,5 @@
 module Mensa
-  class TablesController < ::ApplicationController
-    layout :decide_layout
-
+  class TablesController < ApplicationController
     def show
       @table = Mensa.for_name(params[:id])
 
@@ -21,17 +19,13 @@ module Mensa
       @table.original_view_context = helpers
 
       respond_to do |format|
-        format.turbo_stream
+        format.turbo_stream # Used for filterering
         format.html
         format.xlsx do
           Mensa::ExportJob.perform_later(current_user, params[:id])
           head 200
         end
       end
-    end
-
-    def decide_layout
-      false if params[:turbo_frame_id]
     end
   end
 end
