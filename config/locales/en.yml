@@ -8,4 +8,4 @@ en:
         cancel: Cancel
         save: Save
     views:
-      all: All
+      default: All

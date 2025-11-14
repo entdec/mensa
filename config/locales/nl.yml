@@ -8,4 +8,4 @@ nl:
         cancel: Annuleer
         save: Bewaar
     views:
-      all: Alles
+      default: Alles
