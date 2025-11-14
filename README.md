@@ -29,7 +29,6 @@ Optionally:
 Todo/Fixme:
 
 - [ ] Search only works on table text columns
-- [ ] Clicking on table to go to page two, click on row link (go to a customer/user) and then click back. Pagination stops working.
 
 ## Usage
 
@@ -71,7 +70,7 @@ class UserTable < ApplicationTable
     link { |user| edit_user_path(user) }
     supports_views true # This table supports custom views
     show_header true
-    view_columns_sorting false # Disabled for now
+    view_columns_ordering false # Disabled for now
     view_condensed false # Default false
     view_condensed_toggle true # Whether to show the toggle, default true
 

@@ -9,8 +9,8 @@ module Mensa
         @table = table
       end
 
-      def view_columns_sorting?
-        table.view_columns_sorting?
+      def view_columns_ordering?
+        table.view_columns_ordering?
       end
 
       def view_condensed_toggle?

@@ -17,7 +17,7 @@ module Mensa
     config_reader :supports_filters?
     config_reader :view_condensed?
     config_reader :view_condensed_toggle?
-    config_reader :view_columns_sorting?
+    config_reader :view_columns_ordering?
     config_reader :show_header?
     config_reader :exportable?
     config_reader :export_with_password?
@@ -57,7 +57,7 @@ module Mensa
     end
 
     def system_views
-      [Mensa::SystemView.new(:all, config: {name: I18n.t("mensa.views.all")}, table: self)] +
+      [Mensa::SystemView.new(:default, config: {name: I18n.t("mensa.views.all")}, table: self)] +
         (config[:views] || {}).keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
     end
 

@@ -76,8 +76,11 @@ module Mensa::Config
     option :supports_custom_views, default: false
     option :supports_filters, default: true
     option :show_header, default: true
-    option :view_columns_sorting, default: true
+    # Whether the table allows to change column ordering
+    option :view_columns_ordering, default: true
+    # Whether to show a condensed view by default
     option :view_condensed, default: false
+    # Whether to show the toggle for condensed view
     option :view_condensed_toggle, default: true
 
     option :view, dsl_hash: Mensa::Config::ViewDsl

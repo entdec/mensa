@@ -5,7 +5,7 @@
         i class=Mensa.config.icons[:control_bar_search]
       - if table.supports_filters? && table.filters?
         i class=Mensa.config.icons[:control_bar_filter]
-    /- if view_columns_sorting?
+    /- if view_columns_ordering?
       button.cursor-pointer.w-6.h-full.text-gray-400
         i class=Mensa.config.icons[:control_bar_edit]
     - if view_condensed_toggle?
