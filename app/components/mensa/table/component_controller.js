@@ -20,6 +20,8 @@ export default class TableComponentController extends ApplicationController {
 
   connect() {
     super.connect();
+
+    this.turboFrameTarget.removeAttribute('loading');
   }
 
   openFiltersAndSearch(event) {
