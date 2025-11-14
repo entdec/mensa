@@ -21,6 +21,7 @@ export default class TableComponentController extends ApplicationController {
   connect() {
     super.connect();
 
+    // FIXME: Workaround for https://github.com/hotwired/turbo/issues/886
     this.turboFrameTarget.removeAttribute('loading');
   }
 
