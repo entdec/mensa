@@ -4,13 +4,14 @@ import { get } from '@rails/request.js'
 
 export default class AddFilterComponentController extends ApplicationController {
   static outlets = [
-    "mensa-table"
+    "mensa-filter-pill-list"
   ]
   static targets = [
     'filterList',     // all filters
     'filterListItem', // individual filters
     'description',    // contains the filter description in the "tab"
-    'valuePopover'    // contains the filter-value
+    'valuePopover',   // contains the filter-value
+    'value'
   ]
   static values = {
     supportsViews: Boolean
@@ -21,7 +22,7 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
     // this.filterValueEntered = this.filterValueEntered.bind(this)
-    this.selectedFilterColumn = null
+    this._selectedFilterColumn = null
   }
 
   // Called when you click add-filter
@@ -31,7 +32,7 @@ export default class AddFilterComponentController extends ApplicationController 
 
   // Called when you selected a column
   openValuePopover(event) {
-    let url = this.mensaTableOutlet.ourUrl
+    let url = this.mensaFilterPillListOutlet.ourUrl
     url.pathname += `/filters/${this.selectedFilterColumn}`
     url.searchParams.append('target', this.valuePopoverTarget.id)
 
@@ -63,27 +64,23 @@ export default class AddFilterComponentController extends ApplicationController 
   filterValueEntered(event) {
     this.valuePopoverTarget.classList.add('hidden')
 
-    let url = this.mensaTableOutlet.ourUrl
-
-    let filters = url.searchParams.get('filters') || {}
-    this.mensaTableOutlet.mensaFilterPillOutlets.forEach((filterOutlet) => {
-      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][value]`, filterOutlet.valueValue)
-      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][operator]`, filterOutlet.operatorValue)
-    })
-    // FIXME: Needs better way of getting value
-    url.searchParams.append(`filters[${this.selectedFilterColumn}][value]`, event.target.value)
-    url.searchParams.append(`filters[${this.selectedFilterColumn}][operator]`, 'equals')
-
-    get(url, {
-      responseKind: 'turbo-stream'
-    }).then(() => {
-      // FIXME: There should be a better way to do this, possibly using
-      // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
-      setTimeout(() => {
-        this.mensaTableOutlet.filterListTarget.classList.remove('hidden')
-      }, 50)
-    })
+    this.mensaFilterPillListOutlet.refreshFilters()
     event.preventDefault()
     return false
+  }
+
+  reset(event) {
+    this.descriptionTarget.innerText = 'Add filter'
+    this.selectedFilterColumn = null
+    this.valuePopoverTarget.classList.add('hidden')
+  }
+
+
+  get selectedFilterColumn() {
+    return this._selectedFilterColumn
+  }
+
+  set selectedFilterColumn(value) {
+    this._selectedFilterColumn = value
   }
 }

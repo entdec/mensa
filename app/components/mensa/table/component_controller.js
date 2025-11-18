@@ -2,8 +2,6 @@ import ApplicationController from "mensa/controllers/application_controller";
 import { get } from "@rails/request.js";
 
 export default class TableComponentController extends ApplicationController {
-  static outlets = ["mensa-filter-pill"]
-
   static targets = [
     "controlBar", // Bar with buttons
     "condenseExpandIcon", // Icon

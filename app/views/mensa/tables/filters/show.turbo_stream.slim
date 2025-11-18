@@ -1,5 +1,9 @@
 = turbo_stream.update params[:target] do
   = sts.form_for(Mensa::Tables::FiltersController::Filter.new, url: '#') do |f|
-    = f.input :value, collection: @column.filter.collection, input_html: { "data-action"=> "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered", autofocus: "autofocus" }, label: @column.human_name
-  a.sts-table__add_filter__popover_container__clear
-    | Clear
+    = f.input :value, collection: @column.filter.collection, input_html: { "data-action"=> "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered", autofocus: "autofocus", "data-mensa-add-filter-target" => "value" }, label: @column.human_name
+  button.text-xs.ring-gray-300.ring-inset.ring-1.rounded.px-1.py-0.5 Esc
+  span.text-xs.pl-1.pr-2
+    | reset
+  button.text-xs.ring-gray-300.ring-inset.ring-1.rounded.px-1.py-0.5 Enter
+  span.text-xs.pl-1.pr-2
+    | submit
