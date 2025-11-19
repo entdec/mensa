@@ -25,6 +25,13 @@ module Mensa
           format.html
         end
       end
+
+      def new
+        @table = Mensa.for_name(params[:table_id], {})
+        respond_to do |format|
+          format.html
+        end
+      end
     end
   end
 end

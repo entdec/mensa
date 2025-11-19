@@ -9,3 +9,7 @@ en:
         save: Save
     views:
       default: All
+    tables:
+      filters:
+        new:
+          add_filter: Add filter

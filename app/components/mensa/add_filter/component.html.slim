@@ -1,16 +1,7 @@
 .sts-table__add_filter data-controller="mensa-add-filter" data-mensa-add-filter-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{table.table_id}" 
-  button.relative.w-full.cursor-default.rounded-md.bg-white.dark:bg-gray-800.py-1.5.pl-3.pr-6.text-left.text-gray-400.dark:text-gray-400.shadow-sm.border.border-dashed.focus:outline-none.focus:ring-2.focus:ring-primary-600.sm:text-sm.sm:leading-6 type="button" data-action="mensa-add-filter#toggle"
-    span.mr-2.block.truncate data-mensa-add-filter-target="description"
-      = t('.add_filter')
-    span.pointer-events-none.absolute.inset-y-0.right-0.flex.items-center.pr-2
-      div class=Mensa.config.icons[:filters_add_filter]
-
-  ul.hidden.absolute.z-10.mt-1.max-h-60.w-64.overflow-auto.rounded-md.bg-white.dark:bg-gray-800.py-1.text-base.shadow-lg.ring-1.ring-black.ring-opacity-5.focus:outline-none.sm:text-sm data-mensa-add-filter-target="filterList"
-    - table.columns.select(&:filter?).each do |column|
-      li#listbox-option-0.text-gray-900.dark:text-gray-400.hover:bg-gray-100.relative.cursor-default.select-none.py-2.pl-8.pr-4 data-mensa-add-filter-target="filterListItem" data-action="click->mensa-add-filter#selectColumn" data-filter-column-name=column.name
-        .label.font-normal.block.truncate
-          = column.human_name
-        .check.hidden.text-primary-600.absolute.inset-y-0.left-0.flex.items-center.pl-3
-          .fal.fa-check
-
-  div.hidden.sts-table__add_filter__popover_container data-mensa-add-filter-target="valuePopover" id="mensa-filter-pill-value-#{SecureRandom.base36}"
+  turbo-frame id="add-filter-#{table.table_id}" target="_self" 
+    = link_to helpers.mensa.new_table_filter_path(table_id: table.name, target: "add-filter-#{table.table_id}"), class:"mt-0 button relative cursor-default rounded-md bg-white dark:bg-gray-800 py-1.5 pl-3 pr-6 text-left text-gray-400 dark:text-gray-400 shadow-sm border border-dashed focus:outline-none focus:ring-2 focus:ring-primary-600 sm:text-sm sm:leading-6" do
+      span.mr-2.block.truncate data-mensa-add-filter-target="description"
+        = t('.add_filter')
+      span.pointer-events-none.absolute.inset-y-0.right-0.flex.items-center.pr-2
+        div class=Mensa.config.icons[:filters_add_filter]
