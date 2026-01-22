@@ -11,7 +11,7 @@ PATH
       tailwindcss-rails (~> 3.3)
       textacular (>= 5)
       turbo-rails
-      view_component (~> 3.11)
+      view_component (>= 3.11)
 
 GEM
   remote: https://rubygems.org/

@@ -18,6 +18,10 @@ module Mensa
       @table = table
     end
 
+    def collection?
+      config&.key?(:collection)
+    end
+
     def collection
       return unless config&.key?(:collection)
 

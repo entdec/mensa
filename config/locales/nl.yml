@@ -9,3 +9,7 @@ nl:
         save: Bewaar
     views:
       default: Alles
+    tables:
+      filters:
+        new:
+          add_filter: Filter toevoegen        

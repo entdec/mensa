@@ -3,8 +3,8 @@ import { application } from "mensa/controllers/application"
 // import AddFilterComponentController from 'components/add_filter/component_controller';
 // application.register('mensa-add-filter', AddFilterComponentController)
 
-import AddFilterComponentController from "mensa/components/add_filter/component_controller";
-application.register("mensa-add-filter", AddFilterComponentController);
+// import AddFilterComponentController from "mensa/components/add_filter/component_controller";
+// application.register("mensa-add-filter", AddFilterComponentController);
 
 import FilterPillComponentController from "mensa/components/filter_pill/component_controller";
 application.register("mensa-filter-pill", FilterPillComponentController);
