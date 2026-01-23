@@ -4,7 +4,7 @@ require "pry"
 class FilterTest < ActiveSupport::TestCase
   test "we can initialize a filter" do
     t = CustomerTable.new({filters: {country: {value: "NL"}}})
-    f = t.column(:country).filter
+    f = t.active_filter(:country)
     assert_equal :country, f.column.name
     assert_equal "NL", f.value
     assert_equal :equals, f.operator
@@ -27,5 +27,12 @@ class FilterTest < ActiveSupport::TestCase
     t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
     assert t.filters?
     assert_equal 4, t.rows.size
+  end
+
+  test "we return filtered rows with not_equals operator" do
+    t = CustomerTable.new({filters: {country: {value: "NL", operator: :not_equals}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    assert t.filters?
+    assert_equal 20, t.rows.size
   end
 end

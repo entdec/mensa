@@ -71,6 +71,14 @@ module Mensa
       (config[:filters] || {}).map { |column_name, filter_config| Mensa::Filter.new(column: column(column_name), config: filter_config, table: self) }
     end
 
+    def active_filter(name)
+      active_filters.find { |f| f.column.name == name.to_sym }
+    end
+
+    def active_filters?
+      active_filters.any?
+    end
+
     def actions?
       config[:actions].present?
     end

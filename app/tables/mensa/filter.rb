@@ -33,7 +33,7 @@ module Mensa
     end
 
     def to_s
-      "#{column.human_name}: #{value}"
+      "#{column.human_name} #{operator_label} #{value}"
     end
 
     def filter_scope(record_scope)
@@ -45,6 +45,10 @@ module Mensa
           record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         when :equals
           record_scope.where(column.attribute_for_condition => normalize(value))
+        when :not_equals
+          record_scope.where.not(column.attribute_for_condition => normalize(value))
+        when :not_matches
+          record_scope.where.not("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         else
           # Ignore unknown operators
           record_scope
@@ -53,6 +57,21 @@ module Mensa
     end
 
     private
+
+    def operator_label
+      case operator
+      when :equals
+        "="
+      when :not_equals
+        "!="
+      when :matches
+        "~"
+      when :not_matches
+        "!~"
+      else
+        "="
+      end
+    end
 
     def normalize(query)
       query.to_s.gsub(/\s(?![&!|])/, '\\\\ ')
