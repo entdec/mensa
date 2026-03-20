@@ -55,4 +55,52 @@ class TableTest < ActiveSupport::TestCase
     assert_equal Proc, result.class
     assert_equal 1, result.arity
   end
+
+  test "it uses default order when no order params are given" do
+    t = TestWithDefaultOrderTable.new({})
+    result = t.send(:order_hash)
+    assert_equal({name: :desc}, result)
+  end
+
+  test "it reflects default order in sort_direction for default-ordered column" do
+    t = TestWithDefaultOrderTable.new({})
+    subject = t.column(:name)
+    assert_equal :desc, subject.sort_direction
+  end
+
+  test "it reflects no sort_direction for columns not in default order" do
+    t = TestWithDefaultOrderTable.new({})
+    assert_nil t.column(:first_name).sort_direction
+    assert_nil t.column(:last_name).sort_direction
+  end
+
+  test "it overrides default order when explicit order param is given" do
+    t = TestWithDefaultOrderTable.new({order: {first_name: :asc}})
+    result = t.send(:order_hash)
+    assert_equal({first_name: :asc}, result)
+  end
+
+  test "it merges explicit order on top of default order when calling order_hash with new params" do
+    t = TestWithDefaultOrderTable.new({})
+    result = t.send(:order_hash, {first_name: :asc})
+    assert_equal({name: :desc, first_name: :asc}, result)
+  end
+
+  test "it clears default order column when explicitly set to nil" do
+    t = TestWithDefaultOrderTable.new({})
+    result = t.send(:order_hash, {name: nil})
+    assert_equal({}, result)
+  end
+
+  test "it can change direction of default-ordered column" do
+    t = TestWithDefaultOrderTable.new({order: {name: :asc}})
+    result = t.send(:order_hash)
+    assert_equal({name: :asc}, result)
+  end
+
+  test "it reflects overridden order in sort_direction" do
+    t = TestWithDefaultOrderTable.new({order: {first_name: :asc}})
+    assert_equal :asc, t.column(:first_name).sort_direction
+    assert_nil t.column(:name).sort_direction
+  end
 end

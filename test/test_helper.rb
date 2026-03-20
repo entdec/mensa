@@ -38,6 +38,32 @@ class TestTable < Mensa::Base
   end
 end
 
+class TestWithDefaultOrderTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:last_name)
+    column(:name) do
+      attribute "CONCAT(first_name, last_name)"
+    end
+    column(:role) do
+      filter
+    end
+    column :customer_id do
+      internal true
+    end
+
+    link { |test| root_path }
+
+    order name: :desc
+
+    action :edit do
+      link { |test| root_path }
+    end
+  end
+end
+
 class CustomerTable < Mensa::Base
   definition do
     column(:name)
