@@ -10,26 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_12_143558) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_11_092335) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "customers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "country"
-    t.datetime "created_at", null: false
-    t.string "isin"
     t.string "name"
-    t.string "stock_symbol"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "stock_symbol"
+    t.string "country"
+    t.string "isin"
   end
 
   create_table "mensa_table_views", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.jsonb "config"
-    t.string "name"
     t.string "table_name"
-    t.datetime "updated_at", null: false
+    t.string "name"
+    t.jsonb "config"
     t.uuid "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "description"
     t.index ["config"], name: "index_mensa_table_views_on_config", using: :gin
     t.index ["table_name"], name: "index_mensa_table_views_on_table_name"
@@ -37,13 +37,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_12_143558) do
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.uuid "customer_id", null: false
-    t.string "email"
     t.string "first_name"
     t.string "last_name"
-    t.string "role"
+    t.string "email"
+    t.uuid "customer_id", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "role"
     t.index ["customer_id"], name: "index_users_on_customer_id"
   end
 
