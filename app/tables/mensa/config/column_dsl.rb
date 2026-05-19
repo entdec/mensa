@@ -19,5 +19,6 @@ module Mensa::Config
     option :visible, default: true
     option :render, dsl: Mensa::Config::RenderDsl
     option :filter, dsl: Mensa::Config::FilterDsl
+    option :sort_field
   end
 end
