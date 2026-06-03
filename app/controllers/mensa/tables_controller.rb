@@ -7,7 +7,7 @@ module Mensa
       if params[:table_view_id]
         @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
         @view ||= @table.system_views.find { |v| v.id == params[:table_view_id].to_sym }
-        config = @view&.config
+        config = @view&.config&.deep_transform_keys(&:to_sym)
       end
 
       config = config.merge(params.permit!.to_h)
@@ -21,7 +21,7 @@ module Mensa
       respond_to do |format|
         format.turbo_stream # Used for filterering
         format.html
-        format.xlsx do
+        format.csv do
           to = defined?(current_user) ? current_user : request&.session&.id
           Mensa::ExportJob.perform_later(to, params[:id])
           head :ok

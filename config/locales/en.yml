@@ -7,5 +7,11 @@ en:
       component:
         cancel: Cancel
         save: Save
+        save_view_title: Save view
+        save_view_subtitle: Save the current filters, ordering and search as a reusable view.
+        view_name: Name
+        view_name_placeholder: e.g. Active customers
+        view_description: Description
+        view_description_placeholder: Optional notes about this view
     views:
       default: All

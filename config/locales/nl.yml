@@ -7,5 +7,11 @@ nl:
       component:
         cancel: Annuleer
         save: Bewaar
+        save_view_title: Weergave bewaren
+        save_view_subtitle: Bewaar de huidige filters, sortering en zoekopdracht als een herbruikbare weergave.
+        view_name: Naam
+        view_name_placeholder: bijv. Actieve klanten
+        view_description: Omschrijving
+        view_description_placeholder: Optionele notities over deze weergave
     views:
       default: Alles

@@ -1,7 +1,6 @@
 require "pagy"
 require "satis"
 require "textacular"
-require "caxlsx_rails"
 require "slim"
 require "tailwindcss-rails"
 require "importmap-rails"

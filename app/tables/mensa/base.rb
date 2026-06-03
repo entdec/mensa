@@ -95,8 +95,16 @@ module Mensa
 
     def all_views
       views = system_views
-      views += TableView.where(table_name: name).where(user: [nil, Current.user])
+      views += TableView.where(table_name: name).where(user: [nil, current_user])
       views
+    end
+
+    # The user that owns custom views. Returns nil when the host application has
+    # no current user, in which case views cannot be saved.
+    def current_user
+      return Current.user if defined?(Current) && Current.respond_to?(:user)
+
+      nil
     end
 
     def table_id
