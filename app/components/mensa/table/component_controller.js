@@ -23,7 +23,7 @@ export default class TableComponentController extends ApplicationController {
 
         // The initial frame load is deferred so the filter pill list controller
         // can load it together with any persisted filters in a single request
-        // (see mensa-filter-pill-list#restoreFilters). This avoids a second
+        // (see mensa-filter-pill-list#restoreState). This avoids a second
         // backend call and a flash of unfiltered content. As a safety net, if
         // that controller never takes over, we load the frame ourselves.
         this.frameLoadFallback = setTimeout(() => this.loadFrame(), 100);
@@ -89,10 +89,10 @@ export default class TableComponentController extends ApplicationController {
     cancelFiltersAndSearch(event) {
         event.preventDefault();
 
-        // Discard all applied filters (and their persisted local storage copy)
-        // before collapsing the filter/search chrome.
+        // Discard all applied filters and the search query (and their persisted
+        // local storage copies) before collapsing the filter/search chrome.
         if (this.hasMensaFilterPillListOutlet) {
-            this.mensaFilterPillListOutlet.clearFilters();
+            this.mensaFilterPillListOutlet.clearFiltersAndSearch();
         }
 
         if (this.supportsViewsValue) {
