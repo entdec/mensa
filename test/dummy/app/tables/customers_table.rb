@@ -5,8 +5,17 @@ class CustomersTable < Mensa::Base
     model Customer
 
     column(:name)
+    column(:industry) do
+      filter do
+        collection -> { Customer.pluck(:industry).uniq.compact.sort }
+      end
+    end
     column(:stock_symbol)
-    column(:country)
+    column(:country) do
+      filter do
+        collection -> { Customer.pluck(:country).uniq }
+      end
+    end
     column(:isin)
     column(:updated_at)
 

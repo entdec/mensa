@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_11_092335) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_03_094554) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_11_092335) do
     t.string "stock_symbol"
     t.string "country"
     t.string "isin"
+    t.string "industry"
   end
 
   create_table "mensa_table_views", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
