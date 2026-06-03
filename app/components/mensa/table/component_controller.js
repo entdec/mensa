@@ -27,6 +27,16 @@ export default class TableComponentController extends ApplicationController {
         // backend call and a flash of unfiltered content. As a safety net, if
         // that controller never takes over, we load the frame ourselves.
         this.frameLoadFallback = setTimeout(() => this.loadFrame(), 100);
+
+        // Pagination, sorting and view tabs navigate the turbo-frame directly.
+        // Capture the resulting page/view so they can be persisted and restored.
+        if (this.hasTurboFrameTarget) {
+            this.captureNavigationHandler = () => this.captureNavigation();
+            this.turboFrameTarget.addEventListener(
+                "turbo:frame-load",
+                this.captureNavigationHandler,
+            );
+        }
     }
 
     disconnect() {
@@ -34,6 +44,25 @@ export default class TableComponentController extends ApplicationController {
             clearTimeout(this.frameLoadFallback);
             this.frameLoadFallback = null;
         }
+
+        if (this.hasTurboFrameTarget && this.captureNavigationHandler) {
+            this.turboFrameTarget.removeEventListener(
+                "turbo:frame-load",
+                this.captureNavigationHandler,
+            );
+        }
+    }
+
+    // Forwards the frame's current URL to the filter pill list so it can persist
+    // the page and selected view after a turbo-frame navigation.
+    captureNavigation() {
+        if (!this.hasMensaFilterPillListOutlet) return;
+        if (!this.hasTurboFrameTarget) return;
+
+        const src = this.turboFrameTarget.getAttribute("src");
+        if (!src) return;
+
+        this.mensaFilterPillListOutlet.captureNavigation(src);
     }
 
     // Triggers the turbo-frame's initial load. Idempotent: the frame is only
@@ -114,14 +143,47 @@ export default class TableComponentController extends ApplicationController {
     condenseExpand(event) {
         event.preventDefault();
 
-        if (this.viewTarget.classList.contains("mensa-table__condensed")) {
-            this.viewTarget.classList.remove("mensa-table__condensed");
-            this.condenseExpandIconTarget.classList.add("fa-compress");
-            this.condenseExpandIconTarget.classList.remove("fa-expand");
-        } else {
-            this.viewTarget.classList.add("mensa-table__condensed");
-            this.condenseExpandIconTarget.classList.remove("fa-compress");
-            this.condenseExpandIconTarget.classList.add("fa-expand");
+        if (!this.hasViewTarget) return;
+
+        const condensed = !this.viewTarget.classList.contains(
+            "mensa-table__condensed",
+        );
+        this.applyCondensed(condensed);
+
+        // Persist the condensed preference so it survives a page refresh. It is
+        // a client-only toggle (no server param), so the filter pill list just
+        // stores the flag for us.
+        if (this.hasMensaFilterPillListOutlet) {
+            this.mensaFilterPillListOutlet.persistCondensed(condensed);
+        }
+    }
+
+    // Applies the condensed/expanded state to the rendered view and its icon.
+    applyCondensed(condensed) {
+        if (!this.hasViewTarget) return;
+
+        this.viewTarget.classList.toggle("mensa-table__condensed", condensed);
+
+        if (this.hasCondenseExpandIconTarget) {
+            this.condenseExpandIconTarget.classList.toggle(
+                "fa-compress",
+                !condensed,
+            );
+            this.condenseExpandIconTarget.classList.toggle(
+                "fa-expand",
+                condensed,
+            );
+        }
+    }
+
+    // The view target is (re)rendered inside the turbo-frame on every load. When
+    // it appears, re-apply any persisted condensed preference.
+    viewTargetConnected() {
+        if (!this.hasMensaFilterPillListOutlet) return;
+
+        const condensed = this.mensaFilterPillListOutlet.loadCondensed();
+        if (condensed !== null) {
+            this.applyCondensed(condensed);
         }
     }
 

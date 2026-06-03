@@ -22,87 +22,174 @@ export default class FilterPillListComponentController extends ApplicationContro
     this.restoreState()
   }
 
-  // Called when a filter is added/changed. Persists the resulting filter set
-  // (together with the current search query) to local storage so it survives a
-  // page refresh, then applies it.
+  // Called when a filter is added/changed. Persists the resulting state and
+  // re-requests the table (keeping the active search and view, resetting paging).
   refreshFilters () {
-    const filters = this.collectFilters()
-    const query = this.loadQuery()
-
-    this.persistFilters(filters)
-    this.applyState(filters, query)
+    this.applyState({
+      filters: this.collectFilters(),
+      query: this.loadQuery(),
+      view: this.loadView(),
+      order: this.loadOrder(),
+      page: ''
+    })
   }
 
   // Called by the search controller when the query is submitted or reset. Keeps
-  // any active filters in place while updating the persisted query.
+  // any active filters and view in place while updating the query.
   setQuery (query) {
-    this.persistQuery(query)
-    this.refreshFilters()
+    this.applyState({
+      filters: this.collectFilters(),
+      query,
+      view: this.loadView(),
+      order: this.loadOrder(),
+      page: ''
+    })
+  }
+
+  // Called by the views controller when a view tab is selected. Selecting a view
+  // resets filters, search and paging (the view link itself reloads the data via
+  // the turbo-frame), so here we only persist the new state.
+  viewSelected (view) {
+    // The view link keeps the current sort order but resets filters/search/page.
+    this.persistState({
+      filters: {},
+      query: '',
+      view,
+      order: this.loadOrder(),
+      page: ''
+    })
+    this.setSearchField('')
+  }
+
+  // Called by the table controller after a turbo-frame navigation (pagination,
+  // sorting or a view tab). Only the page, view and sort order can change this
+  // way, so we capture them without touching the persisted filters/query.
+  captureNavigation (src) {
+    let url
+    try {
+      url = new URL(src, window.location.origin)
+    } catch (e) {
+      return
+    }
+
+    this.persistPage(url.searchParams.get('page') || '')
+    this.persistView(url.searchParams.get('table_view_id') || '')
+    this.persistOrder(this.parseOrderParams(url.searchParams))
   }
 
   // Removes every applied filter and the search query, forgets them in local
-  // storage and clears the search field, then reloads the table unfiltered.
+  // storage and clears the search field, then reloads the table (keeping the
+  // current view).
   clearFiltersAndSearch () {
-    this.persistFilters({})
-    this.persistQuery('')
-    this.setSearchField('')
+    const state = {
+      filters: {},
+      query: '',
+      view: this.loadView(),
+      order: this.loadOrder(),
+      page: ''
+    }
 
-    this.requestState({}, '')
+    this.persistState(state)
+    this.setSearchField('')
+    this.requestState(state)
   }
 
-  // Restores persisted filters and search query on initial page load.
+  // Restores persisted filters, search query, view and page on initial page
+  // load.
   //
   // The table controller defers the turbo-frame load so that, when there is
-  // persisted state, we can fetch the filtered/searched table together with its
-  // pills in a single request instead of first loading the unfiltered frame and
-  // then re-requesting. This means a single backend call and no flash of
-  // unfiltered content.
+  // persisted state, we can fetch the right table together with its pills in a
+  // single request instead of first loading the default frame and then
+  // re-requesting. This means a single backend call and no flash of content.
   restoreState () {
     const table = this.mensaTableOutlet
     const filters = this.loadFilters()
     const query = this.loadQuery()
-    const hasState = Object.keys(filters).length > 0 || query.length > 0
+    const view = this.loadView()
+    const page = this.loadPage()
+    const order = this.loadOrder()
+
+    const hasFilterOrSearch =
+            Object.keys(filters).length > 0 || query.length > 0
+    const hasState =
+            hasFilterOrSearch ||
+            view.length > 0 ||
+            page.length > 0 ||
+            Object.keys(order).length > 0
 
     // Filters already on screen (e.g. a view's defaults, or a previous restore
     // after this controller was re-rendered) mean there is nothing to restore.
     const alreadyRendered = Object.keys(this.renderedFilters()).length > 0
 
-    if (hasState && !alreadyRendered && !table.frameLoadHandled) {
-      // Claim the deferred frame load so the table controller does not also
-      // load the unfiltered src.
-      table.frameLoadHandled = true
-
-      // Restore the search field and put the table chrome into the filtering
-      // state (open search bar, hide the views tabs) so the restored state
-      // doesn't render above the views.
-      this.setSearchField(query)
-      if (typeof table.showFiltersAndSearch === 'function') {
-        table.showFiltersAndSearch()
+    if (!hasState || alreadyRendered || table.frameLoadHandled) {
+      // Nothing to restore: trigger the frame's normal load. This is idempotent,
+      // so re-renders after a restore (or the table controller's fallback) are a
+      // no-op.
+      if (typeof table.loadFrame === 'function') {
+        table.loadFrame()
       }
-
-      // Fetch the filtered/searched table and its pills in a single request.
-      this.applyState(filters, query)
       return
     }
 
-    // Nothing to restore: trigger the frame's normal load. This is idempotent,
-    // so re-renders after a restore (or the fallback in the table controller)
-    // are a no-op.
-    if (typeof table.loadFrame === 'function') {
-      table.loadFrame()
+    // Claim the deferred frame load so the table controller does not also load
+    // the default src.
+    table.frameLoadHandled = true
+
+    this.setSearchField(query)
+    this.setViewHighlight(view)
+
+    const state = { filters, query, view, page, order }
+
+    if (hasFilterOrSearch) {
+      // Open the filtering chrome so the restored filters/search don't render
+      // above the views, then fetch everything in a single request.
+      if (typeof table.showFiltersAndSearch === 'function') {
+        table.showFiltersAndSearch()
+      }
+      this.applyState(state)
+    } else {
+      // Only a view and/or page to restore: stay in "views" mode and request.
+      this.persistAndRequest(state)
     }
   }
 
-  // Builds the request URL from the given filters and query and fetches the
-  // table via turbo-stream, updating both the filter pills and the table view.
-  requestState (filters, query) {
+  // Persists the given state and fetches the table, revealing the filter bar
+  // once rendered (used for user-driven filter/search changes and restores).
+  applyState (state) {
+    this.persistAndRequest(state).then(() => {
+      // FIXME: There should be a better way to do this, possibly using
+      // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
+      setTimeout(() => {
+        this.mensaTableOutlet.filterListTarget.classList.remove(
+          'hidden'
+        )
+      }, 50)
+    })
+  }
+
+  persistAndRequest (state) {
+    this.persistState(state)
+    return this.requestState(state)
+  }
+
+  // Builds the request URL from the given state and fetches the table via
+  // turbo-stream, updating both the filter pills and the table view.
+  requestState (state) {
+    return get(this.buildUrl(state), {
+      responseKind: 'turbo-stream'
+    })
+  }
+
+  buildUrl (state) {
     const url = this.mensaTableOutlet.ourUrl
 
     this.removeFilterParams(url)
+    this.removeOrderParams(url)
     url.searchParams.delete('query')
     url.searchParams.delete('page')
+    url.searchParams.delete('table_view_id')
 
-    Object.entries(filters).forEach(([columnName, filter]) => {
+    Object.entries(state.filters || {}).forEach(([columnName, filter]) => {
       url.searchParams.append(
                 `filters[${columnName}][value]`,
                 filter.value
@@ -113,27 +200,15 @@ export default class FilterPillListComponentController extends ApplicationContro
       )
     })
 
-    if (query) {
-      url.searchParams.set('query', query)
-    }
-
-    return get(url, {
-      responseKind: 'turbo-stream'
+    Object.entries(state.order || {}).forEach(([columnName, direction]) => {
+      url.searchParams.set(`order[${columnName}]`, direction)
     })
-  }
 
-  // Same as requestState, but also reveals the filter bar once the response has
-  // rendered (used when applying state from a user action or a restore).
-  applyState (filters, query) {
-    this.requestState(filters, query).then(() => {
-      // FIXME: There should be a better way to do this, possibly using
-      // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
-      setTimeout(() => {
-        this.mensaTableOutlet.filterListTarget.classList.remove(
-          'hidden'
-        )
-      }, 50)
-    })
+    if (state.query) url.searchParams.set('query', state.query)
+    if (state.view) url.searchParams.set('table_view_id', state.view)
+    if (state.page) url.searchParams.set('page', state.page)
+
+    return url
   }
 
   // Strips any `filters[...]` query parameters from the given URL in place.
@@ -145,6 +220,29 @@ export default class FilterPillListComponentController extends ApplicationContro
       }
     })
     filterKeys.forEach((key) => url.searchParams.delete(key))
+  }
+
+  // Strips any `order[...]` query parameters from the given URL in place.
+  removeOrderParams (url) {
+    const orderKeys = []
+    url.searchParams.forEach((_value, key) => {
+      if (key.startsWith('order[')) {
+        orderKeys.push(key)
+      }
+    })
+    orderKeys.forEach((key) => url.searchParams.delete(key))
+  }
+
+  // Parses `order[column]=direction` params into a plain object.
+  parseOrderParams (searchParams) {
+    const order = {}
+    searchParams.forEach((value, key) => {
+      const match = key.match(/^order\[(.+)\]$/)
+      if (match && value) {
+        order[match[1]] = value
+      }
+    })
+    return order
   }
 
   // The full set of active filters: existing pills plus the one currently
@@ -204,6 +302,26 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
   }
 
+  // Reflects the persisted view in the views tabs (selected highlight). The
+  // views component lives outside the turbo-stream targets, so we update it here.
+  setViewHighlight (view) {
+    // No persisted view: leave the server-rendered default highlight intact.
+    if (!view) return
+
+    const root = this.element.closest('.mensa-table')
+    if (!root) return
+
+    root.querySelectorAll('[data-mensa-views-target="view"]').forEach(
+      (link) => {
+        const linkView = link.getAttribute('data-view-id') || ''
+        link.classList.toggle(
+          'selected',
+          view !== '' && linkView === view
+        )
+      }
+    )
+  }
+
   searchInputElement () {
     const root = this.element.closest('.mensa-table')
     return root
@@ -220,55 +338,117 @@ export default class FilterPillListComponentController extends ApplicationContro
       : null
   }
 
-  persistFilters (filters) {
-    if (!this.hasStorage) return
+  persistState (state) {
+    this.persistFilters(state.filters || {})
+    this.persistQuery(state.query || '')
+    this.persistView(state.view || '')
+    this.persistPage(state.page || '')
+    this.persistOrder(state.order || {})
+  }
 
-    try {
-      if (Object.keys(filters).length === 0) {
-        window.localStorage.removeItem(this.filtersStorageKey)
-      } else {
-        window.localStorage.setItem(
-          this.filtersStorageKey,
-          JSON.stringify(filters)
-        )
-      }
-    } catch (e) {
-      // localStorage may be unavailable (private mode / disabled); ignore.
-    }
+  persistFilters (filters) {
+    this.writeStorage(
+      this.filtersStorageKey,
+      Object.keys(filters).length > 0 ? JSON.stringify(filters) : null
+    )
   }
 
   loadFilters () {
-    if (!this.hasStorage) return {}
-
+    const raw = this.readStorage(this.filtersStorageKey)
+    if (!raw) return {}
     try {
-      const raw = window.localStorage.getItem(this.filtersStorageKey)
-      return raw ? JSON.parse(raw) : {}
+      return JSON.parse(raw)
     } catch (e) {
       return {}
     }
   }
 
   persistQuery (query) {
+    this.writeStorage(
+      this.searchStorageKey,
+      query && query.length > 0 ? query : null
+    )
+  }
+
+  loadQuery () {
+    return this.readStorage(this.searchStorageKey) || ''
+  }
+
+  persistView (view) {
+    this.writeStorage(
+      this.viewStorageKey,
+      view && view.length > 0 ? view : null
+    )
+  }
+
+  loadView () {
+    return this.readStorage(this.viewStorageKey) || ''
+  }
+
+  persistPage (page) {
+    // Page 1 is the default, so there is nothing worth persisting.
+    this.writeStorage(
+      this.pageStorageKey,
+      page && page !== '1' ? page : null
+    )
+  }
+
+  loadPage () {
+    return this.readStorage(this.pageStorageKey) || ''
+  }
+
+  persistOrder (order) {
+    this.writeStorage(
+      this.orderStorageKey,
+      order && Object.keys(order).length > 0
+        ? JSON.stringify(order)
+        : null
+    )
+  }
+
+  loadOrder () {
+    const raw = this.readStorage(this.orderStorageKey)
+    if (!raw) return {}
+    try {
+      return JSON.parse(raw)
+    } catch (e) {
+      return {}
+    }
+  }
+
+  // The condensed view is a client-side toggle (no server param), so it is
+  // persisted on its own and re-applied by the table controller after render.
+  persistCondensed (condensed) {
+    this.writeStorage(this.condensedStorageKey, condensed ? '1' : '0')
+  }
+
+  loadCondensed () {
+    const raw = this.readStorage(this.condensedStorageKey)
+    if (raw === null) return null
+    return raw === '1'
+  }
+
+  writeStorage (key, value) {
     if (!this.hasStorage) return
 
     try {
-      if (query && query.length > 0) {
-        window.localStorage.setItem(this.searchStorageKey, query)
+      if (value === null) {
+        window.localStorage.removeItem(key)
       } else {
-        window.localStorage.removeItem(this.searchStorageKey)
+        window.localStorage.setItem(key, value)
       }
     } catch (e) {
       // localStorage may be unavailable (private mode / disabled); ignore.
     }
   }
 
-  loadQuery () {
-    if (!this.hasStorage) return ''
+  readStorage (key) {
+    if (!this.hasStorage) return null
 
     try {
-      return window.localStorage.getItem(this.searchStorageKey) || ''
+      return window.localStorage.getItem(key)
     } catch (e) {
-      return ''
+      return null
     }
   }
 
@@ -286,6 +466,22 @@ export default class FilterPillListComponentController extends ApplicationContro
 
   get searchStorageKey () {
     return `mensa:search:${this.tableNameValue}`
+  }
+
+  get viewStorageKey () {
+    return `mensa:view:${this.tableNameValue}`
+  }
+
+  get pageStorageKey () {
+    return `mensa:page:${this.tableNameValue}`
+  }
+
+  get orderStorageKey () {
+    return `mensa:order:${this.tableNameValue}`
+  }
+
+  get condensedStorageKey () {
+    return `mensa:condensed:${this.tableNameValue}`
   }
 
   get ourUrl () {
