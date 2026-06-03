@@ -22,7 +22,8 @@ module Mensa
         format.turbo_stream # Used for filterering
         format.html
         format.xlsx do
-          Mensa::ExportJob.perform_later(current_user, params[:id])
+          to = defined?(current_user) ? current_user : request&.session&.id
+          Mensa::ExportJob.perform_later(to, params[:id])
           head :ok
         end
       end

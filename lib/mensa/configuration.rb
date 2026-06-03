@@ -59,9 +59,9 @@ module Mensa
     option :callbacks, default: {
       # Callback is called when the export is started,
       # the return value is passed as context to the export_complete callback
-      export_started: lambda do |user_id, table_name|
+      export_started: lambda do |to, table_name|
       end,
-      export_complete: lambda do |user_id, table_name, context, attachment|
+      export_complete: lambda do |to, table_name, context, attachment|
       end
     }
 

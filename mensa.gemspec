@@ -29,7 +29,6 @@ Gem::Specification.new do |spec|
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
 
-  spec.add_dependency "caxlsx_rails", "~> 0"
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "pagy", ">=43"
   spec.add_dependency "textacular", ">=5"
