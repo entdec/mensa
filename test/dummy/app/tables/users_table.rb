@@ -34,9 +34,17 @@ class UsersTable < Mensa::Base
 
     supports_views true
 
+    # Todo:
     # view :default do
     #   name "All Users"
     # end
+    view :users do
+      name "Users"
+      filter :role do
+        operator :equals
+        value "user"
+      end
+    end
   end
 
   private
