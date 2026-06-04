@@ -2,6 +2,6 @@
   .mensa-table__add_filter__popover_container__heading
     = @column.human_name
   = form_for(Mensa::Tables::FiltersController::Filter.new, url: '#') do |f|
-    = f.select :value, @column.filter.collection, {include_blank: true}, data: { action: "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered change->mensa-add-filter#filterValueEntered", autofocus: "autofocus", "mensa-add-filter-target" => "value" }
+    = f.select :value, @column.filter.collection, {include_blank: params[:value].blank?, selected: params[:value]}, data: { action: "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered change->mensa-add-filter#filterValueEntered", autofocus: "autofocus", "mensa-add-filter-target" => "value" }
   a.mensa-table__add_filter__popover_container__clear href="#" data-action="click->mensa-add-filter#reset"
     | Clear
