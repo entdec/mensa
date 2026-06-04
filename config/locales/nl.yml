@@ -5,6 +5,8 @@ nl:
         add_filter: Filter toevoegen
     search:
       component:
+        search: Zoek
+        search_in: Zoek in %{view}
         cancel: Annuleer
         save: Bewaar
         save_view_title: Weergave bewaren

@@ -68,6 +68,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             page: "",
         });
         this.setSearchField("");
+        this.updateSearchPlaceholder();
     }
 
     // Called by the table controller after a turbo-frame navigation (pagination,
@@ -329,6 +330,36 @@ export default class FilterPillListComponentController extends ApplicationContro
                 );
             },
         );
+
+        this.updateSearchPlaceholder();
+    }
+
+    // Reflects the selected view in the search field placeholder: "Search in
+    // <view>" for a named view, or the plain default placeholder when the
+    // default view is active. Reads the currently highlighted view link, so it
+    // must run after the selected class has been set.
+    updateSearchPlaceholder() {
+        const input = this.searchInputElement();
+        if (!input) return;
+
+        const root = this.element.closest(".mensa-table");
+        const selected = root
+            ? root.querySelector('[data-mensa-views-target="view"].selected')
+            : null;
+
+        const viewId = selected
+            ? selected.getAttribute("data-view-id") || ""
+            : "";
+        const isDefault = !selected || viewId === "" || viewId === "default";
+
+        if (isDefault) {
+            input.placeholder = input.dataset.defaultPlaceholder || "";
+        } else {
+            input.placeholder = (input.dataset.viewPlaceholder || "").replace(
+                "{view}",
+                selected.textContent.trim(),
+            );
+        }
     }
 
     searchInputElement() {

@@ -1,9 +1,11 @@
+- default_view_selected = table.table_view.blank? || table.table_view.id == :default
+- search_placeholder = default_view_selected ? t(".search", default: "Search") : t(".search_in", view: table.table_view.name, default: "Search in %{view}")
 .mensa-table__search data-mensa-table-target="search" data-controller="mensa-search" data-mensa-search-target="search" class="#{table.supports_views? ? 'hidden' : ''}" data-mensa-search-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{table.table_id}"
   .flex
     .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
       i.cursor-pointer class=Mensa.config.icons[:search]
     .flex-1
-      input.mensa-table__search__input type="text" name="search_query" placeholder=t("search", default: "Search") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query]
+      input.mensa-table__search__input type="text" name="search_query" placeholder=search_placeholder data-default-placeholder=t(".search", default: "Search") data-view-placeholder=t(".search_in", view: "{view}", default: "Search in {view}") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query]
     .flex.space-x-2.justify-right.pr-2
       button.mensa-table__search__button.hidden.pr-6 data-mensa-search-target="resetSearchButton" data-action="mensa-search#resetSearch"
         i.fas.fa-xmark

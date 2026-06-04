@@ -5,6 +5,8 @@ en:
         add_filter: Add filter
     search:
       component:
+        search: Search
+        search_in: Search in %{view}
         cancel: Cancel
         save: Save
         save_view_title: Save view
