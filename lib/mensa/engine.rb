@@ -27,8 +27,14 @@ module Mensa
 
     initializer "mensa.helper" do
       Rails.application.reloader.to_prepare do
+        ActiveSupport.on_load(:action_view) do
+          include Mensa::ApplicationHelper
+        end
         ActiveSupport.on_load(:action_controller) do
-          Satis.add_helper(:table, ::Mensa::Table::Component)
+          # Only do this if Satis is defined, this will be deprecated!
+          if defined?(Satis)
+            Satis.add_helper(:table, ::Mensa::Table::Component)
+          end
         end
       end
     end

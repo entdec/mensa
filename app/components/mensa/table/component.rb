@@ -10,6 +10,7 @@ module Mensa
 
       def initialize(table_name, config = {}, **options)
         @table = Mensa.for_name(table_name, config)
+        @table.original_view_context = options[:original_view_context]
         @table.component = self
         @params = options[:params] || {}
       end

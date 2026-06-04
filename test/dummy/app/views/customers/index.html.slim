@@ -3,5 +3,4 @@
     = sts.card :customers, title: "Customers", content_padding: false do |card|
       - card.with_action do
         = link_to "Users", users_path, class: "button btn-primary"
-      = sts.table :customers
-
+      = table :customers

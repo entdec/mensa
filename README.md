@@ -89,11 +89,10 @@ class UserTable < ApplicationTable
 end
 ```
 
-Currently mensa depends on satis, but that is something we might remove in a future version.
 You can show your tables on the page using the following:
 
 ```slim
-  = sts.table :users
+  = table :users
 ```
 
 #### Custom views
@@ -141,7 +140,7 @@ If you're not using devcontainers:
 
 Using the following in your view will render Mensa::Table::Component
 ```slim
-  = sts.table :users
+  = table :users
 ```
 
 The Mensa::Table::Component will render:
