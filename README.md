@@ -38,52 +38,50 @@ This in turn should inherit from Mensa::Base.
 
 ```ruby
 class UserTable < ApplicationTable
-  definition do
-    model User # implicit from name
+  model User # implicit from name
 
-    order name: :desc
+  order name: :desc
 
-    column(:name) do
-      attribute :name # Optional, we can deduct this from the column name
-      sortable true
-      sanitize true
-      internal false
-      visible true
-      filter do
-        collection -> { }
-        scope -> { where(name: ...) }
-      end
+  column(:name) do
+    attribute :name # Optional, we can deduct this from the column name
+    sortable true
+    sanitize true
+    internal false
+    visible true
+    filter do
+      collection -> { }
+      scope -> { where(name: ...) }
     end
+  end
 
-    column(:nr_of_roles) do
-      attribute "roles_count" # We use a database column here
-    end
+  column(:nr_of_roles) do
+    attribute "roles_count" # We use a database column here
+  end
 
-    # You can add one or more actions to a row
-    action :delete do
-      title "Delete row"
-      link { |user| user_path(user) }
-      icon "fa-regular fa-trash"
-      link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}
-      show ->(user) { true }
-    end
+  # You can add one or more actions to a row
+  action :delete do
+    title "Delete row"
+    link { |user| user_path(user) }
+    icon "fa-regular fa-trash"
+    link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}
+    show ->(user) { true }
+  end
 
-    link { |user| edit_user_path(user) }
-    supports_views true # This table supports custom views
-    show_header true
-    view_columns_ordering false # Disabled for now
-    view_condensed false # Default false
-    view_condensed_toggle true # Whether to show the toggle, default true
+  link { |user| edit_user_path(user) }
+  supports_views true # This table supports custom views
+  show_header true
+  view_columns_ordering false # Disabled for now
+  view_condensed false # Default false
+  view_condensed_toggle true # Whether to show the toggle, default true
 
-    # Add system views
-    # Mensa will always create a systemview (:default) with name 'All' showing all records. 
-    # If you want to rename it, for example because you don't show all records in your default scope, add it and give it a name like below.
-    view :concept do
-      name "Concept"
-      filter :state do
-        operator :equals
-        value "concept"
-      end
+  # Add system views
+  # Mensa will always create a systemview (:default) with name 'All' showing all records. 
+  # If you want to rename it, for example because you don't show all records in your default scope, add it and give it a name like below.
+  view :concept do
+    name "Concept"
+    filter :state do
+      operator :equals
+      value "concept"
     end
   end
 end

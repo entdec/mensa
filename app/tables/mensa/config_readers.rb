@@ -8,8 +8,27 @@ module Mensa
 
     class_methods do
       def defined_by(dsl_class)
+        # Lazily-built DSL instance that accumulates configuration.
+        define_singleton_method(:dsl_definition) do
+          @dsl_definition ||= dsl_class.new(name)
+        end
+
         define_singleton_method(:definition) do |&block|
-          @definition ||= dsl_class.new(name, &block).config
+          dsl_definition.instance_eval(&block) if block
+          dsl_definition.config
+        end
+
+        # Forward unknown class-level calls to the DSL
+        define_singleton_method(:method_missing) do |method_name, *args, &block|
+          if dsl_definition.respond_to?(method_name)
+            dsl_definition.public_send(method_name, *args, &block)
+          else
+            super(method_name, *args, &block)
+          end
+        end
+
+        define_singleton_method(:respond_to_missing?) do |method_name, include_private = false|
+          dsl_definition.respond_to?(method_name, include_private) || super(method_name, include_private)
         end
       end
 
