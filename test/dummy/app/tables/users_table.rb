@@ -45,6 +45,20 @@ class UsersTable < Mensa::Base
         value "user"
       end
     end
+
+    action :show do
+      link { |user| user_path(user) }
+      icon "fal fa-eye"
+    end
+    action :edit do
+      link { |user| edit_user_path(user) }
+      icon "fal fa-pencil"
+    end
+    action :delete do
+      link { |user| user_path(user) }
+      link_attributes { {data: {turbo: {confirm: "Are you sure?", method: :delete}}} }
+      icon "fal fa-trash"
+    end
   end
 
   private

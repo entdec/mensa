@@ -3,8 +3,10 @@
     - if table.show_header?
       thead
         tr
+          - if table.actions? && Mensa.config.row_actions_position == :front
+            th
           = render(Mensa::Header::Component.with_collection(table.columns.select(&:visible?).reject(&:internal?), table: table))
-          - if table.actions?
+          - if table.actions? && Mensa.config.row_actions_position == :back
             th
 
     tbody

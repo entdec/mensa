@@ -65,6 +65,8 @@ module Mensa
       end
     }
 
+    option :row_actions_position, default: :back
+
     def initialize
       set_defaults!
     end
