@@ -17,7 +17,7 @@ Features:
 Still to do:
 - [ ] column sorting
 - [X] editing of existing filters
-- [ ] view selection and exports per view
+- [X] view selection and exports per view
 - [ ] exports can be mailed - daily/weekly/monthly/quarterly/bi-yearly/yearly (time configurable)
 - [ ] multiple selection of rows
 
