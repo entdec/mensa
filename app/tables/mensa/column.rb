@@ -21,7 +21,11 @@ module Mensa
     config_reader :method # When a method needs to be called on the model, slow!
 
     def sort_direction
-      table.config.dig(:order, name)&.to_sym
+      if @sort_field&.split(".")&.count == 2
+        table.config.dig(:order, @sort_field&.split(".").first.to_sym, @sort_field&.split(".").last.to_sym)&.to_sym
+      else
+        table.config.dig(:order, table.name.to_sym, name.to_sym)&.to_sym  
+      end
     end
 
     def next_sort_direction
@@ -72,6 +76,16 @@ module Mensa
         name.to_s.humanize
       end
     end
+
+    def sort_field
+      return unless sortable?
+      @sort_field = config[:sort_field]
+      if @sort_field&.split(".")&.count == 2
+        {@sort_field&.split(".").first => {@sort_field&.split(".").last => next_sort_direction}}
+      else
+        {table.name => { name => next_sort_direction} }
+      end  
+    end  
 
     def menu
       Satis::Menus::Builder.build(:filter_menu, event: "click") do |m|

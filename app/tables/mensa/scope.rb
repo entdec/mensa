@@ -72,7 +72,13 @@ module Mensa
     def order_hash(new_params = {})
       (params[:order] || config[:order]).merge(new_params.symbolize_keys)
         .compact_blank
-        .transform_values { |value| value.to_sym }
+        .transform_values do |value|
+          if value.is_a?(Hash)
+            value.compact_blank.transform_values(&:to_sym)
+          else
+            value.to_sym
+          end
+        end  
     end
   end
 end
