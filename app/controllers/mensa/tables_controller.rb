@@ -21,11 +21,6 @@ module Mensa
       respond_to do |format|
         format.turbo_stream # Used for filterering
         format.html
-        format.csv do
-          to = defined?(current_user) ? current_user : request&.session&.id
-          Mensa::ExportJob.perform_later(to, params[:id])
-          head :ok
-        end
       end
     end
   end

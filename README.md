@@ -181,6 +181,12 @@ Always use `bundle` to install the gem. Next use the install generator to instal
 $  bin/rails g mensa:install
 ```
 
+### Exports
+
+Exporting is built into the table's control bar. Clicking the export button opens
+a dialog that lists the user's previous downloads and lets them request a new
+export (scope and CSV format). 
+
 ## Contributing
 
 ```

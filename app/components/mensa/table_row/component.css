@@ -1,0 +1,7 @@
+.mensa-table {
+    tbody {
+        td.actions {
+            @apply pl-0 pr-0;
+        }
+    }
+}

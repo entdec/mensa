@@ -1,10 +1,10 @@
 tr *row.link_attributes
   - if table.actions? && Mensa.config.row_actions_position == :front
-    td.text-center
+    td.text-center.actions
       = render(Mensa::RowAction::Component.with_collection(table.actions, row: row, table: table))
       | &nbsp;
   = render(Mensa::Cell::Component.with_collection(table.display_columns, row: row))
   - if table.actions? && Mensa.config.row_actions_position == :back
-    td.text-center
+    td.text-center.actions
       = render(Mensa::RowAction::Component.with_collection(table.actions, row: row, table: table))
       | &nbsp;

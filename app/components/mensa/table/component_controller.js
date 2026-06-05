@@ -14,12 +14,14 @@ export default class TableComponentController extends ApplicationController {
         "saveViewDialog", // Dialog asking for a view name/description
         "saveViewName", // Name input inside the save-view dialog
         "saveViewDescription", // Description input inside the save-view dialog
+        "exportDialog", // Dialog listing downloads and offering a new export
     ];
     static outlets = ["mensa-filter-pill-list"];
     static values = {
         supportsViews: Boolean,
         tableUrl: String,
         saveViewUrl: String,
+        exportsUrl: String,
     };
 
     connect() {
@@ -287,12 +289,99 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
+    // Opens the export dialog. The downloads list is refreshed first (via a
+    // Turbo stream response) so the user always sees their current downloads,
+    // then the dialog is shown.
     export(event) {
         event.preventDefault();
 
-        let url = this.ourUrl;
-        url.pathname += ".xlsx";
-        get(url, {}).then(() => {});
+        if (!this.hasExportDialogTarget) return;
+
+        if (this.hasExportsUrlValue && this.exportsUrlValue) {
+            get(this.exportsUrlValue, { responseKind: "turbo-stream" }).finally(
+                () => this.openExportDialog(),
+            );
+        } else {
+            this.openExportDialog();
+        }
+    }
+
+    openExportDialog() {
+        if (!this.hasExportDialogTarget) return;
+
+        if (typeof this.exportDialogTarget.showModal === "function") {
+            this.exportDialogTarget.showModal();
+        } else {
+            this.exportDialogTarget.setAttribute("open", "");
+        }
+    }
+
+    cancelExport(event) {
+        if (event) event.preventDefault();
+        this.closeExportDialog();
+    }
+
+    // Closes the dialog when the user clicks the backdrop (outside the panel).
+    exportDialogBackdrop(event) {
+        if (event.target === this.exportDialogTarget) {
+            this.closeExportDialog();
+        }
+    }
+
+    closeExportDialog() {
+        if (!this.hasExportDialogTarget) return;
+
+        if (typeof this.exportDialogTarget.close === "function") {
+            this.exportDialogTarget.close();
+        } else {
+            this.exportDialogTarget.removeAttribute("open");
+        }
+    }
+
+    // Creates a new export honouring the selected scope/format and the currently
+    // applied filters, search and ordering. The dialog stays open so the new
+    // (pending) download appears in the list; it is updated to a download link
+    // via a Turbo stream broadcast once the background job finishes.
+    confirmExport(event) {
+        event.preventDefault();
+
+        if (!this.hasExportsUrlValue) return;
+
+        const dialog = this.exportDialogTarget;
+        const scope =
+            dialog.querySelector('input[name="scope"]:checked')?.value || "all";
+        const exportFormat =
+            dialog.querySelector('input[name="export_format"]:checked')
+                ?.value || "csv_excel";
+
+        const state = this.currentViewState();
+
+        // The page and query come from the URL that rendered the table currently
+        // on screen (see mensa-filter-pill-list#currentRequestState). This is
+        // authoritative for what the user is viewing, whereas per-key local
+        // storage can be missing the current page/query. Filters and order are
+        // read from the live pills/storage so they stay correct even when a
+        // navigation URL omits them.
+        const nav = this.hasMensaFilterPillListOutlet
+            ? this.mensaFilterPillListOutlet.currentRequestState()
+            : { page: "", query: "", view: "" };
+        const view = this.hasMensaFilterPillListOutlet
+            ? this.mensaFilterPillListOutlet.loadView() || nav.view
+            : "";
+
+        post(this.exportsUrlValue, {
+            body: JSON.stringify({
+                scope,
+                export_format: exportFormat,
+                table_view_id: view,
+                page: nav.page,
+                query: state.query || nav.query,
+                filters: state.filters,
+                order: state.order,
+            }),
+            contentType: "application/json",
+            responseKind: "turbo-stream",
+        });
     }
 
     get ourUrl() {

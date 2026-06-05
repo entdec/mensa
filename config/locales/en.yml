@@ -15,5 +15,22 @@ en:
         view_name_placeholder: e.g. Active customers
         view_description: Description
         view_description_placeholder: Optional notes about this view
+    exports:
+      title: "Export %{table}"
+      close: Close
+      available_downloads: Available downloads
+      empty: You have no downloads yet. Create one below.
+      item_name: "%{table} export"
+      download: Download
+      processing: Preparing…
+      failed: Failed
+      new_export: New export
+      scope_all: All records (matching current filters)
+      scope_current_page: Current page
+      export_as: Export as
+      format_excel: CSV for Excel, Numbers, or other spreadsheet programs
+      format_plain: Plain CSV file
+      cancel: Cancel
+      submit: Export
     views:
       default: All

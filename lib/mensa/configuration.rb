@@ -57,11 +57,12 @@ module Mensa
     # }
 
     option :callbacks, default: {
-      # Callback is called when the export is started,
-      # the return value is passed as context to the export_complete callback
-      export_started: lambda do |to, table_name|
+      # Called with the Mensa::Export when the export job starts processing.
+      export_started: lambda do |export|
       end,
-      export_complete: lambda do |to, table_name, context, attachment|
+      # Called with the Mensa::Export once the CSV has been generated and
+      # attached (export.asset). Use this to e.g. notify or email the user.
+      export_complete: lambda do |export|
       end
     }
 

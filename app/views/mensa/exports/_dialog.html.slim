@@ -1,0 +1,42 @@
+/ Export dialog rendered once per table inside the control bar. Opening it
+/ refreshes the downloads list; submitting the form creates a new export.
+- user = table.current_user
+- exports = Mensa::Export.for_table(table.name).for_user(user).recent
+dialog.mensa-table__export-dialog data-mensa-table-target="exportDialog" data-action="click->mensa-table#exportDialogBackdrop"
+  .mensa-table__export-dialog__panel
+    header.mensa-table__export-dialog__header
+      h2.mensa-table__export-dialog__title
+        = t("mensa.exports.title", default: "Export %{table}", table: table.name.to_s.humanize)
+      button.mensa-table__export-dialog__close type="button" data-action="mensa-table#cancelExport" aria-label=t("mensa.exports.close", default: "Close")
+        i.fa-solid.fa-xmark
+
+    .mensa-table__export-dialog__body
+      = render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, exports: exports}
+
+      form.mensa-table__export-dialog__form data-action="submit->mensa-table#confirmExport"
+        fieldset.mensa-table__export-dialog__fieldset
+          legend.mensa-table__export-dialog__section-title
+            = t("mensa.exports.new_export", default: "New export")
+          label.mensa-table__export-dialog__option
+            input type="radio" name="scope" value="all" checked=true
+            span = t("mensa.exports.scope_all", default: "All records (matching current filters)")
+          label.mensa-table__export-dialog__option
+            input type="radio" name="scope" value="current_page"
+            span = t("mensa.exports.scope_current_page", default: "Current page")
+
+        fieldset.mensa-table__export-dialog__fieldset
+          legend.mensa-table__export-dialog__section-title
+            = t("mensa.exports.export_as", default: "Export as")
+          label.mensa-table__export-dialog__option
+            input type="radio" name="export_format" value="csv_excel" checked=true
+            span = t("mensa.exports.format_excel", default: "CSV for Excel, Numbers, or other spreadsheet programs")
+          label.mensa-table__export-dialog__option
+            input type="radio" name="export_format" value="plain_csv"
+            span = t("mensa.exports.format_plain", default: "Plain CSV file")
+
+        .mensa-table__export-dialog__actions
+          button.mensa-table__export-dialog__button.mensa-table__export-dialog__button--secondary type="button" data-action="mensa-table#cancelExport"
+            = t("mensa.exports.cancel", default: "Cancel")
+          button.mensa-table__export-dialog__button.mensa-table__export-dialog__button--primary type="submit"
+            i.fa-solid.fa-file-export
+            = t("mensa.exports.submit", default: "Export")

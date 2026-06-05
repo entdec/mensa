@@ -30,6 +30,8 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 7.1"
+  spec.add_dependency "csv"
+  spec.add_dependency "rubyzip", ">= 1.2.2"
   spec.add_dependency "pagy", ">=43"
   spec.add_dependency "textacular", ">=5"
   spec.add_dependency "view_component", "~> 3.11"

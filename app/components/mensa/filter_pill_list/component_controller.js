@@ -82,9 +82,56 @@ export default class FilterPillListComponentController extends ApplicationContro
             return;
         }
 
+        // Remember the URL that rendered the table currently on screen so other
+        // controllers (e.g. export) can read the exact page/query/order/view the
+        // user is looking at.
+        this.lastTableUrl = url.toString();
+
         this.persistPage(url.searchParams.get("page") || "");
         this.persistView(url.searchParams.get("table_view_id") || "");
         this.persistOrder(this.parseOrderParams(url.searchParams));
+    }
+
+    // Returns the state of the table currently on screen, read from the URL of
+    // the last table request. That URL is authoritative: it is set both when a
+    // navigation happens (pagination/sort/view, via captureNavigation) and when
+    // filters/search/order change (via requestState), so it always reflects what
+    // the user is actually viewing - including the current page and query, which
+    // per-key local storage can fail to capture.
+    currentRequestState() {
+        let url;
+        try {
+            url = this.lastTableUrl
+                ? new URL(this.lastTableUrl, window.location.origin)
+                : this.mensaTableOutlet.ourUrl;
+        } catch (e) {
+            url = this.mensaTableOutlet.ourUrl;
+        }
+
+        const params = url.searchParams;
+        const filters = {};
+        const order = {};
+        params.forEach((value, key) => {
+            const filterMatch = key.match(
+                /^filters\[(.+?)\]\[(value|operator)\]$/,
+            );
+            if (filterMatch) {
+                const column = filterMatch[1];
+                (filters[column] = filters[column] || {})[filterMatch[2]] =
+                    value;
+                return;
+            }
+            const orderMatch = key.match(/^order\[(.+)\]$/);
+            if (orderMatch && value) order[orderMatch[1]] = value;
+        });
+
+        return {
+            filters,
+            query: params.get("query") || "",
+            view: params.get("table_view_id") || "",
+            page: params.get("page") || "",
+            order,
+        };
     }
 
     // Removes every applied filter and the search query, forgets them in local
@@ -185,7 +232,12 @@ export default class FilterPillListComponentController extends ApplicationContro
     // Builds the request URL from the given state and fetches the table via
     // turbo-stream, updating both the filter pills and the table view.
     requestState(state) {
-        return get(this.buildUrl(state), {
+        const url = this.buildUrl(state);
+        // Keep the authoritative "what's on screen" URL in sync for filter/search/
+        // order changes too (these render via a turbo-stream, not a frame load,
+        // so captureNavigation never sees them).
+        this.lastTableUrl = url.toString();
+        return get(url, {
             responseKind: "turbo-stream",
         });
     }

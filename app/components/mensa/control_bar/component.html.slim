@@ -11,6 +11,10 @@
     - if view_condensed_toggle?
       button.mensa-table__control_bar__button data-action="mensa-table#condenseExpand"
         i data-mensa-table-target="condenseExpandIcon" class=Mensa.config.icons[:control_bar_compress]
-    - if table.config[:render]&.key?(:xlsx)
-      button.mensa-table__control_bar__button data-action="mensa-table#export"
+    - if table.exportable?
+      button.mensa-table__control_bar__button.relative data-action="mensa-table#export"
         i data-mensa-table-target="exportIcon" class=Mensa.config.icons[:control_bar_export]
+        = helpers.render partial: "mensa/exports/badge", locals: {table_name: table.name, user: table.current_user}
+  - if table.exportable?
+    = helpers.turbo_stream_from Mensa::Export.stream_name(table.name, table.current_user)
+    = helpers.render partial: "mensa/exports/dialog", locals: {table: table}

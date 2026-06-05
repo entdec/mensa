@@ -5,5 +5,114 @@
         &__button {
             @apply inline-flex items-center justify-center gap-1 cursor-pointer rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 shadow-sm px-2 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors;
         }
+
+        &__badge {
+            @apply absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary-600 text-white text-[0.625rem] font-semibold leading-none ring-2 ring-white dark:ring-gray-800;
+        }
+    }
+
+    &__export-dialog {
+        @apply w-[34rem] max-w-[92vw] max-h-[85vh] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
+
+        &::backdrop {
+            @apply bg-gray-900/40;
+            backdrop-filter: blur(2px);
+        }
+
+        &__panel {
+            @apply flex flex-col max-h-[85vh] overflow-hidden;
+        }
+
+        &__header {
+            @apply flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+        }
+
+        &__title {
+            @apply text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100;
+        }
+
+        &__close {
+            @apply cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none;
+        }
+
+        &__body {
+            @apply flex flex-col gap-5 p-6 min-h-0 overflow-y-auto;
+        }
+
+        &__section-title {
+            @apply text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2;
+        }
+
+        &__empty {
+            @apply flex h-44 items-center justify-center rounded-lg ring-1 ring-gray-200 dark:ring-gray-700 px-3 text-center text-sm text-gray-500 dark:text-gray-400;
+        }
+
+        &__list {
+            @apply flex flex-col divide-y divide-gray-100 dark:divide-gray-700 rounded-lg ring-1 ring-gray-200 dark:ring-gray-700 h-44 overflow-x-hidden overflow-y-auto;
+        }
+
+        &__item {
+            @apply flex shrink-0 items-center justify-between gap-3 px-3 py-2.5;
+        }
+
+        &__item-info {
+            @apply flex flex-col min-w-0;
+        }
+
+        &__item-name {
+            @apply text-sm font-medium text-gray-900 dark:text-gray-100 truncate;
+        }
+
+        &__item-meta {
+            @apply text-xs text-gray-500 dark:text-gray-400;
+        }
+
+        &__download {
+            @apply inline-flex items-center gap-1.5 rounded-md bg-white dark:bg-gray-700 px-2.5 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600;
+        }
+
+        &__status {
+            @apply inline-flex items-center gap-1.5 text-sm;
+
+            &--pending {
+                @apply text-gray-500 dark:text-gray-400;
+            }
+
+            &--failed {
+                @apply text-red-600 dark:text-red-400 font-medium;
+            }
+        }
+
+        &__form {
+            @apply flex flex-col gap-5 border-t border-gray-200 dark:border-gray-700 pt-5;
+        }
+
+        &__fieldset {
+            @apply flex flex-col gap-2 border-0 p-0 m-0;
+        }
+
+        &__option {
+            @apply flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer;
+
+            input {
+                @apply mt-0.5 text-primary-600 focus:ring-primary-500;
+            }
+        }
+
+        &__actions {
+            @apply flex justify-end gap-2 pt-1;
+        }
+
+        &__button {
+            @apply inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors;
+
+            &--secondary {
+                @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-gray-400;
+            }
+
+            &--primary {
+                @apply bg-primary-600 text-white hover:bg-primary-500 focus:ring-primary-500;
+            }
+        }
     }
 }

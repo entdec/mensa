@@ -15,5 +15,22 @@ nl:
         view_name_placeholder: bijv. Actieve klanten
         view_description: Omschrijving
         view_description_placeholder: Optionele notities over deze weergave
+    exports:
+      title: "%{table} exporteren"
+      close: Sluiten
+      available_downloads: Beschikbare downloads
+      empty: Je hebt nog geen downloads. Maak er hieronder een aan.
+      item_name: "%{table} export"
+      download: Downloaden
+      processing: Bezig…
+      failed: Mislukt
+      new_export: Nieuwe export
+      scope_all: Alle records (volgens huidige filters)
+      scope_current_page: Huidige pagina
+      export_as: Exporteren als
+      format_excel: CSV voor Excel, Numbers of andere spreadsheetprogramma's
+      format_plain: Eenvoudig CSV-bestand
+      cancel: Annuleer
+      submit: Exporteren
     views:
       default: Alles
