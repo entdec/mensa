@@ -508,18 +508,6 @@ export default class FilterPillListComponentController extends ApplicationContro
         }
     }
 
-    // The condensed view is a client-side toggle (no server param), so it is
-    // persisted on its own and re-applied by the table controller after render.
-    persistCondensed(condensed) {
-        this.writeStorage(this.condensedStorageKey, condensed ? "1" : "0");
-    }
-
-    loadCondensed() {
-        const raw = this.readStorage(this.condensedStorageKey);
-        if (raw === null) return null;
-        return raw === "1";
-    }
-
     writeStorage(key, value) {
         if (!this.hasStorage) return;
 
@@ -570,10 +558,6 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     get orderStorageKey() {
         return `mensa:order:${this.tableNameValue}`;
-    }
-
-    get condensedStorageKey() {
-        return `mensa:condensed:${this.tableNameValue}`;
     }
 
     get ourUrl() {

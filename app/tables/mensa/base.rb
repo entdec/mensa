@@ -15,8 +15,6 @@ module Mensa
     config_reader :supports_views?
     config_reader :supports_custom_views?
     config_reader :supports_filters?
-    config_reader :view_condensed?
-    config_reader :view_condensed_toggle?
     config_reader :view_columns_ordering?
     config_reader :show_header?
     config_reader :exportable?

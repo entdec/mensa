@@ -242,51 +242,9 @@ export default class TableComponentController extends ApplicationController {
         };
     }
 
-    condenseExpand(event) {
-        event.preventDefault();
-
-        if (!this.hasViewTarget) return;
-
-        const condensed = !this.viewTarget.classList.contains(
-            "mensa-table__condensed",
-        );
-        this.applyCondensed(condensed);
-
-        // Persist the condensed preference so it survives a page refresh. It is
-        // a client-only toggle (no server param), so the filter pill list just
-        // stores the flag for us.
-        if (this.hasMensaFilterPillListOutlet) {
-            this.mensaFilterPillListOutlet.persistCondensed(condensed);
-        }
-    }
-
-    // Applies the condensed/expanded state to the rendered view and its icon.
-    applyCondensed(condensed) {
-        if (!this.hasViewTarget) return;
-
-        this.viewTarget.classList.toggle("mensa-table__condensed", condensed);
-
-        if (this.hasCondenseExpandIconTarget) {
-            this.condenseExpandIconTarget.classList.toggle(
-                "fa-compress",
-                !condensed,
-            );
-            this.condenseExpandIconTarget.classList.toggle(
-                "fa-expand",
-                condensed,
-            );
-        }
-    }
-
-    // The view target is (re)rendered inside the turbo-frame on every load. When
-    // it appears, re-apply any persisted condensed preference.
+    // The view target is (re)rendered inside the turbo-frame on every load.
     viewTargetConnected() {
         if (!this.hasMensaFilterPillListOutlet) return;
-
-        const condensed = this.mensaFilterPillListOutlet.loadCondensed();
-        if (condensed !== null) {
-            this.applyCondensed(condensed);
-        }
     }
 
     // Opens the export dialog. The downloads list is refreshed first (via a

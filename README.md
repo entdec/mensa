@@ -71,8 +71,6 @@ class UserTable < ApplicationTable
   supports_views true # This table supports custom views
   show_header true
   view_columns_ordering false # Disabled for now
-  view_condensed false # Default false
-  view_condensed_toggle true # Whether to show the toggle, default true
 
   # Add system views
   # Mensa will always create a systemview (:default) with name 'All' showing all records. 
@@ -151,7 +149,6 @@ The Mensa::Table::Component will render:
   - Mensa::ControlBar::Component
     - search icon
     - filter icon
-    - condensed toggle
     - export icon
 - turbo-frame with the actual table you see  (which is rendered by Mensa::View::Component)
 
