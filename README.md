@@ -75,6 +75,10 @@ class UserTable < ApplicationTable
   # Add system views
   # Mensa will always create a systemview (:default) with name 'All' showing all records. 
   # If you want to rename it, for example because you don't show all records in your default scope, add it and give it a name like below.
+  view :default do
+    name "Default"
+    description "Some descriptive text"
+  end
   view :concept do
     name "Concept"
     filter :state do
