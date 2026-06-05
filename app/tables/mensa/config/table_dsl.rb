@@ -70,6 +70,8 @@ module Mensa::Config
     # Actions
     option :action, dsl_hash: Mensa::Config::ActionDsl
 
+    option :batch, dsl_hash: Mensa::Config::BatchDsl
+
     option :render, dsl: Mensa::Config::RenderDsl
 
     option :supports_views, default: false

@@ -19,7 +19,7 @@ Still to do:
 - [X] editing of existing filters
 - [X] view selection and exports per view
 - [ ] exports can be mailed - daily/weekly/monthly/quarterly/bi-yearly/yearly (time configurable)
-- [ ] multiple selection of rows
+- [X] multiple selection of rows and batch processing
 
 Optionally:
 
@@ -80,6 +80,13 @@ class UserTable < ApplicationTable
     filter :state do
       operator :equals
       value "concept"
+    end
+  end
+  
+  batch :confirm do
+    description "Confirm users"
+    process do |records|
+      ConfirmUsersJob.perform_later(records.to_a)
     end
   end
 end

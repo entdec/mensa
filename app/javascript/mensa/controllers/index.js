@@ -1,4 +1,4 @@
-import { application } from "mensa/controllers/application"
+import { application } from "mensa/controllers/application";
 
 // import AddFilterComponentController from 'components/add_filter/component_controller';
 // application.register('mensa-add-filter', AddFilterComponentController)
@@ -10,16 +10,22 @@ import FilterPillComponentController from "mensa/components/filter_pill/componen
 application.register("mensa-filter-pill", FilterPillComponentController);
 
 import FilterPillListComponentController from "mensa/components/filter_pill_list/component_controller";
-application.register("mensa-filter-pill-list", FilterPillListComponentController);
+application.register(
+    "mensa-filter-pill-list",
+    FilterPillListComponentController,
+);
 
 import SearchComponentController from "mensa/components/search/component_controller";
 application.register("mensa-search", SearchComponentController);
 
-import TableComponentController from 'mensa/components/table/component_controller'
+import TableComponentController from "mensa/components/table/component_controller";
 application.register("mensa-table", TableComponentController);
 
-import ViewsComponentController from 'mensa/components/views/component_controller'
+import ViewsComponentController from "mensa/components/views/component_controller";
 application.register("mensa-views", ViewsComponentController);
+
+import SelectionComponentController from "mensa/components/selection/component_controller";
+application.register("mensa-selection", SelectionComponentController);
 
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 // import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"

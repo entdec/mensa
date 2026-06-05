@@ -79,6 +79,16 @@ module Mensa
       @actions ||= config[:actions].keys.map { |action_name| Mensa::Action.new(action_name, config: config.dig(:actions, action_name), table: self) }
     end
 
+    def batch_actions?
+      config[:batches].present?
+    end
+
+    def batch_actions
+      return @batch_actions if @batch_actions
+
+      @batch_actions ||= config[:batches].keys.map { |batch_name| Mensa::BatchAction.new(batch_name, config: config.dig(:batches, batch_name), table: self) }
+    end
+
     # Returns the current path with configuration
     def path(order: {}, turbo_frame_id: nil, table_view_id: nil)
       # FIXME: if someone doesn't use as: :mensa in the routes, it breaks

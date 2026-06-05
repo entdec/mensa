@@ -59,12 +59,12 @@ class UsersTable < Mensa::Base
     icon "fal fa-trash"
   end
 
-  # batch :confirm do
-  #   description "Confirm users"
-  #   process do
-  #     # do nothing
-  #   end
-  # end
+  batch :confirm do
+    description "Confirm users"
+    process do |records|
+      ConfirmUsersJob.perform_later(records)
+    end
+  end
 
   private
 
