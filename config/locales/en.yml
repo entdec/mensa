@@ -32,5 +32,9 @@ en:
       format_plain: Plain CSV file
       cancel: Cancel
       submit: Export
+    empty_state:
+      title: No %{model} found
+      subtitle: Try changing the filters or search terms for this view
+      clear_button: Clear search and filters
     views:
       default: All

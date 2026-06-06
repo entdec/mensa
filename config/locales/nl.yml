@@ -32,5 +32,9 @@ nl:
       format_plain: Eenvoudig CSV-bestand
       cancel: Annuleer
       submit: Exporteren
+    empty_state:
+      title: Geen %{model} gevonden
+      subtitle: Probeer de filters of zoektermen voor deze weergave te wijzigen
+      clear_button: Zoekopdracht en filters wissen
     views:
       default: Alles

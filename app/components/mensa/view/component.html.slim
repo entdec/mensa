@@ -22,8 +22,9 @@
             th
     tbody
       = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
-  - if table.pagy_details&.last > 1 || table.pagy_details.count == 0
+  - if table.pagy_details&.count == 0
+    = render Mensa::EmptyState::Component.new(table: table)
+  - elsif table.pagy_details&.last > 1
     .paging
       == table.pagy_details.info_tag
-      - if table.pagy_details&.last > 1
-        == table.pagy_details.series_nav(anchor_string: 'data-turbo-frame="_self"')
+      == table.pagy_details.series_nav(anchor_string: 'data-turbo-frame="_self"')
