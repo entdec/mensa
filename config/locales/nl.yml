@@ -32,6 +32,8 @@ nl:
       format_plain: Eenvoudig CSV-bestand
       cancel: Annuleer
       submit: Exporteren
+    paging:
+      info: "%{model} %{from}-%{to} van %{count} weergeven"
     empty_state:
       title: Geen %{model} gevonden
       subtitle: Probeer de filters of zoektermen voor deze weergave te wijzigen

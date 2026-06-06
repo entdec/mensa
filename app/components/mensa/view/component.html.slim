@@ -26,5 +26,5 @@
     = render Mensa::EmptyState::Component.new(table: table)
   - elsif table.pagy_details&.last > 1
     .paging
-      == table.pagy_details.info_tag
+      span = t("mensa.paging.info", model: model_name_plural, from: table.pagy_details.from, to: table.pagy_details.to, count: table.pagy_details.count)
       == table.pagy_details.series_nav(anchor_string: 'data-turbo-frame="_self"')

@@ -32,6 +32,8 @@ en:
       format_plain: Plain CSV file
       cancel: Cancel
       submit: Export
+    paging:
+      info: Displaying %{model} %{from}-%{to} of %{count}
     empty_state:
       title: No %{model} found
       subtitle: Try changing the filters or search terms for this view

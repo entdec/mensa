@@ -11,6 +11,11 @@ module Mensa
       def initialize(table)
         @table = table
       end
+
+      # "orders", "users", etc. — used in the paging info line.
+      def model_name_plural
+        table.model.model_name.human.pluralize.downcase
+      end
     end
   end
 end
