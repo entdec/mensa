@@ -9,7 +9,7 @@
     top: 0;
     left: 0;
     z-index: 10;
-    @apply py-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
+    @apply pt-3 pb-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
 
     &__content {
         /* h-4 matches the .container height used inside header th cells.
@@ -22,7 +22,7 @@
     }
 
     &__button {
-        @apply inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
+        @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
     }
 }
 
