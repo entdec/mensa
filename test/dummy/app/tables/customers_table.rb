@@ -21,6 +21,7 @@ class CustomersTable < Mensa::Base
   link { |customer| edit_customer_path(customer) }
 
   supports_views true
+  supports_custom_views true
 
   view :de do
     name "Germany"

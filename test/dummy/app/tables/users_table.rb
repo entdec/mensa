@@ -32,6 +32,7 @@ class UsersTable < Mensa::Base
   link { |user| edit_user_path(user) }
 
   supports_views true
+  supports_custom_views true
 
   view :default do
     name "All users"
