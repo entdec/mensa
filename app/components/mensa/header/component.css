@@ -15,28 +15,18 @@
                 @apply w-full pr-3;
             }
 
-            .actions {
-                @apply flex items-center;
+            /* For sortable columns the link takes over the cell's padding so
+               the entire th area — including what was padding — is clickable. */
+            &:has(.order) {
+                @apply p-0;
 
-                .action {
-                    @apply cursor-pointer;
-                    /*.fa-arrow-down-arrow-up {*/
-                    @apply opacity-0;
-                    /*}*/
-                }
-            }
-        }
-
-        th:hover {
-            .actions {
-                .action {
-                    /*.fa-arrow-down-arrow-up {*/
-                    @apply opacity-100;
-                    /*}*/
+                .order {
+                    @apply pl-4 flex items-center gap-1 w-full py-2;
                 }
             }
         }
     }
+
     &__column_edit {
         thead {
             th {

@@ -32,9 +32,8 @@ module Mensa
 
     # TODO: add all icons below
     option :icons, default: {
-      order_indicator_asc: "fa-solid fa-sort-up",
-      order_indicator_desc: "fa-solid fa-sort-down",
-      order_indicator: "fa-solid fa-sort",
+      order_indicator_asc: "fa-solid fa-arrow-up",
+      order_indicator_desc: "fa-solid fa-arrow-down",
       control_bar_search: "fa-solid fa-magnifying-glass",
       control_bar_filter: "fa-solid fa-filter",
       control_bar_edit: "fa-solid fa-table-columns",

@@ -12,6 +12,7 @@ class UsersTable < Mensa::Base
   column(:last_name)
   column(:email)
   column(:role) do
+    sortable false
     filter do
       collection -> { User.ROLES }
     end
