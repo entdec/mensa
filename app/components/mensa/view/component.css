@@ -8,7 +8,6 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
     z-index: 10;
     @apply py-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
 

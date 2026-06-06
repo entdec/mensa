@@ -2,11 +2,12 @@ import ApplicationController from "mensa/controllers/application_controller";
 
 // Manages row-level checkbox selection and the batch-action bar.
 //
-// The controller lives on the <table> element.
+// The controller lives on the .overflow-y-auto.relative wrapper element.
 //
 // The batch bar is a div.mensa-batch-bar that is a sibling of the <table>,
-// absolutely positioned inside the .overflow-y-auto.relative wrapper. It
-// covers the thead row via top/left/right CSS — no JS width-setting needed.
+// absolutely positioned at top:0/left:0 inside that wrapper. Its width is
+// set to the <table>'s offsetWidth so it covers the full table — including
+// any overflow that causes horizontal scrolling.
 export default class SelectionController extends ApplicationController {
     static targets = [
         "headerCheckbox", // select-all checkbox in the header <th>
@@ -19,6 +20,25 @@ export default class SelectionController extends ApplicationController {
     static values = {
         batchUrl: String, // POST endpoint for batch actions
     };
+
+    connect() {
+        super.connect();
+        this.resizeHandler = () => this.syncBatchBarWidth();
+        window.addEventListener("resize", this.resizeHandler);
+    }
+
+    disconnect() {
+        window.removeEventListener("resize", this.resizeHandler);
+    }
+
+    // Sets the batch bar's width to match the <table> element so it covers
+    // the full scrollable width, not just the visible viewport portion.
+    syncBatchBarWidth() {
+        if (!this.hasBatchBarTarget) return;
+        const table = this.element.querySelector("table");
+        if (!table) return;
+        this.batchBarTarget.style.width = `${table.offsetWidth}px`;
+    }
 
     // Called when the select-all checkbox in the header changes.
     toggleAll(event) {
@@ -115,6 +135,7 @@ export default class SelectionController extends ApplicationController {
 
         // Show / hide the batch bar overlay
         if (this.hasBatchBarTarget) {
+            if (hasSelection) this.syncBatchBarWidth();
             this.batchBarTarget.classList.toggle("hidden", !hasSelection);
         }
 
