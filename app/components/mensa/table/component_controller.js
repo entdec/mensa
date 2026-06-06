@@ -103,6 +103,8 @@ export default class TableComponentController extends ApplicationController {
     // bar and hide the views tabs). Extracted so it can be triggered both by a
     // user click and when persisted filters are restored on page load.
     showFiltersAndSearch() {
+        this.filterBarIsOpen = true;
+
         if (this.supportsViewsValue) {
             if (this.hasViewButtonsTarget)
                 this.viewButtonsTarget.classList.remove("hidden");
@@ -123,6 +125,7 @@ export default class TableComponentController extends ApplicationController {
 
     cancelFiltersAndSearch(event) {
         event.preventDefault();
+        this.filterBarIsOpen = false;
 
         // Discard all applied filters and the search query (and their persisted
         // local storage copies) before collapsing the filter/search chrome.
@@ -139,6 +142,16 @@ export default class TableComponentController extends ApplicationController {
             this.controlBarTarget.classList.remove("hidden");
             this.viewButtonsTarget.classList.add("hidden");
             this.filterListTarget.classList.add("hidden");
+        }
+    }
+
+    // Called by Stimulus whenever the filterList target element is connected —
+    // including after a turbo-stream swaps the filter pill list for a fresh
+    // render (which always has the .hidden class baked in). If the user had the
+    // bar open at the time, keep it open.
+    filterListTargetConnected(element) {
+        if (this.filterBarIsOpen) {
+            element.classList.remove("hidden");
         }
     }
 

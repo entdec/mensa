@@ -59,16 +59,22 @@ export default class FilterPillListComponentController extends ApplicationContro
     // resets filters, search and paging (the view link itself reloads the data via
     // the turbo-frame), so here we only persist the new state.
     viewSelected(view) {
-        // The view link keeps the current sort order but resets filters/search/page.
-        this.persistState({
+        // Selecting a view resets filters, search and paging but keeps the order.
+        // We persist that state and immediately fire a turbo-stream request so
+        // that both the table view and the filter pill list are updated atomically.
+        // The turbo-frame link navigation is suppressed in the views controller so
+        // this single request is the only one that runs.
+        const state = {
             filters: {},
             query: "",
             view,
             order: this.loadOrder(),
             page: "",
-        });
+        };
+        this.persistState(state);
         this.setSearchField("");
         this.updateSearchPlaceholder();
+        this.requestState(state);
     }
 
     // Called by the table controller after a turbo-frame navigation (pagination,

@@ -15,6 +15,11 @@ export default class ViewsComponentController extends ApplicationController {
     }
 
     select(event) {
+        // Prevent the turbo-frame link navigation. viewSelected() fires a
+        // turbo-stream request that updates the table view AND the filter pills
+        // in a single round-trip, so we don't need the frame navigation at all.
+        event.preventDefault();
+
         const selected = event.currentTarget;
 
         this.viewTargets.forEach((element) => {
@@ -23,9 +28,6 @@ export default class ViewsComponentController extends ApplicationController {
                 : element.classList.remove("selected");
         });
 
-        // The view link reloads the table data via the turbo-frame; here we persist
-        // the newly selected view (and reset filters/search/paging) so it survives
-        // a page refresh.
         if (this.hasMensaFilterPillListOutlet) {
             this.mensaFilterPillListOutlet.viewSelected(
                 selected.getAttribute("data-view-id") || "",
