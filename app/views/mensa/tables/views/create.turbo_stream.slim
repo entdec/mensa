@@ -1,0 +1,11 @@
+/ Replace the views tabs so the newly saved view tab appears, selected.
+= turbo_stream.replace "mensa-views-#{@table.table_id}" do
+  = render Mensa::Views::Component.new(table: @table)
+
+/ Clear the filter pills — the saved view starts fresh with no extra filters.
+= turbo_stream.update "filters-#{@table.table_id}" do
+  = render Mensa::FilterPillList::Component.new(table: @table)
+
+/ Re-render the table body with the saved view's data.
+= turbo_stream.update @table.table_id do
+  = render Mensa::View::Component.new(@table)

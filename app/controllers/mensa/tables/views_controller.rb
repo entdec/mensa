@@ -18,7 +18,21 @@ module Mensa
         )
 
         if view.save
-          render json: {id: view.id, name: view.name}, status: :created
+          respond_to do |format|
+            format.turbo_stream do
+              # Re-use the same turbo_frame_id that the client sent so the
+              # generated element IDs match what is already in the DOM.
+              table_config = view.config
+                .deep_transform_keys(&:to_sym)
+                .merge(turbo_frame_id: params[:turbo_frame_id])
+
+              @table = Mensa.for_name(params[:table_id], table_config)
+              @table.request = request
+              @table.original_view_context = helpers
+              @table.table_view = view
+            end
+            format.json { render json: {id: view.id, name: view.name}, status: :created }
+          end
         else
           render json: {errors: view.errors.full_messages}, status: :unprocessable_entity
         end

@@ -201,7 +201,8 @@ export default class TableComponentController extends ApplicationController {
 
     // Collects the currently applied filters, ordering and search query and
     // posts them to the server to be stored as a named view for the current
-    // user. On success the page is reloaded so the new view appears in the tabs.
+    // user. On success, the server returns a turbo-stream that updates the
+    // views tabs, filter pill list, and table data in one shot.
     async confirmSaveView(event) {
         event.preventDefault();
 
@@ -220,6 +221,11 @@ export default class TableComponentController extends ApplicationController {
 
         const state = this.currentViewState();
 
+        // Clear the open flag before the request so that when the turbo-stream
+        // swaps the filter list target, filterListTargetConnected does not
+        // immediately re-open the bar.
+        this.filterBarIsOpen = false;
+
         const response = await post(this.saveViewUrlValue, {
             body: JSON.stringify({
                 name,
@@ -227,14 +233,40 @@ export default class TableComponentController extends ApplicationController {
                 query: state.query,
                 filters: state.filters,
                 order: state.order,
+                // Sent so the server can reconstruct matching element IDs.
+                turbo_frame_id: this.hasTurboFrameTarget
+                    ? this.turboFrameTarget.id
+                    : null,
             }),
             contentType: "application/json",
-            responseKind: "json",
+            responseKind: "turbo-stream",
         });
 
         if (response.ok) {
             this.closeSaveViewDialog();
-            window.location.reload();
+            this.collapseToViewsMode();
+        }
+    }
+
+    // Closes the filter/search bar and restores the views-tab chrome, without
+    // clearing filters. Used after a successful view save where the turbo-stream
+    // response has already updated all the relevant data.
+    collapseToViewsMode() {
+        if (this.supportsViewsValue) {
+            if (this.hasSearchTarget) this.searchTarget.classList.add("hidden");
+            if (this.hasViewButtonsTarget)
+                this.viewButtonsTarget.classList.add("hidden");
+            if (this.hasFilterListTarget)
+                this.filterListTarget.classList.add("hidden");
+            if (this.hasViewsTarget)
+                this.viewsTarget.classList.remove("hidden");
+        } else {
+            if (this.hasControlBarTarget)
+                this.controlBarTarget.classList.remove("hidden");
+            if (this.hasViewButtonsTarget)
+                this.viewButtonsTarget.classList.add("hidden");
+            if (this.hasFilterListTarget)
+                this.filterListTarget.classList.add("hidden");
         }
     }
 
