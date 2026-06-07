@@ -4,6 +4,8 @@ Fast and awesome tables, with pagination, sorting, filtering and custom views.
 
 ![table](./docs/table.png)
 ![filters](./docs/filters.png)
+![columns](./docs/columns.png)
+![export](./docs/export.png)
 
 Features:
 
