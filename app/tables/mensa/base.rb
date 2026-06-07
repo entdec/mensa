@@ -90,7 +90,7 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {}, turbo_frame_id: nil, table_view_id: nil)
+    def path(order: {}, turbo_frame_id: nil, table_view_id: params[:table_view_id])
       # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
       original_view_context.mensa.table_path(name, order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
     end
