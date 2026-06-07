@@ -23,10 +23,24 @@ module Mensa
     def initialize(config = {})
       @params = config.to_h.deep_symbolize_keys
       @config = self.class.definition.merge(@params || {})
+
+      params[:hidden_columns]&.each do |column_name|
+        c = columns.find { |c| c.name == column_name.to_sym }
+        c.config[:visible] = false
+      end
     end
 
     def column_order
-      config[:column_order] || config[:columns]&.keys
+      order = config[:column_order] || config[:columns]&.keys
+      order = order&.map(&:to_sym)
+      return order if order.nil?
+
+      # Internal columns are never shown in the column customizer UI, so they
+      # are absent from any URL-supplied column_order. Always append them so
+      # that columns and selected_scope include their attributes.
+      all_keys = (config[:columns]&.keys || []).map(&:to_sym)
+      internal_keys = all_keys.select { |key| config.dig(:columns, key, :internal) }
+      (order | internal_keys)
     end
 
     # Returns all columns
@@ -40,9 +54,15 @@ module Mensa
       columns.find { |c| c.name == name.to_sym }
     end
 
-    # Returns the columns to be displayed
+    # Returns the columns to be displayed, ordered by column_order.
     def display_columns
-      @display_columns ||= columns.select(&:visible?).reject(&:internal?)
+      @display_columns ||= begin
+        order = column_order || []
+        columns
+          .select(&:visible?)
+          .reject(&:internal?)
+          .sort_by { |col| order.index(col.name) || Float::INFINITY }
+      end
     end
 
     # Returns the rows to be displayed
@@ -90,9 +110,16 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {}, turbo_frame_id: nil, table_view_id: params[:table_view_id])
+    def path(order: {}, turbo_frame_id: nil, table_view_id: params[:table_view_id], column_order: params[:column_order], hidden_columns: params[:hidden_columns])
       # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
-      original_view_context.mensa.table_path(name, order: order_hash(order), turbo_frame_id: turbo_frame_id, table_view_id: table_view_id)
+      original_view_context.mensa.table_path(
+        name,
+        order: order_hash(order),
+        turbo_frame_id: turbo_frame_id,
+        table_view_id: table_view_id,
+        column_order: column_order,
+        hidden_columns: hidden_columns
+      )
     end
 
     def menu

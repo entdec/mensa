@@ -1,0 +1,14 @@
+.relative data-controller="mensa-column-customizer" data-mensa-column-customizer-table-name-value=table.name data-mensa-column-customizer-turbo-frame-id-value=table.table_id data-mensa-column-customizer-mensa-table-outlet="#table-#{table.table_id}"
+  button.mensa-table__control_bar__button type="button" data-action="click->mensa-column-customizer#toggle"
+    i class=Mensa.config.icons[:control_bar_edit]
+  .mensa-table__column_customizer__popover.hidden data-mensa-column-customizer-target="popover"
+    p.mensa-table__column_customizer__heading Columns
+    ul
+      - table.columns.reject(&:internal?).each do |column|
+        li.mensa-table__column_customizer__row[data-mensa-column-customizer-target="columnRow" data-column-name=column.name.to_s data-visible=column.visible?.to_s draggable="true" data-action="dragstart->mensa-column-customizer#dragStart dragover->mensa-column-customizer#dragOver drop->mensa-column-customizer#drop dragend->mensa-column-customizer#dragEnd"]
+          i.mensa-table__column_customizer__handle.fa-solid.fa-grip-vertical
+          span.mensa-table__column_customizer__name[class=(!column.visible? ? "mensa-table__column_customizer__name--hidden" : "")]
+            = column.human_name
+          button.mensa-table__column_customizer__visibility type="button" data-action="click->mensa-column-customizer#toggleVisibility"
+            i.fa-solid.fa-eye
+            i.fa-solid.fa-eye-slash

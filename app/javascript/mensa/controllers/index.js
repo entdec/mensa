@@ -27,6 +27,9 @@ application.register("mensa-views", ViewsComponentController);
 import SelectionComponentController from "mensa/components/selection/component_controller";
 application.register("mensa-selection", SelectionComponentController);
 
+import ColumnCustomizerController from "mensa/components/column_customizer/component_controller";
+application.register("mensa-column-customizer", ColumnCustomizerController);
+
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 // import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 // eagerLoadControllersFrom("controllers", application)

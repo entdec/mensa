@@ -38,6 +38,32 @@ module Mensa
         end
       end
 
+      def update
+        user = current_mensa_user
+        return head(:forbidden) if user.blank?
+
+        view = Mensa::TableView.find_by(table_name: params[:table_id], id: params[:id], user: user)
+        return head(:not_found) if view.blank?
+
+        if view.update(config: view_config)
+          respond_to do |format|
+            format.turbo_stream do
+              table_config = view.config
+                .deep_transform_keys(&:to_sym)
+                .merge(turbo_frame_id: params[:turbo_frame_id])
+
+              @table = Mensa.for_name(params[:table_id], table_config)
+              @table.request = request
+              @table.original_view_context = helpers
+              @table.table_view = view
+            end
+            format.json { render json: {id: view.id, name: view.name} }
+          end
+        else
+          render json: {errors: view.errors.full_messages}, status: :unprocessable_entity
+        end
+      end
+
       private
 
       # The view configuration mirrors the query parameters the table reads on

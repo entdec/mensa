@@ -1,0 +1,40 @@
+.mensa-table {
+    &__column_customizer {
+        &__popover {
+            @apply absolute right-0 z-20 mt-1 w-64 rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 py-2;
+        }
+
+        &__heading {
+            @apply px-4 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
+        }
+
+        &__row {
+            @apply flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-grab select-none;
+        }
+
+        &__handle {
+            @apply text-gray-300 dark:text-gray-600 text-xs flex-none;
+        }
+
+        &__name {
+            @apply flex-1 text-sm text-gray-700 dark:text-gray-200 truncate;
+
+            &--hidden {
+                @apply text-gray-400 dark:text-gray-500;
+            }
+        }
+
+        &__visibility {
+            @apply flex-none text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer;
+        }
+
+        /* Show the correct eye icon based on the row's data-visible attribute.
+           Works with both FA CSS (i elements) and FA SVG mode (svg elements). */
+        &__row[data-visible="true"] .fa-eye-slash {
+            display: none;
+        }
+        &__row[data-visible="false"] .fa-eye {
+            display: none;
+        }
+    }
+}

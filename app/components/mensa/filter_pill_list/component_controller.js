@@ -172,13 +172,15 @@ export default class FilterPillListComponentController extends ApplicationContro
         const page = this.loadPage();
         const order = this.loadOrder();
 
+        const columnOrder = this.loadColumnOrder();
         const hasFilterOrSearch =
             Object.keys(filters).length > 0 || query.length > 0;
         const hasState =
             hasFilterOrSearch ||
             view.length > 0 ||
             page.length > 0 ||
-            Object.keys(order).length > 0;
+            Object.keys(order).length > 0 ||
+            columnOrder.length > 0;
 
         // Filters already on screen (e.g. a view's defaults, or a previous restore
         // after this controller was re-rendered) mean there is nothing to restore.
@@ -253,6 +255,7 @@ export default class FilterPillListComponentController extends ApplicationContro
 
         this.removeFilterParams(url);
         this.removeOrderParams(url);
+        this.removeColumnParams(url);
         url.searchParams.delete("query");
         url.searchParams.delete("page");
         url.searchParams.delete("table_view_id");
@@ -276,6 +279,15 @@ export default class FilterPillListComponentController extends ApplicationContro
         if (state.view) url.searchParams.set("table_view_id", state.view);
         if (state.page) url.searchParams.set("page", state.page);
 
+        // Re-apply persisted column order and visibility so that the initial
+        // page-refresh request includes them without needing a second round-trip.
+        this.loadColumnOrder().forEach((col) =>
+            url.searchParams.append("column_order[]", col),
+        );
+        this.loadHiddenColumns().forEach((col) =>
+            url.searchParams.append("hidden_columns[]", col),
+        );
+
         return url;
     }
 
@@ -288,6 +300,20 @@ export default class FilterPillListComponentController extends ApplicationContro
             }
         });
         filterKeys.forEach((key) => url.searchParams.delete(key));
+    }
+
+    // Strips any `column_order[...]` and `hidden_columns[...]` params from the URL.
+    removeColumnParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_value, key) => {
+            if (
+                key.startsWith("column_order") ||
+                key.startsWith("hidden_columns")
+            ) {
+                keys.push(key);
+            }
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
     }
 
     // Strips any `order[...]` query parameters from the given URL in place.
@@ -543,6 +569,34 @@ export default class FilterPillListComponentController extends ApplicationContro
             return typeof window !== "undefined" && !!window.localStorage;
         } catch (e) {
             return false;
+        }
+    }
+
+    loadColumnOrder() {
+        try {
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:column_order:${this.tableNameValue}`,
+                    ),
+                ) || []
+            );
+        } catch (e) {
+            return [];
+        }
+    }
+
+    loadHiddenColumns() {
+        try {
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:hidden_columns:${this.tableNameValue}`,
+                    ),
+                ) || []
+            );
+        } catch (e) {
+            return [];
         }
     }
 

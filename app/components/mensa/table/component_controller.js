@@ -1,5 +1,5 @@
 import ApplicationController from "mensa/controllers/application_controller";
-import { get, post } from "@rails/request.js";
+import { get, post, patch } from "@rails/request.js";
 
 export default class TableComponentController extends ApplicationController {
     static targets = [
@@ -155,11 +155,26 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
-    // Opens the dialog that asks the user for a name and description before the
-    // current filters/ordering/search are persisted as a custom view. The button
-    // (and this dialog) only exist when there is a current user to own the view.
+    // Opens the save dialog (create) or immediately updates the current view.
+    // If a user-created view is active, "save" updates it in place. Otherwise
+    // it opens the dialog to name a new view.
     saveFiltersAndSearch(event) {
         event.preventDefault();
+
+        // Read the selected view directly from the DOM. The views bar is always
+        // present (just visually hidden in filter mode), so this is reliable
+        // regardless of outlet connection state or localStorage timing.
+        const selectedViewEl = this.element.querySelector(
+            '[data-mensa-views-target="view"].selected',
+        );
+        const viewId = selectedViewEl?.getAttribute("data-view-id") || "";
+
+        // Numeric IDs are user-created views; symbol-like strings ("default",
+        // "active", etc.) are system views. Update in place for user views.
+        if (viewId && /^\d+$/.test(viewId)) {
+            this._updateCurrentView(viewId);
+            return;
+        }
 
         if (!this.hasSaveViewDialogTarget) return;
 
@@ -174,6 +189,28 @@ export default class TableComponentController extends ApplicationController {
         }
 
         if (this.hasSaveViewNameTarget) this.saveViewNameTarget.focus();
+    }
+
+    async _updateCurrentView(viewId) {
+        const state = this.currentViewState();
+        this.filterBarIsOpen = false;
+
+        const response = await patch(`${this.saveViewUrlValue}/${viewId}`, {
+            body: JSON.stringify({
+                query: state.query,
+                filters: state.filters,
+                order: state.order,
+                turbo_frame_id: this.hasTurboFrameTarget
+                    ? this.turboFrameTarget.id
+                    : null,
+            }),
+            contentType: "application/json",
+            responseKind: "turbo-stream",
+        });
+
+        if (response.ok) {
+            this.collapseToViewsMode();
+        }
     }
 
     cancelSaveView(event) {

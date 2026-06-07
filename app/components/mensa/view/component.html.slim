@@ -16,10 +16,10 @@
               .container
                 input.mensa-table__select-all type="checkbox" data-action="change->mensa-selection#toggleAll" data-mensa-selection-target="headerCheckbox"
           - if table.actions? && Mensa.config.row_actions_position == :front
-            th
+            th Actions
           = render(Mensa::Header::Component.with_collection(table.display_columns, table: table))
           - if table.actions? && Mensa.config.row_actions_position == :back
-            th
+            th Actions
     tbody
       = render(Mensa::TableRow::Component.with_collection(table.rows, table: table))
   - if table.pagy_details&.count == 0
