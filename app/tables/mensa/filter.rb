@@ -41,6 +41,8 @@ module Mensa
           record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         when :equals
           record_scope.where(column.attribute_for_condition => normalize(value))
+        when :not_equals
+          record_scope.where.not(column.attribute_for_condition => normalize(value))
         else
           # Ignore unknown operators
           record_scope
