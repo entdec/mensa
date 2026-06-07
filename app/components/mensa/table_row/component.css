@@ -1,7 +1,6 @@
 .mensa-table {
     tbody {
-        td.actions {
-            @apply text-left px-4;
+        td {
         }
     }
 }

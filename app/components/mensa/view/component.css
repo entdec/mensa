@@ -85,6 +85,10 @@
             @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
 
             /* tr and th moved to header */
+
+            .mensa-table__checkbox-col {
+                @apply pr-2;
+            }
         }
 
         tbody {
