@@ -10,6 +10,7 @@ export default class AddFilterComponentController extends ApplicationController 
         "description", // contains the filter description in the "tab"
         "valuePopover", // contains the filter-value
         "value",
+        "operatorOption", // individual operator list items
     ];
     static values = {
         supportsViews: Boolean,
@@ -21,6 +22,12 @@ export default class AddFilterComponentController extends ApplicationController 
         // this.filterValueEntered = debounce(this.filterValueEntered, 500).bind(this)
         // this.filterValueEntered = this.filterValueEntered.bind(this)
         this._selectedFilterColumn = null;
+        this._outsideClickHandler = null;
+        this._columnLabel = null;
+    }
+
+    disconnect() {
+        this._unbindOutsideClick();
     }
 
     // Called when you click add-filter
@@ -35,6 +42,14 @@ export default class AddFilterComponentController extends ApplicationController 
         this.selectedFilterColumn = columnName;
         this.editingValue = value;
         this.anchorElement = anchor;
+
+        // Resolve the human column label from the filter list so _updateDescription works.
+        const item = this.filterListItemTargets.find(
+            (li) => li.dataset.filterColumnName === columnName,
+        );
+        this._columnLabel =
+            item?.querySelector(".label")?.innerText ?? columnName;
+
         this.openValuePopover();
     }
 
@@ -51,6 +66,7 @@ export default class AddFilterComponentController extends ApplicationController 
         }).then(() => {
             this.valuePopoverTarget.classList.remove("hidden");
             this.positionPopover();
+            this._bindOutsideClick();
         });
     }
 
@@ -81,30 +97,62 @@ export default class AddFilterComponentController extends ApplicationController 
         this.anchorElement = null;
 
         let label = event.target.closest("li").querySelector(".label");
-        this.descriptionTarget.innerText = label.innerText + ": ";
+        this._columnLabel = label.innerText;
+        this.descriptionTarget.innerText = `${this._columnLabel} is`;
 
         this.toggle();
         this.openValuePopover();
     }
 
-    // Called when you entered/selected a filter value
+    // Called when you entered/selected a filter value — applies immediately,
+    // but leaves the popover open so the user can change the operator or close
+    // by clicking outside.
     filterValueEntered(event) {
-        this.valuePopoverTarget.classList.add("hidden");
-        this.editingValue = null;
-        this.anchorElement = null;
-
+        this._updateDescription();
         this.mensaFilterPillListOutlet.refreshFilters();
         event.preventDefault();
         return false;
     }
 
+    // Called when an operator list item is clicked
+    selectOperator(event) {
+        const selected = event.currentTarget;
+        this.operatorOptionTargets.forEach((opt) => {
+            const check = opt.querySelector(
+                ".mensa-table__add_filter__popover_container__operator__check",
+            );
+            if (opt === selected) {
+                opt.dataset.selected = "true";
+                check?.classList.remove("invisible");
+            } else {
+                delete opt.dataset.selected;
+                check?.classList.add("invisible");
+            }
+        });
+
+        // Always reflect the new operator in the description immediately.
+        this._updateDescription();
+
+        // Apply to the table immediately when a value is already selected.
+        if (this.hasValueTarget && this.valueTarget.value) {
+            this.mensaFilterPillListOutlet.refreshFilters();
+        }
+    }
+
+    // Returns the currently selected operator, defaulting to "equals"
+    get operator() {
+        if (!this.hasOperatorOptionTarget) return "equals";
+        const selected = this.operatorOptionTargets.find(
+            (opt) => opt.dataset.selected === "true",
+        );
+        return selected?.dataset.operator ?? "equals";
+    }
+
     reset(event) {
         this.descriptionTarget.innerText = "Add filter";
         this.selectedFilterColumn = null;
-        this.editingValue = null;
-        this.anchorElement = null;
-        this.valuePopoverTarget.classList.add("hidden");
-        this.valuePopoverTarget.style.left = "";
+        this._columnLabel = null;
+        this._closePopover();
     }
 
     get selectedFilterColumn() {
@@ -113,5 +161,59 @@ export default class AddFilterComponentController extends ApplicationController 
 
     set selectedFilterColumn(value) {
         this._selectedFilterColumn = value;
+    }
+
+    // --- private ---
+
+    get operatorLabel() {
+        const labels = {
+            equals: "is",
+            not_equals: "is not",
+            matches: "contains",
+        };
+        return labels[this.operator] ?? "is";
+    }
+
+    _updateDescription() {
+        if (!this._columnLabel) return;
+        const hasValue = this.hasValueTarget && this.valueTarget.value;
+        if (hasValue) {
+            const select = this.valueTarget;
+            const valueLabel =
+                select.options[select.selectedIndex]?.text ?? select.value;
+            this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel} ${valueLabel}`;
+        } else {
+            // No value chosen yet — just reflect the operator so the user can
+            // see which one is active before picking a value.
+            this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel}`;
+        }
+    }
+
+    _closePopover() {
+        this.editingValue = null;
+        this.anchorElement = null;
+        this.valuePopoverTarget.classList.add("hidden");
+        this.valuePopoverTarget.style.left = "";
+        this._unbindOutsideClick();
+    }
+
+    _bindOutsideClick() {
+        this._unbindOutsideClick();
+        this._outsideClickHandler = (event) => {
+            if (!this.element.contains(event.target)) {
+                this._closePopover();
+            }
+        };
+        // Defer so the current click that opened the popover doesn't immediately close it
+        setTimeout(() => {
+            document.addEventListener("click", this._outsideClickHandler);
+        }, 0);
+    }
+
+    _unbindOutsideClick() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener("click", this._outsideClickHandler);
+            this._outsideClickHandler = null;
+        }
     }
 }

@@ -3,5 +3,14 @@
     = @column.human_name
   = form_for(Mensa::Tables::FiltersController::Filter.new, url: '#') do |f|
     = f.select :value, @column.filter.collection, {include_blank: params[:value].blank?, selected: params[:value]}, data: { action: "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered change->mensa-add-filter#filterValueEntered", autofocus: "autofocus", "mensa-add-filter-target" => "value" }
+  hr.mensa-table__add_filter__popover_container__separator
+  ul.mensa-table__add_filter__popover_container__operators
+    li.mensa-table__add_filter__popover_container__operator data-mensa-add-filter-target="operatorOption" data-operator="equals" data-selected="true" data-action="click->mensa-add-filter#selectOperator"
+      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check
+      | Is
+    li.mensa-table__add_filter__popover_container__operator data-mensa-add-filter-target="operatorOption" data-operator="not_equals" data-action="click->mensa-add-filter#selectOperator"
+      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check.invisible
+      | Is not
+  hr.mensa-table__add_filter__popover_container__separator
   a.mensa-table__add_filter__popover_container__clear href="#" data-action="click->mensa-add-filter#reset"
     | Clear

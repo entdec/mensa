@@ -29,7 +29,7 @@ module Mensa
     end
 
     def to_s
-      "#{column.human_name}: #{value}"
+      "#{column.human_name} #{operator_label} #{value}"
     end
 
     def filter_scope(record_scope)
@@ -51,6 +51,15 @@ module Mensa
     end
 
     private
+
+    def operator_label
+      case operator
+      when :equals then "is"
+      when :not_equals then "is not"
+      when :matches then "contains"
+      else "is"
+      end
+    end
 
     def normalize(query)
       query.to_s.gsub(/\s(?![&!|])/, '\\\\ ')

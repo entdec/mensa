@@ -324,7 +324,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         ) {
             filters[this.mensaAddFilterOutlet.selectedFilterColumn] = {
                 value: this.mensaAddFilterOutlet.valueTarget.value,
-                operator: "equals",
+                operator: this.mensaAddFilterOutlet.operator,
             };
         }
 

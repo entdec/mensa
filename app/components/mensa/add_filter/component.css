@@ -9,6 +9,22 @@
                 @apply font-semibold text-gray-900 dark:text-gray-100 mb-2;
             }
 
+            &__separator {
+                @apply border-t border-gray-200 dark:border-gray-600 my-3 -mx-4;
+            }
+
+            &__operators {
+                @apply mb-2;
+            }
+
+            &__operator {
+                @apply flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+
+                &__check {
+                    @apply w-4 flex-none inline-flex items-center justify-center text-xs;
+                }
+            }
+
             &__clear {
                 @apply block mt-3 text-gray-500 dark:text-gray-400 no-underline hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer;
             }
