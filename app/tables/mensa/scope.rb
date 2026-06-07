@@ -35,7 +35,7 @@ module Mensa
       return @ordered_scope if @ordered_scope
 
       @ordered_scope = filtered_scope
-      @ordered_scope = @ordered_scope.reorder(order_hash)
+      @ordered_scope = @ordered_scope.reorder(effective_order)
 
       @ordered_scope
     end
@@ -70,11 +70,24 @@ module Mensa
       @pagy_details, @records = selected_scope.is_a?(Array) ? pagy(:offset, ordered_scope, anchor_string: 'data-turbo-frame="_self"') : pagy(:offset, selected_scope, anchor_string: 'data-turbo-frame="_self"')
     end
 
-    # Though this works, perhaps moving this in column(s) is nicer
+    # Effective ordering for SQL: when the request includes any order[] params
+    # (even with blank values), use only those — blank means "explicitly no sort".
+    # Falls back to the view/config default only when no order params were sent.
+    def effective_order
+      if params.key?(:order)
+        (params[:order] || {}).symbolize_keys.compact_blank.transform_values(&:to_sym)
+      else
+        (config[:order] || {}).symbolize_keys.compact_blank.transform_values(&:to_sym)
+      end
+    end
+
+    # Builds an order hash for URL generation. Merges current order with overrides;
+    # nil values become "" so they appear in the URL as order[col]= (which tells
+    # the server the user explicitly cleared that column's sort direction).
     def order_hash(new_params = {})
-      (params[:order] || config[:order]).merge(new_params.symbolize_keys)
-        .compact_blank
-        .transform_values { |value| value.to_sym }
+      base = params[:order]&.symbolize_keys || config[:order]&.symbolize_keys || {}
+      merged = base.merge(new_params.symbolize_keys)
+      merged.transform_values { |v| v.nil? ? "" : v.to_s }
     end
   end
 end
