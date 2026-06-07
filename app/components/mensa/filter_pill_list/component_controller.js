@@ -128,7 +128,7 @@ export default class FilterPillListComponentController extends ApplicationContro
                 return;
             }
             const orderMatch = key.match(/^order\[(.+)\]$/);
-            if (orderMatch && value) order[orderMatch[1]] = value;
+            if (orderMatch) order[orderMatch[1]] = value;
         });
 
         return {
@@ -328,11 +328,13 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     // Parses `order[column]=direction` params into a plain object.
+    // An empty value (order[col]=) means the user explicitly cleared that column's
+    // sort; it is preserved so the server can distinguish it from "no params sent".
     parseOrderParams(searchParams) {
         const order = {};
         searchParams.forEach((value, key) => {
             const match = key.match(/^order\[(.+)\]$/);
-            if (match && value) {
+            if (match) {
                 order[match[1]] = value;
             }
         });

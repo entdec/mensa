@@ -21,7 +21,8 @@ module Mensa
     config_reader :method # When a method needs to be called on the model, slow!
 
     def sort_direction
-      table.config.dig(:order, name)&.to_sym
+      value = table.config.dig(:order, name)
+      value.present? ? value.to_sym : nil
     end
 
     def next_sort_direction
@@ -77,7 +78,7 @@ module Mensa
       Satis::Menus::Builder.build(:filter_menu, event: "click") do |m|
         if sortable?
           m.item :sort_ascending, icon: "fa-solid fa-arrow-up-short-wide", link: table.path(order: {name => :asc}), link_attributes: {"data-turbo-frame": "_self"}
-          m.item :sort_descending, icon: "fa-solid fa-arrow-down-wide-short", link: table.path(order: {name => :asc}), link_attributes: {"data-turbo-frame": "_self"}
+          m.item :sort_descending, icon: "fa-solid fa-arrow-down-wide-short", link: table.path(order: {name => :desc}), link_attributes: {"data-turbo-frame": "_self"}
         end
       end
     end
