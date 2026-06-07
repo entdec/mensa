@@ -70,7 +70,7 @@ module Mensa
       # show (query, ordering and filters), so a saved view can be replayed by
       # merging this hash back into the request params.
       def view_config
-        params.permit(:query, order: {}, filters: {}).to_h
+        params.permit(:query, order: {}, filters: {}, column_order: [], hidden_columns: []).to_h
       end
 
       def current_mensa_user

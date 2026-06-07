@@ -169,9 +169,9 @@ export default class TableComponentController extends ApplicationController {
         );
         const viewId = selectedViewEl?.getAttribute("data-view-id") || "";
 
-        // Numeric IDs are user-created views; symbol-like strings ("default",
+        // UUID's are user-created views; symbol-like strings ("default",
         // "active", etc.) are system views. Update in place for user views.
-        if (viewId && /^\d+$/.test(viewId)) {
+        if (viewId && /[a-f0-9-]{32}$/.test(viewId)) {
             this._updateCurrentView(viewId);
             return;
         }
@@ -200,6 +200,8 @@ export default class TableComponentController extends ApplicationController {
                 query: state.query,
                 filters: state.filters,
                 order: state.order,
+                column_order: state.column_order,
+                hidden_columns: state.hidden_columns,
                 turbo_frame_id: this.hasTurboFrameTarget
                     ? this.turboFrameTarget.id
                     : null,
@@ -270,6 +272,8 @@ export default class TableComponentController extends ApplicationController {
                 query: state.query,
                 filters: state.filters,
                 order: state.order,
+                column_order: state.column_order,
+                hidden_columns: state.hidden_columns,
                 // Sent so the server can reconstruct matching element IDs.
                 turbo_frame_id: this.hasTurboFrameTarget
                     ? this.turboFrameTarget.id
@@ -321,6 +325,8 @@ export default class TableComponentController extends ApplicationController {
             filters: outlet.collectFilters(),
             query: input ? input.value : outlet.loadQuery(),
             order: outlet.loadOrder(),
+            column_order: outlet.loadColumnOrder(),
+            hidden_columns: outlet.loadHiddenColumns(),
         };
     }
 
