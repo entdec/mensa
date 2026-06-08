@@ -86,7 +86,25 @@ export default class TableComponentController extends ApplicationController {
             this.frameLoadFallback = null;
         }
 
-        if (this.hasTurboFrameTarget && this.hasTableUrlValue) {
+        if (!this.hasTurboFrameTarget) return;
+
+        // When the filter-pill-list outlet is available, build the frame URL from the
+        // full saved state (filters, view, order, …) so that captureNavigation doesn't
+        // call persistView("") and wipe the active view from localStorage.
+        // This happens on back-navigation: the outlet is connected before loadFrame is
+        // called, but tableUrlValue was computed from the initial page URL which never
+        // carries table_view_id.
+        if (this.hasMensaFilterPillListOutlet) {
+            const outlet = this.mensaFilterPillListOutlet;
+            const state = {
+                filters: outlet.loadFilters(),
+                query:   outlet.loadQuery(),
+                view:    outlet.loadView(),
+                order:   outlet.loadOrder(),
+                page:    outlet.loadPage(),
+            };
+            this.turboFrameTarget.setAttribute("src", outlet.buildUrl(state).toString());
+        } else if (this.hasTableUrlValue) {
             this.turboFrameTarget.setAttribute("src", this.tableUrlValue);
         }
     }

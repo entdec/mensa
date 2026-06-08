@@ -180,7 +180,12 @@ export default class FilterPillListComponentController extends ApplicationContro
 
         this.lastTableUrl = url.toString();
         this.persistPage(url.searchParams.get("page") || "");
-        this.persistView(url.searchParams.get("table_view_id") || "");
+        // Only update the stored view when the param is explicitly present.
+        // An absent table_view_id (e.g. the plain tableUrlValue on back-navigation)
+        // must not erase a view the user deliberately selected.
+        if (url.searchParams.has("table_view_id")) {
+            this.persistView(url.searchParams.get("table_view_id") || "");
+        }
         const order = this.parseOrderParams(url.searchParams);
         this.persistOrder(order);
 
