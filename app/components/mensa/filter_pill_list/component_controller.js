@@ -163,6 +163,9 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.persistState(state);
         this.setSearchField("");
         this.updateSearchPlaceholder();
+        if (this.hasMensaTableOutlet) {
+            this.mensaTableOutlet.viewChanged();
+        }
         this.requestState(state);
     }
 

@@ -10,6 +10,15 @@ module Mensa
       def initialize(filter:)
         @filter = filter
       end
+
+      def view_filter?
+        view = filter.table.table_view
+        return false unless view
+
+        view_filters = view.config&.dig(:filters) || view.config&.dig("filters") || {}
+        col = filter.column.name.to_s
+        view_filters.key?(col) || view_filters.key?(col.to_sym)
+      end
     end
   end
 end

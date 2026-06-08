@@ -46,6 +46,7 @@ class UsersTable < Mensa::Base
       operator :equals
       value "user"
     end
+    hidden_columns [:role]
   end
 
   action :show do

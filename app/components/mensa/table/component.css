@@ -1,3 +1,18 @@
+/* Hide view-origin filter pills when the eye toggle is in hidden state */
+.mensa-table--view-filters-hidden [data-view-filter="true"] {
+    display: none;
+}
+
+/* Hide the + trigger when view filters are collapsed AND no user-added pills exist.
+   Using :not(:has(...)) keeps it visible whenever the user has their own filters.
+   The controller and its column-list ul stay in the DOM so the search-input focus
+   handler can still open the column list. */
+.mensa-table--view-filters-hidden
+    .mensa-table__search-bar__pills-area:not(:has(.mensa-filter-pill:not([data-view-filter="true"])))
+    .mensa-table__add_filter__trigger {
+    display: none;
+}
+
 .mensa-table {
     select {
         @apply w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-gray-900 dark:text-gray-100 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm;

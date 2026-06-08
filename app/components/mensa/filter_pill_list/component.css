@@ -42,14 +42,22 @@
     }
 }
 
-/* Hide placeholder and search icon when filter chips are active */
-.mensa-filter-pill
-    ~ .mensa-table__search-bar__input-wrapper
+/* Hide placeholder when visible filter pills exist.
+   User-added pills (no data-view-filter) are always visible.
+   View-filter pills are only visible when the eye toggle is showing them. */
+.mensa-table__search-bar__pills-area:has(.mensa-filter-pill:not([data-view-filter="true"]))
+    .mensa-table__search-bar__input::placeholder,
+.mensa-table:not(.mensa-table--view-filters-hidden)
+    .mensa-table__search-bar__pills-area:has(.mensa-filter-pill[data-view-filter="true"])
     .mensa-table__search-bar__input::placeholder {
     opacity: 0;
 }
-.mensa-filter-pill
-    ~ .mensa-table__search-bar__input-wrapper
+
+/* Hide search icon under the same conditions */
+.mensa-table__search-bar__pills-area:has(.mensa-filter-pill:not([data-view-filter="true"]))
+    .mensa-table__search-bar__search-icon,
+.mensa-table:not(.mensa-table--view-filters-hidden)
+    .mensa-table__search-bar__pills-area:has(.mensa-filter-pill[data-view-filter="true"])
     .mensa-table__search-bar__search-icon {
     display: none;
 }

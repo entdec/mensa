@@ -17,6 +17,7 @@ export default class TableComponentController extends ApplicationController {
         "saveDropdown",
         "saveSimple",
         "saveSplit",
+        "eyeButton",
     ];
     static outlets = ["mensa-filter-pill-list", "mensa-column-customizer"];
     static values = {
@@ -274,6 +275,93 @@ export default class TableComponentController extends ApplicationController {
 
     filterListTargetConnected(element) {
         // The filter bar is always visible in the new design — nothing to toggle.
+    }
+
+    // Called when the filter-pill-list outlet connects (including after turbo-stream re-renders).
+    // Re-applied on every connect so late-arriving pills (from restoreState) get the right state.
+    mensaFilterPillListOutletConnected() {
+        const hasViewFilters = this._hasViewFilterPills();
+        if (hasViewFilters) {
+            const visible = this._loadViewFiltersVisible();
+            this.element.classList.toggle("mensa-table--view-filters-hidden", !visible);
+        } else {
+            this.element.classList.remove("mensa-table--view-filters-hidden");
+        }
+        this._updateEyeButton();
+    }
+
+    // Called from the filter-pill-list controller when the user selects a different view.
+    // Resets the eye preference to hidden so the new view's filters start collapsed.
+    // Does NOT call _updateEyeButton() — the old DOM is still present here and would cause
+    // _updateEyeButton to remove the class we just added. The proper update happens in
+    // mensaFilterPillListOutletConnected after the turbo-stream re-render.
+    viewChanged() {
+        this._saveViewFiltersVisible(false);
+        this.element.classList.add("mensa-table--view-filters-hidden");
+    }
+
+    // --- Eye toggle (view-origin filter pills) ---
+
+    toggleViewFilters(event) {
+        if (event) event.preventDefault();
+        const nowHidden = this.element.classList.toggle("mensa-table--view-filters-hidden");
+        this._saveViewFiltersVisible(!nowHidden);
+        this._updateEyeButton();
+    }
+
+    _hasViewFilterPills() {
+        return this.element.querySelectorAll('[data-view-filter="true"]').length > 0;
+    }
+
+    // Only updates button visibility and icon — never touches the hidden class.
+    // Class management is the sole responsibility of mensaFilterPillListOutletConnected
+    // and toggleViewFilters.
+    _updateEyeButton() {
+        const hasViewFilters = this._hasViewFilterPills();
+
+        if (!this.hasEyeButtonTarget) return;
+
+        this.eyeButtonTarget.classList.toggle("hidden", !hasViewFilters);
+
+        if (hasViewFilters) {
+            const hidden = this.element.classList.contains("mensa-table--view-filters-hidden");
+            // Replace innerHTML so FontAwesome's MutationObserver re-processes the new <i>
+            this.eyeButtonTarget.innerHTML = hidden
+                ? '<i class="fa-solid fa-eye"></i>'
+                : '<i class="fa-solid fa-eye-slash"></i>';
+        }
+    }
+
+    // --- View filter visibility persistence ---
+
+    _viewFiltersStorageKey() {
+        return `mensa:view-filters-visible:${this._tableName()}`;
+    }
+
+    _tableName() {
+        if (this.hasMensaFilterPillListOutlet) {
+            return this.mensaFilterPillListOutlet.tableNameValue;
+        }
+        const el = this.element.querySelector("[data-mensa-filter-pill-list-table-name-value]");
+        return el?.dataset?.mensaFilterPillListTableNameValue || "";
+    }
+
+    _loadViewFiltersVisible() {
+        try {
+            return window.localStorage.getItem(this._viewFiltersStorageKey()) === "true";
+        } catch (e) {
+            return false;
+        }
+    }
+
+    _saveViewFiltersVisible(visible) {
+        try {
+            if (visible) {
+                window.localStorage.setItem(this._viewFiltersStorageKey(), "true");
+            } else {
+                window.localStorage.removeItem(this._viewFiltersStorageKey());
+            }
+        } catch (e) {}
     }
 
     // --- Export ---

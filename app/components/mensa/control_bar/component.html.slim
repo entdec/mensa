@@ -28,6 +28,10 @@
         button.mensa-table__control_bar__button[type="button" data-action="mensa-table#saveAsNewView"]
           = t('.save', default: 'Save!')
 
+    / Eye icon — toggles visibility of view-origin filter pills (shown by JS when needed)
+    button.mensa-table__control_bar__button.hidden[type="button" data-mensa-table-target="eyeButton" data-action="click->mensa-table#toggleViewFilters"]
+      i.fa-solid.fa-eye
+
     / Export
     - if table.exportable?
       button.mensa-table__control_bar__button.relative[type="button" data-action="mensa-table#export"]
