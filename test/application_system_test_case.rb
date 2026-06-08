@@ -1,5 +1,27 @@
 require "test_helper"
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+  class << self
+    def setup_browser
+      headless = !ENV.fetch("HEADLESS", "1").in?(%w[n 0 no false])
+
+      driven_by :selenium, using: (headless ? :headless_firefox : :firefox), options: {
+        browser: :remote,
+        url: ENV["SELENIUM_URL"]
+      } do |driver|
+        driver.add_preference("intl.accept_languages", "nl")
+      end
+
+      Capybara.javascript_driver = :selenium
+      Capybara.default_max_wait_time = 10
+      Capybara.server = :puma, {Silent: true, Threads: "0:10", queue_requests: false}
+      Capybara.server_port = 3100
+      Capybara.server_host = "0.0.0.0"
+      Capybara.app_host = "http://app.mensa.orb.local"
+      Rails.application.routes.default_url_options[:host] = Capybara.app_host
+      Rails.application.routes.default_url_options[:port] = Capybara.server_port
+    end
+  end
+
+  setup_browser
 end

@@ -19,6 +19,10 @@ module Mensa
       @table = table
     end
 
+    def multiple?
+      !!multiple
+    end
+
     def collection
       return unless config&.key?(:collection)
 
@@ -27,6 +31,14 @@ module Mensa
       else
         config[:collection]
       end
+    end
+
+    # This defines how the filter should be displayed in the value popover
+    # :select => as a select input
+    # :checkbox => as a checkbox input
+    # :string => as a text input
+    def as
+      config[:as]
     end
 
     def to_s
@@ -41,9 +53,11 @@ module Mensa
         when :matches
           record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         when :equals
-          record_scope.where(column.attribute_for_condition => normalize(value))
+          val = value.is_a?(Array) ? value : normalize(value)
+          record_scope.where(column.attribute_for_condition => val)
         when :not_equals
-          record_scope.where.not(column.attribute_for_condition => normalize(value))
+          val = value.is_a?(Array) ? value : normalize(value)
+          record_scope.where.not(column.attribute_for_condition => val)
         else
           # Ignore unknown operators
           record_scope

@@ -11,7 +11,8 @@ module Mensa
       end
 
       config = config.merge(params.permit!.to_h)
-      config = config.merge(params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, filters: {}, column_order: [], hidden_columns: []).to_h)
+      config = config.merge(params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, column_order: [], hidden_columns: []).to_h)
+      config[:filters] = params[:filters]&.to_unsafe_h || config[:filters] || {}
 
       @table = Mensa.for_name(params[:id], config)
       @table.request = request

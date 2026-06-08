@@ -8,11 +8,24 @@
         }
 
         &__enter-hint {
-            @apply hidden text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 rounded px-1.5 py-0.5 whitespace-nowrap;
+            display: none;
+            @apply text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 rounded px-1.5 py-0.5 whitespace-nowrap;
+        }
+
+        &__checkbox {
+            @apply h-4 w-4 flex-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 inline-block;
+
+            &--checked {
+                @apply bg-gray-900 border-gray-900 dark:bg-white dark:border-white;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
         }
 
         &__popover_container {
-            @apply p-4 absolute z-10 w-72 rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+            @apply p-4 fixed z-50 w-72 rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
 
             &__heading {
                 @apply font-semibold text-gray-900 dark:text-gray-100 mb-2;
@@ -56,7 +69,7 @@
 /* Show enter hint on hover or keyboard highlight — covers column list and value popover */
 .mensa-table__add_filter li:hover .mensa-table__add_filter__enter-hint,
 .mensa-table__add_filter li.highlighted .mensa-table__add_filter__enter-hint {
-    @apply block;
+    display: inline-flex;
 }
 
 /* Keyboard highlight background — mirrors the hover style */

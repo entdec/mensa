@@ -19,9 +19,12 @@ export default class FilterPillComponentController extends ApplicationController
 
         if (!this.hasMensaFilterPillListOutlet) return;
 
+        let value = this.valueValue;
+        try { value = JSON.parse(value); } catch {}
+
         this.mensaFilterPillListOutlet.editFilter(
             this.columnNameValue,
-            this.valueValue,
+            value,
             this.operatorValue,
             this.element,
         );

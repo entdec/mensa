@@ -26,6 +26,9 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     searchFocused(event) {
         if (this.hasMensaAddFilterOutlet) {
+            // Don't open the column list while the value popover is already showing —
+            // focusing the search input for keyboard nav must not clobber the popover.
+            if (this.mensaAddFilterOutlet.isValuePopoverOpen) return;
             this.mensaAddFilterOutlet.filterColumns("");
             this.mensaAddFilterOutlet.showList(this.searchInputTarget);
         }
@@ -36,6 +39,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         this._monitorResetButton();
 
         if (this.hasMensaAddFilterOutlet) {
+            if (this.mensaAddFilterOutlet.isValuePopoverOpen) return;
             this.mensaAddFilterOutlet.filterColumns(value);
             if (value.length > 0) {
                 if (this.mensaAddFilterOutlet.visibleColumnCount > 0) {
@@ -126,7 +130,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     // Called when a filter is added/changed.
     refreshFilters() {
         this._notifyUnsavedState();
-        this.applyState({
+        return this.applyState({
             filters: this.collectFilters(),
             query: this.loadQuery(),
             view: this.loadView(),
@@ -135,7 +139,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         });
     }
 
-    // Called by the search controller when the query is submitted or reset.
+// Called by the search controller when the query is submitted or reset.
     setQuery(query) {
         if (query && query.length > 0) this._notifyUnsavedState();
         this.applyState({
@@ -196,9 +200,15 @@ export default class FilterPillListComponentController extends ApplicationContro
         const filters = {};
         const order = {};
         params.forEach((value, key) => {
-            const filterMatch = key.match(
-                /^filters\[(.+?)\]\[(value|operator)\]$/,
-            );
+            // Multi-select: filters[col][value][]
+            const multiMatch = key.match(/^filters\[(.+?)\]\[value\]\[\]$/);
+            if (multiMatch) {
+                const column = multiMatch[1];
+                const f = (filters[column] = filters[column] || {});
+                f.value = Array.isArray(f.value) ? [...f.value, value] : [value];
+                return;
+            }
+            const filterMatch = key.match(/^filters\[(.+?)\]\[(value|operator)\]$/);
             if (filterMatch) {
                 const column = filterMatch[1];
                 (filters[column] = filters[column] || {})[filterMatch[2]] = value;
@@ -280,7 +290,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     applyState(state) {
-        this.persistAndRequest(state);
+        return this.persistAndRequest(state);
     }
 
     persistAndRequest(state) {
@@ -305,7 +315,13 @@ export default class FilterPillListComponentController extends ApplicationContro
         url.searchParams.delete("table_view_id");
 
         Object.entries(state.filters || {}).forEach(([columnName, filter]) => {
-            url.searchParams.append(`filters[${columnName}][value]`, filter.value);
+            if (Array.isArray(filter.value)) {
+                filter.value.forEach((v) =>
+                    url.searchParams.append(`filters[${columnName}][value][]`, v),
+                );
+            } else {
+                url.searchParams.append(`filters[${columnName}][value]`, filter.value ?? "");
+            }
             url.searchParams.append(`filters[${columnName}][operator]`, filter.operator);
         });
 
@@ -328,9 +344,9 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     removeFilterParams(url) {
-        const keys = [];
+        const keys = new Set();
         url.searchParams.forEach((_v, key) => {
-            if (key.startsWith("filters[")) keys.push(key);
+            if (key.startsWith("filters[")) keys.add(key);
         });
         keys.forEach((key) => url.searchParams.delete(key));
     }
@@ -363,12 +379,15 @@ export default class FilterPillListComponentController extends ApplicationContro
     collectFilters() {
         const filters = this.renderedFilters();
 
-        if (
-            this.hasMensaAddFilterOutlet &&
-            this.mensaAddFilterOutlet.selectedFilterColumn
-        ) {
+        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.selectedFilterColumn) {
+            const isMultiple = this.mensaAddFilterOutlet.isMultipleMode;
+            const value = isMultiple
+                ? this.mensaAddFilterOutlet.selectedValues
+                : this.mensaAddFilterOutlet.hasValueTarget
+                    ? this.mensaAddFilterOutlet.valueTarget.value
+                    : "";
             filters[this.mensaAddFilterOutlet.selectedFilterColumn] = {
-                value: this.mensaAddFilterOutlet.valueTarget.value,
+                value,
                 operator: this.mensaAddFilterOutlet.operator,
             };
         }
@@ -385,8 +404,12 @@ export default class FilterPillListComponentController extends ApplicationContro
                 const columnName = pill.getAttribute("data-mensa-filter-pill-column-name-value");
                 if (!columnName) return;
 
+                const rawValue = pill.getAttribute("data-mensa-filter-pill-value-value");
+                let value;
+                try { value = JSON.parse(rawValue); } catch { value = rawValue; }
+
                 filters[columnName] = {
-                    value: pill.getAttribute("data-mensa-filter-pill-value-value"),
+                    value,
                     operator: pill.getAttribute("data-mensa-filter-pill-operator-value"),
                 };
             });

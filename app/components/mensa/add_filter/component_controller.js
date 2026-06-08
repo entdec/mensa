@@ -2,6 +2,10 @@ import ApplicationController from "mensa/controllers/application_controller";
 // import { debounce } from '@entdec/satis'
 import { get } from "@rails/request.js";
 
+// Survives the turbo-stream re-render that destroys both the filter-pill-list
+// and add-filter controller instances on every refreshFilters() call.
+let _pendingMultiReopen = null;
+
 export default class AddFilterComponentController extends ApplicationController {
     static outlets = ["mensa-filter-pill-list"];
     static targets = [
@@ -26,10 +30,39 @@ export default class AddFilterComponentController extends ApplicationController 
         this._outsideClickHandler = null;
         this._columnLabel = null;
         this._pendingPill = null;
+
+        // If a multi-select toggle triggered a refreshFilters() that destroyed and
+        // recreated this controller, re-open the value popover with the saved state.
+        if (_pendingMultiReopen) {
+            const reopen = _pendingMultiReopen;
+            _pendingMultiReopen = null;
+            // Defer one macrotask so Stimulus has time to wire up outlets.
+            setTimeout(() => {
+                if (this.hasMensaFilterPillListOutlet) {
+                    this.editColumn(reopen.column, reopen.values, reopen.operator || "equals", null);
+                }
+            }, 0);
+        }
+
+        // Prevent arrow keys from scrolling the page while any popup is open.
+        // Bound once here (not on each showList/hideList) to avoid timing issues
+        // with turbo-stream re-renders destroying the controller mid-flow.
+        this._arrowPreventHandler = (event) => {
+            if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+            const listOpen =
+                this.hasFilterListTarget &&
+                !this.filterListTarget.classList.contains("hidden");
+            if (listOpen || this.isValuePopoverOpen) event.preventDefault();
+        };
+        document.addEventListener("keydown", this._arrowPreventHandler);
     }
 
     disconnect() {
         this._unbindOutsideClick();
+        if (this._arrowPreventHandler) {
+            document.removeEventListener("keydown", this._arrowPreventHandler);
+            this._arrowPreventHandler = null;
+        }
     }
 
     // Called when you click add-filter (legacy — kept for backward compatibility)
@@ -158,25 +191,54 @@ export default class AddFilterComponentController extends ApplicationController 
     // Confirm the highlighted (or pre-selected) item in the value popover via Enter
     confirmHighlightedValue() {
         let item = this._valuePopoverItems.find((i) => i.classList.contains("highlighted"));
-        // Fall back to pre-selected value option if nothing is keyboard-highlighted
-        if (!item && this.hasValueOptionTarget) {
+        // Fall back to pre-selected value option if nothing is keyboard-highlighted (single only)
+        if (!item && !this.isMultipleMode && this.hasValueOptionTarget) {
             item = this.valueOptionTargets.find((opt) => opt.dataset.selected === "true");
         }
         if (!item) return;
         if (this.hasValueOptionTarget && this.valueOptionTargets.includes(item)) {
-            this._selectValueItem(item);
+            if (this.isMultipleMode) {
+                this._toggleValueItem(item);
+            } else {
+                this._selectValueItem(item);
+            }
         } else {
-            item.click();
+            item.click(); // operator item
         }
     }
 
     // Click handler for custom value list items
     selectValue(event) {
-        this._selectValueItem(event.currentTarget);
+        if (this.isMultipleMode) {
+            this._toggleValueItem(event.currentTarget);
+        } else {
+            this._selectValueItem(event.currentTarget);
+        }
     }
 
     get isValuePopoverOpen() {
         return this.hasValuePopoverTarget && !this.valuePopoverTarget.classList.contains("hidden");
+    }
+
+    get isMultipleMode() {
+        if (!this.hasValuePopoverTarget) return false;
+        return (
+            this.valuePopoverTarget.querySelector(
+                ".mensa-table__add_filter__popover_container__values",
+            )?.dataset.multiple === "true"
+        );
+    }
+
+    // Returns all selected values. Array for multi-select; scalar string for single.
+    get selectedValues() {
+        if (this.isMultipleMode) {
+            return this.hasValueOptionTarget
+                ? this.valueOptionTargets
+                    .filter((opt) => opt.dataset.selected === "true")
+                    .map((opt) => opt.dataset.value)
+                : [];
+        }
+        return this.hasValueTarget ? this.valueTarget.value : "";
     }
 
     get hasHighlightedValue() {
@@ -195,8 +257,11 @@ export default class AddFilterComponentController extends ApplicationController 
         let url = this.mensaFilterPillListOutlet.ourUrl;
         url.pathname += `/filters/${this.selectedFilterColumn}`;
         url.searchParams.append("target", this.valuePopoverTarget.id);
-        if (this.editingValue)
+        if (Array.isArray(this.editingValue)) {
+            this.editingValue.forEach((v) => url.searchParams.append("value[]", v));
+        } else if (this.editingValue) {
             url.searchParams.append("value", this.editingValue);
+        }
         if (this.editingOperator)
             url.searchParams.append("operator", this.editingOperator);
 
@@ -206,32 +271,35 @@ export default class AddFilterComponentController extends ApplicationController 
             this.valuePopoverTarget.classList.remove("hidden");
             this.positionPopover();
             this._bindOutsideClick();
+            // Restore focus to the search input so keyboard navigation (↑↓ Enter)
+            // keeps working — especially after the popover is re-opened programmatically
+            // following a multi-select turbo-stream re-render.
+            if (this.hasMensaFilterPillListOutlet) {
+                const input = this.mensaFilterPillListOutlet.searchInputElement?.();
+                if (input) input.focus({ preventScroll: true });
+            }
         });
     }
 
-    // Position the value popover below the search container. When editing an
-    // existing pill the left edge is aligned to that pill; otherwise it aligns
-    // to the left edge of the search container.
+    // Position the value popover below the search container. Uses fixed positioning
+    // with viewport coordinates so it escapes any ancestor overflow clipping.
     positionPopover() {
         const container =
             this.element.closest(".mensa-table__search-container") ||
             this.element.closest(".mensa-table__search-bar");
-        const base = this.element.getBoundingClientRect();
 
         if (container) {
             const containerRect = container.getBoundingClientRect();
-            this.valuePopoverTarget.style.top = `${containerRect.bottom - base.top + 4}px`;
+            this.valuePopoverTarget.style.top = `${containerRect.bottom + 4}px`;
         }
 
         if (this.anchorElement) {
             const anchor = this.anchorElement.getBoundingClientRect();
-            this.valuePopoverTarget.style.left = `${anchor.left - base.left}px`;
+            this.valuePopoverTarget.style.left = `${anchor.left}px`;
         } else {
-            // Align to the trigger element (search input or + button) when available,
-            // otherwise fall back to the add-filter element's own position.
             const ref = this._triggerEl || this.element;
             const r = ref.getBoundingClientRect();
-            this.valuePopoverTarget.style.left = `${r.left - base.left}px`;
+            this.valuePopoverTarget.style.left = `${r.left}px`;
         }
     }
 
@@ -277,7 +345,16 @@ export default class AddFilterComponentController extends ApplicationController 
         this._updateDescription();
 
         // Apply to the table immediately when a value is already selected.
-        if (this.hasValueTarget && this.valueTarget.value) {
+        if (this.isMultipleMode) {
+            if (this.selectedValues.length > 0) {
+                _pendingMultiReopen = {
+                    column: this._selectedFilterColumn,
+                    values: this.selectedValues,
+                    operator: this.operator,
+                };
+                this.mensaFilterPillListOutlet.refreshFilters();
+            }
+        } else if (this.hasValueTarget && this.valueTarget.value) {
             this.mensaFilterPillListOutlet.refreshFilters();
         }
     }
@@ -291,10 +368,12 @@ export default class AddFilterComponentController extends ApplicationController 
         return selected?.dataset.operator ?? "equals";
     }
 
+    // Called via Escape — close the value popover.
     closeValuePopover() {
         this._closePopover();
     }
 
+    // Called by the Clear link.
     reset(event) {
         if (this.hasDescriptionTarget) this.descriptionTarget.innerText = "Add filter";
         this.selectedFilterColumn = null;
@@ -324,16 +403,46 @@ export default class AddFilterComponentController extends ApplicationController 
 
     _updateDescription() {
         if (!this._columnLabel || !this.hasDescriptionTarget) return;
-        const value = this.hasValueTarget ? this.valueTarget.value : "";
-        if (value) {
-            const option = this.hasValueOptionTarget
-                ? this.valueOptionTargets.find((opt) => opt.dataset.value === value)
-                : null;
-            const valueLabel = option?.dataset.label || value;
+        let valueLabel;
+        if (this.isMultipleMode) {
+            const labels = this.hasValueOptionTarget
+                ? this.valueOptionTargets
+                    .filter((opt) => opt.dataset.selected === "true")
+                    .map((opt) => opt.dataset.label || opt.dataset.value)
+                : [];
+            valueLabel = labels.length > 0 ? labels.join(", ") : null;
+        } else {
+            const value = this.hasValueTarget ? this.valueTarget.value : "";
+            if (value) {
+                const option = this.hasValueOptionTarget
+                    ? this.valueOptionTargets.find((opt) => opt.dataset.value === value)
+                    : null;
+                valueLabel = option?.dataset.label || value;
+            }
+        }
+        if (valueLabel) {
             this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel} ${valueLabel}`;
         } else {
             this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel}`;
         }
+    }
+
+    _toggleValueItem(item) {
+        const isSelected = item.dataset.selected === "true";
+        const newState = !isSelected;
+        item.dataset.selected = newState ? "true" : "";
+        const checkbox = item.querySelector(".mensa-table__add_filter__checkbox");
+        if (checkbox) checkbox.classList.toggle("mensa-table__add_filter__checkbox--checked", newState);
+        this._updateDescription();
+        // Stash reopen state before the turbo-stream destroys both this controller
+        // and the filter-pill-list controller. The new add-filter instance reads
+        // this in connect() and re-opens the popover after outlets are wired.
+        _pendingMultiReopen = {
+            column: this._selectedFilterColumn,
+            values: this.selectedValues,
+            operator: this.operator,
+        };
+        this.mensaFilterPillListOutlet.refreshFilters();
     }
 
     _selectValueItem(item) {
@@ -355,21 +464,21 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     // Position the column list below the search container, aligned to the trigger
-    // element (search input or + button) so it appears under the cursor.
+    // element (search input or + button). Uses fixed positioning with viewport
+    // coordinates so it escapes any ancestor overflow clipping.
     _positionListUnderSearchBar(triggerEl = null) {
         const container =
             this.element.closest(".mensa-table__search-container") ||
             this.element.closest(".mensa-table__search-bar");
         if (!container) return;
         const containerRect = container.getBoundingClientRect();
-        const baseRect = this.element.getBoundingClientRect();
 
-        this.filterListTarget.style.top = `${containerRect.bottom - baseRect.top + 4}px`;
+        this.filterListTarget.style.top = `${containerRect.bottom + 4}px`;
         this.filterListTarget.style.minWidth = "16rem";
 
         const anchor = triggerEl || this.element;
         const anchorRect = anchor.getBoundingClientRect();
-        this.filterListTarget.style.left = `${anchorRect.left - baseRect.left}px`;
+        this.filterListTarget.style.left = `${anchorRect.left}px`;
     }
 
     _closePopover() {
@@ -430,4 +539,5 @@ export default class AddFilterComponentController extends ApplicationController 
             this._outsideClickHandler = null;
         }
     }
+
 }

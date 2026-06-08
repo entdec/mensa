@@ -21,6 +21,8 @@ module Mensa
         @table.original_view_context = helpers
         @column = @table.column(params[:id])
         @operator = params[:operator].presence || "equals"
+        @multiple = @column.filter.multiple?
+        @values = Array(params[:value]).flatten.compact
         respond_to do |format|
           format.turbo_stream
           format.html

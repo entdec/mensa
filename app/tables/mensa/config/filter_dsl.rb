@@ -6,5 +6,7 @@ module Mensa::Config
     option :value
     option :collection
     option :scope
+    option :multiple, default: false
+    option :as
   end
 end

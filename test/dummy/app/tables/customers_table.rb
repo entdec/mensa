@@ -13,6 +13,7 @@ class CustomersTable < Mensa::Base
   column(:country) do
     filter do
       collection -> { Customer.pluck(:country).uniq }
+      multiple true
     end
   end
   column(:isin)

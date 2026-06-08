@@ -1,14 +1,18 @@
 = turbo_stream.update params[:target] do
   .mensa-table__add_filter__popover_container__heading
     = @column.human_name
-  input[type="hidden" data-mensa-add-filter-target="value" value=params[:value]]
-  ul.mensa-table__add_filter__popover_container__values
+  - unless @multiple
+    input[type="hidden" data-mensa-add-filter-target="value" value=@values.first]
+  ul.mensa-table__add_filter__popover_container__values data-multiple=("true" if @multiple)
     - (@column.filter.collection || []).each do |item|
       - opt_label = item.is_a?(Array) ? item.first.to_s : item.to_s
       - opt_value = item.is_a?(Array) ? item.last.to_s : item.to_s
-      - is_selected = params[:value].present? && params[:value].to_s == opt_value
+      - is_selected = @values.include?(opt_value)
       li.mensa-table__add_filter__popover_container__value[data-mensa-add-filter-target="valueOption" data-value=opt_value data-label=opt_label data-selected=("true" if is_selected) data-action="click->mensa-add-filter#selectValue mouseenter->mensa-add-filter#highlightItem"]
-        i.mensa-table__add_filter__popover_container__value__check.fa-solid.fa-check class=("invisible" unless is_selected)
+        - if @multiple
+          span.mensa-table__add_filter__checkbox class=("mensa-table__add_filter__checkbox--checked" if is_selected)
+        - else
+          i.mensa-table__add_filter__popover_container__value__check.fa-solid.fa-check class=("invisible" unless is_selected)
         span.flex-1
           = opt_label
         span.mensa-table__add_filter__enter-hint

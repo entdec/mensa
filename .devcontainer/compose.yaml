@@ -27,7 +27,7 @@ services:
       - RUBY_YJIT_ENABLE=1
 
   selenium:
-    image: selenium/standalone-chromium
+    image: selenium/standalone-firefox
     restart: unless-stopped
 
   redis:
