@@ -39,7 +39,10 @@ export default class FilterPillListComponentController extends ApplicationContro
         this._monitorResetButton();
 
         if (this.hasMensaAddFilterOutlet) {
-            if (this.mensaAddFilterOutlet.isValuePopoverOpen) return;
+            if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+                this.mensaAddFilterOutlet.filterValues(value);
+                return;
+            }
             this.mensaAddFilterOutlet.filterColumns(value);
             if (value.length > 0) {
                 if (this.mensaAddFilterOutlet.visibleColumnCount > 0) {

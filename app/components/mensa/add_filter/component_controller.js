@@ -102,6 +102,16 @@ export default class AddFilterComponentController extends ApplicationController 
         });
     }
 
+    // Filters the value option items in the open value popover to those matching `query`.
+    // Operator options are never hidden — they don't represent data values.
+    filterValues(query) {
+        const q = (query || "").toLowerCase();
+        this.valueOptionTargets.forEach((item) => {
+            const label = (item.dataset.label || item.dataset.value || "").toLowerCase();
+            item.classList.toggle("hidden", q.length > 0 && !label.includes(q));
+        });
+    }
+
     get visibleColumnCount() {
         return this.filterListItemTargets.filter((i) => !i.classList.contains("hidden")).length;
     }
@@ -249,7 +259,7 @@ export default class AddFilterComponentController extends ApplicationController 
         return [
             ...(this.hasValueOptionTarget ? this.valueOptionTargets : []),
             ...this.operatorOptionTargets,
-        ];
+        ].filter((i) => !i.classList.contains("hidden"));
     }
 
     // Called when you selected a column
