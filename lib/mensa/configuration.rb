@@ -3,9 +3,20 @@
 module Mensa
   module Options
     module ClassMethods
-      def option(name, default: nil)
-        attr_accessor(name)
-        schema[name] = default
+      def option(name, default: nil, proc: false)
+        attr_writer(name)
+        schema[name] = {default: default, proc: proc}
+
+        if schema[name][:proc]
+          define_method(name) do |*params|
+            value = instance_variable_get(:"@#{name}")
+            instance_exec(*params, &value)
+          end
+        else
+          define_method(name) do
+            instance_variable_get(:"@#{name}")
+          end
+        end
       end
 
       def schema
@@ -14,8 +25,8 @@ module Mensa
     end
 
     def set_defaults!
-      self.class.schema.each do |name, default|
-        instance_variable_set("@#{name}", default)
+      self.class.schema.each do |name, options|
+        instance_variable_set(:"@#{name}", options[:default])
       end
     end
 
@@ -67,7 +78,13 @@ module Mensa
 
     option :row_actions_position, default: :back
     # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
-    option :search, default: :basic
+    option :search, default: -> {
+      @_search_cache ||= begin
+        (ActiveRecord::Base.connection.execute("SELECT extname FROM pg_extension where extname='pg_trgm';")&.first&.[]("extname") == "pg_trgm") ? :fuzzy : :basic
+      rescue
+        :basic
+      end
+    }, proc: true
 
     def initialize
       set_defaults!
