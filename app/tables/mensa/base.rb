@@ -31,7 +31,7 @@ module Mensa
     end
 
     def column_order
-      order = config[:column_order] || config[:columns]&.keys
+      order = config[:column_order].presence || config[:columns]&.keys
       order = order&.map(&:to_sym)
       return order if order.nil?
 
@@ -84,9 +84,13 @@ module Mensa
       columns.any?(&:filter?)
     end
 
-    # Returns the active filters
+    # Returns the active filters, skipping any whose column no longer exists.
     def active_filters
-      (config[:filters] || {}).map { |column_name, filter_config| Mensa::Filter.new(column: column(column_name), config: filter_config, table: self) }
+      (config[:filters] || {}).filter_map do |column_name, filter_config|
+        col = column(column_name)
+        next unless col
+        Mensa::Filter.new(column: col, config: filter_config, table: self)
+      end
     end
 
     def actions?

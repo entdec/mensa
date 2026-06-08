@@ -11,6 +11,7 @@ module Mensa
     config_reader :operator, cast: :to_sym
     config_reader :value
     config_reader :scope
+    config_reader :multiple
 
     def initialize(column:, config:, table:)
       @column = column
@@ -50,8 +51,6 @@ module Mensa
       end
     end
 
-    private
-
     def operator_label
       case operator
       when :equals then "is"
@@ -60,6 +59,8 @@ module Mensa
       else "is"
       end
     end
+
+    private
 
     def normalize(query)
       query.to_s.gsub(/\s(?![&!|])/, '\\\\ ')

@@ -45,7 +45,13 @@ module Mensa
         view = Mensa::TableView.find_by(table_name: params[:table_id], id: params[:id], user: user)
         return head(:not_found) if view.blank?
 
-        if view.update(config: view_config)
+        # When only renaming, preserve the existing config rather than overwriting
+        # with an empty hash from view_config.
+        new_config = view_config
+        update_attrs = {config: new_config.present? ? new_config : view.config}
+        update_attrs[:name] = params[:name] if params[:name].present?
+
+        if view.update(update_attrs)
           respond_to do |format|
             format.turbo_stream do
               table_config = view.config
@@ -61,6 +67,25 @@ module Mensa
           end
         else
           render json: {errors: view.errors.full_messages}, status: :unprocessable_entity
+        end
+      end
+
+      def destroy
+        user = current_mensa_user
+        return head(:forbidden) if user.blank?
+
+        view = Mensa::TableView.find_by(table_name: params[:table_id], id: params[:id], user: user)
+        return head(:not_found) if view.blank?
+
+        view.destroy
+
+        respond_to do |format|
+          format.turbo_stream do
+            @table = Mensa.for_name(params[:table_id], {turbo_frame_id: params[:turbo_frame_id]})
+            @table.request = request
+            @table.original_view_context = helpers
+          end
+          format.json { head :no_content }
         end
       end
 

@@ -1,0 +1,23 @@
+.mensa-filter-pill {
+    @apply inline-flex items-stretch text-xs;
+
+    &__chip {
+        @apply flex items-center gap-1 pl-2 pr-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-l-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors;
+    }
+
+    &__column {
+        @apply text-gray-600 dark:text-gray-300;
+    }
+
+    &__operator {
+        @apply rounded px-1 bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300;
+    }
+
+    &__value {
+        @apply rounded pl-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium;
+    }
+
+    &__remove {
+        @apply inline-flex items-center justify-center px-1.5 text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-r-md hover:text-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 dark:hover:text-gray-200 cursor-pointer transition-colors;
+    }
+}

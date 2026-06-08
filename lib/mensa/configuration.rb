@@ -66,6 +66,8 @@ module Mensa
     }
 
     option :row_actions_position, default: :back
+    # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
+    option :search, default: :basic
 
     def initialize
       set_defaults!

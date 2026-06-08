@@ -1,13 +1,55 @@
 .mensa-table {
-    &__filters {
-        @apply p-2 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
+    &__search-bar {
+        @apply flex items-center gap-1.5 flex-1 min-w-0 h-full px-2;
 
-        a.filter {
-            @apply bg-gray-200 dark:bg-gray-500 hover:bg-gray-400 text-gray-800 rounded-md px-3 py-1.5 text-sm;
+        &__pills-area {
+            @apply flex flex-1 flex-wrap items-center gap-1 min-w-0;
         }
 
-        a.filter.selected {
-            @apply bg-gray-100 text-gray-600 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-200;
+        &__input-wrapper {
+            @apply relative flex items-center flex-1 min-w-[4rem];
+        }
+
+        &__search-icon {
+            @apply absolute left-2 text-gray-400 pointer-events-none -ml-4;
+            font-size: 0.9rem;
+            /* icon is after input in DOM but floats left via absolute positioning */
+        }
+
+        &__input {
+            @apply w-full bg-transparent text-xs text-gray-700 dark:text-gray-200 placeholder:text-gray-400;
+            /* Override @tailwindcss/forms — direct CSS beats attribute selector specificity */
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            padding: 0 0.25rem 0 1.5rem;
+
+            &:focus {
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            /* Hide the icon that follows when input has content (placeholder not shown) */
+            &:not(:placeholder-shown) ~ .mensa-table__search-bar__search-icon {
+                display: none;
+            }
+        }
+
+        &__clear {
+            @apply flex-none p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer;
         }
     }
+}
+
+/* Hide placeholder and search icon when filter chips are active */
+.mensa-filter-pill
+    ~ .mensa-table__search-bar__input-wrapper
+    .mensa-table__search-bar__input::placeholder {
+    opacity: 0;
+}
+.mensa-filter-pill
+    ~ .mensa-table__search-bar__input-wrapper
+    .mensa-table__search-bar__search-icon {
+    display: none;
 }

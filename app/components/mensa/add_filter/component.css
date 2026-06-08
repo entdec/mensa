@@ -1,9 +1,18 @@
 .mensa-table {
     &__add_filter {
-        @apply relative;
+        @apply relative inline-flex items-center;
+
+        &__trigger {
+            /* Hidden by default; shown via sibling selector when filter pills exist */
+            @apply hidden items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer transition-colors text-sm;
+        }
+
+        &__enter-hint {
+            @apply hidden text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 rounded px-1.5 py-0.5 whitespace-nowrap;
+        }
 
         &__popover_container {
-            @apply p-4 absolute z-10 mt-1 w-72 rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+            @apply p-4 absolute z-10 w-72 rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
 
             &__heading {
                 @apply font-semibold text-gray-900 dark:text-gray-100 mb-2;
@@ -11,6 +20,18 @@
 
             &__separator {
                 @apply border-t border-gray-200 dark:border-gray-600 my-3 -mx-4;
+            }
+
+            &__values {
+                @apply mb-2;
+            }
+
+            &__value {
+                @apply flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+
+                &__check {
+                    @apply w-4 flex-none inline-flex items-center justify-center text-xs;
+                }
             }
 
             &__operators {
@@ -30,4 +51,25 @@
             }
         }
     }
+}
+
+/* Show enter hint on hover or keyboard highlight — covers column list and value popover */
+.mensa-table__add_filter li:hover .mensa-table__add_filter__enter-hint,
+.mensa-table__add_filter li.highlighted .mensa-table__add_filter__enter-hint {
+    @apply block;
+}
+
+/* Keyboard highlight background — mirrors the hover style */
+.mensa-table__add_filter li.highlighted {
+    @apply bg-gray-100 dark:bg-gray-700;
+}
+
+/* Show the + trigger only when filter pills precede the add_filter in the DOM */
+.mensa-filter-pill ~ .mensa-table__add_filter .mensa-table__add_filter__trigger {
+    @apply inline-flex;
+}
+
+/* Pending pill while the value popover is open — rounded on both sides (no remove button) */
+.mensa-filter-pill--pending .mensa-filter-pill__chip {
+    @apply rounded-md opacity-70;
 }

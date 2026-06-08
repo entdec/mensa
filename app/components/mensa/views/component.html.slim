@@ -1,18 +1,49 @@
-.mensa-table__views id="mensa-views-#{table.table_id}" data-mensa-table-target="views" data-controller="mensa-views" data-mensa-views-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{table.table_id}"
-  .sm:hidden
-    label.sr-only[for="tabs"]
-      | Select a tab
-    select#tabs.block.w-full.rounded-md.border-gray-300.focus:border-indigo-500.focus:ring-indigo-500[name="tabs"]
-      - table.all_views.each.with_index do |view, index|
-        option = view.name
-  .hidden.sm:block
-    nav.flex.justify-between[aria-label="Tabs"]
-      .flex.space-x-2.overflow-x-auto.whitespace-nowrap.scroll-p-0
-        - table.all_views.each.with_index do |view, index|
-          = link_to(table.path(table_view_id: view.id, turbo_frame_id: table.table_id), "data-turbo-frame": table.table_id, class: "view #{(view.id == table.table_view&.id || view.id == :default && table.table_view.blank?) ? 'selected' : ''}", data: {"mensa-views-target": "view", "view-id": view.id, action: "mensa-views#select", "tippy-content": view.description}) do
-            = view.name
+- current_view = table.all_views.find { |v| v.id == table.table_view&.id } || table.all_views.first
+- current_view_name = current_view&.name || t(".all", default: "All")
+- current_view_id = current_view&.id || ""
 
-        /- if table.supports_custom_views?
-          a.text-gray-600.dark:text-gray-400.hover:text-gray-800.hover:bg-gray-200.rounded-md.px-3.pt-2.pb-0.text-sm[href="#" title=t("new_view", default: "New view")]
-            .fa-solid.fa-plus
-      = render Mensa::ControlBar::Component.new(table: table)
+.mensa-table__views id="mensa-views-#{table.table_id}" data-mensa-table-target="views" data-controller="mensa-views" data-mensa-views-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{table.table_id}" data-mensa-views-table-id-value=table.table_id data-mensa-views-views-url-value=helpers.mensa.table_views_path(table.name)
+  button.mensa-table__views__trigger type="button" data-action="mensa-views#toggleDropdown" data-mensa-views-target="trigger" aria-haspopup="listbox"
+    span.mensa-table__views__trigger-label data-mensa-views-target="triggerLabel"
+      = current_view_name
+    i.fa-solid.fa-sort.mensa-table__views__trigger-icon
+
+  .mensa-table__views__dropdown.hidden data-mensa-views-target="dropdown"
+    ul role="listbox"
+      - table.all_views.each do |view|
+        - is_selected = view.id == table.table_view&.id || (view.id == :default && table.table_view.blank?)
+        - is_user_view = view.id.is_a?(String) && view.id.match?(/\A[0-9a-f-]{32,}\z/i)
+        li.mensa-table__views__option[role="option" data-view-id=view.id data-view-name=view.name data-mensa-views-target="view"]
+          button.mensa-table__views__option-btn[type="button" data-action="mensa-views#select" data-view-id=view.id]
+            i.mensa-table__views__option-check.fa-solid.fa-check class=("invisible" unless is_selected)
+            span = view.name
+          - if is_user_view
+            button.mensa-table__views__option-menu[type="button" data-action="mensa-views#toggleSubmenu" data-view-id=view.id title="View options"]
+              i.fa-solid.fa-ellipsis
+
+    / Per-view submenu (shown via JS positioning)
+    .mensa-table__views__submenu.hidden data-mensa-views-target="submenu"
+      button.mensa-table__views__submenu-item[type="button" data-action="mensa-views#renameView"]
+        i.fa-solid.fa-pencil
+        = t(".rename_view", default: "Rename view")
+      button.mensa-table__views__submenu-item[type="button" data-action="mensa-views#duplicateView"]
+        i.fa-solid.fa-copy
+        = t(".duplicate_view", default: "Duplicate view")
+      button.mensa-table__views__submenu-item.mensa-table__views__submenu-item--danger[type="button" data-action="mensa-views#deleteView"]
+        i.fa-solid.fa-trash
+        = t(".delete_view", default: "Delete view")
+
+  / Rename dialog
+  dialog.mensa-table__views__rename-dialog data-mensa-views-target="renameDialog" data-action="click->mensa-views#renameDialogBackdrop"
+    form.mensa-table__views__rename-form data-action="submit->mensa-views#confirmRename"
+      input type="hidden" data-mensa-views-target="renameViewId"
+      h3.mensa-table__views__rename-title
+        = t(".rename_view", default: "Rename view")
+      label.mensa-table__views__rename-label
+        = t(".view_name", default: "Name")
+        input.mensa-table__views__rename-input[type="text" required=true placeholder=t(".view_name_placeholder", default: "View name") data-mensa-views-target="renameInput"]
+      .mensa-table__views__rename-actions
+        button.mensa-table__views__rename-btn.mensa-table__views__rename-btn--secondary[type="button" data-action="mensa-views#cancelRename"]
+          = t(".cancel", default: "Cancel")
+        button.mensa-table__views__rename-btn.mensa-table__views__rename-btn--primary[type="submit"]
+          = t(".rename", default: "Rename")

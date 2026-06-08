@@ -3,9 +3,11 @@ en:
     add_filter:
       component:
         add_filter: Add filter
+    filter_pill_list:
+      component:
+        search: Search and filter
     search:
       component:
-        search: Search
         search_in: Search in %{view}
         cancel: Cancel
         save: Save

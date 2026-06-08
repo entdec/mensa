@@ -16,10 +16,11 @@ module Mensa
 
       # Returns the filter information on the column-name
       def show
-        config = {}.merge(params.permit(:id, :value, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+        config = {}.merge(params.permit(:id, :value, :operator, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
         @table = Mensa.for_name(params[:table_id], config)
         @table.original_view_context = helpers
         @column = @table.column(params[:id])
+        @operator = params[:operator].presence || "equals"
         respond_to do |format|
           format.turbo_stream
           format.html

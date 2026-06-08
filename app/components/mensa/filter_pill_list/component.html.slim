@@ -1,8 +1,9 @@
-.mensa-table__filters.hidden id="mensa-filter-pill-list-#{table.table_id}" data-controller="mensa-filter-pill-list" data-mensa-table-target="filterList" data-mensa-filter-pill-list-table-name-value=table.name data-mensa-filter-pill-list-mensa-table-outlet=".mensa-table#table-#{table.table_id}" data-mensa-filter-pill-list-mensa-filter-pill-outlet=".mensa-filter-pill" data-mensa-filter-pill-list-mensa-add-filter-outlet="[data-controller=mensa-add-filter]"
-  .block
-    nav
-      .flex.space-x-2.overflow-none.whitespace-nowrap.scroll-p-0[aria-label="Tabs"]
-        / existing filters first
-        = render Mensa::FilterPill::Component.with_collection(table.active_filters)
-
-        = render Mensa::AddFilter::Component.new(table: table)
+.mensa-table__search-bar id="mensa-filter-pill-list-#{table.table_id}" data-controller="mensa-filter-pill-list" data-mensa-table-target="filterList" data-mensa-filter-pill-list-table-name-value=table.name data-mensa-filter-pill-list-mensa-table-outlet=".mensa-table#table-#{table.table_id}" data-mensa-filter-pill-list-mensa-filter-pill-outlet=".mensa-filter-pill" data-mensa-filter-pill-list-mensa-add-filter-outlet="[data-controller=mensa-add-filter]"
+  .mensa-table__search-bar__pills-area
+    = render Mensa::FilterPill::Component.with_collection(table.active_filters)
+    = render Mensa::AddFilter::Component.new(table: table)
+    .mensa-table__search-bar__input-wrapper
+      input.mensa-table__search-bar__input[type="text" name="search_query" autocomplete="off" placeholder=t(".search") data-mensa-filter-pill-list-target="searchInput" data-action="input->mensa-filter-pill-list#monitorSearch keydown.enter->mensa-filter-pill-list#search keydown.esc->mensa-filter-pill-list#resetSearch focus->mensa-filter-pill-list#searchFocused keydown.down->mensa-filter-pill-list#navigateDown keydown.up->mensa-filter-pill-list#navigateUp" value=params[:query]]
+      i.mensa-table__search-bar__search-icon class=Mensa.config.icons[:search]
+  button.mensa-table__search-bar__clear.hidden[type="button" data-mensa-filter-pill-list-target="resetSearchButton" data-action="mensa-filter-pill-list#resetSearch"]
+    i.fas.fa-xmark

@@ -1,40 +1,21 @@
-- default_view_selected = table.table_view.blank? || table.table_view.id == :default
-- search_placeholder = default_view_selected ? t(".search", default: "Search") : t(".search_in", view: table.table_view.name, default: "Search in %{view}")
-.mensa-table__search data-mensa-table-target="search" data-controller="mensa-search" data-mensa-search-target="search" class="#{table.supports_views? ? 'hidden' : ''}" data-mensa-search-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{table.table_id}"
-  .flex
-    .flex-none.w-6.h-22.text-right.text-gray-500.dark:text-gray-400
-      i.cursor-pointer class=Mensa.config.icons[:search]
-    .flex-1
-      input.mensa-table__search__input type="text" name="search_query" placeholder=search_placeholder data-default-placeholder=t(".search", default: "Search") data-view-placeholder=t(".search_in", view: "{view}", default: "Search in {view}") data-mensa-search-target="searchInput" data-action="mensa-search#monitorSearch keydown.enter->mensa-search#search keydown.esc->mensa-search#resetSearch" value=params[:query]
-    .flex.space-x-2.justify-right.pr-2
-      button.mensa-table__search__button.hidden.pr-6 data-mensa-search-target="resetSearchButton" data-action="mensa-search#resetSearch"
-        i.fas.fa-xmark
-      .view-buttons.space-x-2.hidden data-mensa-table-target="viewButtons"
-        button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#cancelFiltersAndSearch"
+- if table.current_user
+  dialog.mensa-table__save-view-dialog data-mensa-table-target="saveViewDialog" data-action="click->mensa-table#saveViewDialogBackdrop"
+    form.mensa-table__save-view-dialog__form data-action="submit->mensa-table#confirmSaveView"
+      header.mensa-table__save-view-dialog__header
+        h2.mensa-table__save-view-dialog__title
+          = t('.save_view_title', default: 'Save view')
+        p.mensa-table__save-view-dialog__subtitle
+          = t('.save_view_subtitle', default: 'Save the current filters, ordering and search as a reusable view.')
+      label.mensa-table__save-view-dialog__field
+        span.mensa-table__save-view-dialog__label
+          = t('.view_name', default: 'Name')
+        input.mensa-table__save-view-dialog__input type="text" required=true placeholder=t('.view_name_placeholder', default: 'e.g. Active customers') data-mensa-table-target="saveViewName"
+      label.mensa-table__save-view-dialog__field
+        span.mensa-table__save-view-dialog__label
+          = t('.view_description', default: 'Description')
+        textarea.mensa-table__save-view-dialog__textarea rows="3" placeholder=t('.view_description_placeholder', default: 'Optional notes about this view') data-mensa-table-target="saveViewDescription"
+      .mensa-table__save-view-dialog__actions
+        button.mensa-table__save-view-dialog__button.mensa-table__save-view-dialog__button--secondary type="button" data-action="mensa-table#cancelSaveView"
           = t('.cancel')
-        - if table.current_user && table.supports_custom_views?
-          button class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" data-action="mensa-table#saveFiltersAndSearch"
-            = t('.save')
-    - unless table.supports_views?
-      = render Mensa::ControlBar::Component.new(table: table)
-  - if table.current_user
-    dialog.mensa-table__save-view-dialog data-mensa-table-target="saveViewDialog" data-action="click->mensa-table#saveViewDialogBackdrop"
-      form.mensa-table__save-view-dialog__form data-action="submit->mensa-table#confirmSaveView"
-        header.mensa-table__save-view-dialog__header
-          h2.mensa-table__save-view-dialog__title
-            = t('.save_view_title', default: 'Save view')
-          p.mensa-table__save-view-dialog__subtitle
-            = t('.save_view_subtitle', default: 'Save the current filters, ordering and search as a reusable view.')
-        label.mensa-table__save-view-dialog__field
-          span.mensa-table__save-view-dialog__label
-            = t('.view_name', default: 'Name')
-          input.mensa-table__save-view-dialog__input type="text" required=true placeholder=t('.view_name_placeholder', default: 'e.g. Active customers') data-mensa-table-target="saveViewName"
-        label.mensa-table__save-view-dialog__field
-          span.mensa-table__save-view-dialog__label
-            = t('.view_description', default: 'Description')
-          textarea.mensa-table__save-view-dialog__textarea rows="3" placeholder=t('.view_description_placeholder', default: 'Optional notes about this view') data-mensa-table-target="saveViewDescription"
-        .mensa-table__save-view-dialog__actions
-          button.mensa-table__save-view-dialog__button.mensa-table__save-view-dialog__button--secondary type="button" data-action="mensa-table#cancelSaveView"
-            = t('.cancel')
-          button.mensa-table__save-view-dialog__button.mensa-table__save-view-dialog__button--primary type="submit"
-            = t('.save')
+        button.mensa-table__save-view-dialog__button.mensa-table__save-view-dialog__button--primary type="submit"
+          = t('.save')

@@ -3,39 +3,35 @@ import { get, post, patch } from "@rails/request.js";
 
 export default class TableComponentController extends ApplicationController {
     static targets = [
-        "controlBar", // Bar with buttons
-        "condenseExpandIcon", // Icon
-        "filterList", // Tabs or list of filters
-        "views", // Tabs or list of views
-        "viewButtons", // Cancel and save buttons for views
-        "search", // Search bar
-        "view", // View contains table element
-        "turboFrame", // The turbo-frame
-        "saveViewDialog", // Dialog asking for a view name/description
-        "saveViewName", // Name input inside the save-view dialog
-        "saveViewDescription", // Description input inside the save-view dialog
-        "exportDialog", // Dialog listing downloads and offering a new export
+        "controlBar",
+        "filterList",
+        "views",
+        "view",
+        "turboFrame",
+        "saveViewDialog",
+        "saveViewName",
+        "saveViewDescription",
+        "exportDialog",
+        "exportIcon",
+        "saveResetButtons",
+        "saveDropdown",
+        "saveSimple",
+        "saveSplit",
     ];
-    static outlets = ["mensa-filter-pill-list"];
+    static outlets = ["mensa-filter-pill-list", "mensa-column-customizer"];
     static values = {
         supportsViews: Boolean,
         tableUrl: String,
         saveViewUrl: String,
+        viewsUrl: String,
         exportsUrl: String,
     };
 
     connect() {
         super.connect();
 
-        // The initial frame load is deferred so the filter pill list controller
-        // can load it together with any persisted filters in a single request
-        // (see mensa-filter-pill-list#restoreState). This avoids a second
-        // backend call and a flash of unfiltered content. As a safety net, if
-        // that controller never takes over, we load the frame ourselves.
         this.frameLoadFallback = setTimeout(() => this.loadFrame(), 100);
 
-        // Pagination, sorting and view tabs navigate the turbo-frame directly.
-        // Capture the resulting page/view so they can be persisted and restored.
         if (this.hasTurboFrameTarget) {
             this.captureNavigationHandler = () => this.captureNavigation();
             this.turboFrameTarget.addEventListener(
@@ -43,6 +39,17 @@ export default class TableComponentController extends ApplicationController {
                 this.captureNavigationHandler,
             );
         }
+
+        // Close save dropdown when clicking outside
+        this._saveDropdownOutsideHandler = (e) => {
+            if (this.hasSaveDropdownTarget && !this.saveDropdownTarget.classList.contains("hidden")) {
+                const saveArea = this.saveDropdownTarget.closest(".relative");
+                if (saveArea && !saveArea.contains(e.target)) {
+                    this.saveDropdownTarget.classList.add("hidden");
+                }
+            }
+        };
+        document.addEventListener("click", this._saveDropdownOutsideHandler);
     }
 
     disconnect() {
@@ -57,28 +64,18 @@ export default class TableComponentController extends ApplicationController {
                 this.captureNavigationHandler,
             );
         }
+
+        document.removeEventListener("click", this._saveDropdownOutsideHandler);
     }
 
-    // Forwards the frame's current URL to the filter pill list so it can persist
-    // the page and selected view after a turbo-frame navigation.
     captureNavigation() {
         if (!this.hasMensaFilterPillListOutlet) return;
         if (!this.hasTurboFrameTarget) return;
-
         const src = this.turboFrameTarget.getAttribute("src");
         if (!src) return;
-
         this.mensaFilterPillListOutlet.captureNavigation(src);
     }
 
-    // Triggers the turbo-frame's initial load. Idempotent: the frame is only
-    // ever loaded once, whether that happens here or via a filtered restore that
-    // claims the load by setting `frameLoadHandled`.
-    //
-    // The template intentionally omits the frame's `src` so it does not
-    // auto-load the unfiltered table; we set it here instead. This lets the
-    // filter pill list controller load the filtered table in a single request
-    // (without a second, unfiltered request racing/overwriting it).
     loadFrame() {
         if (this.frameLoadHandled) return;
         this.frameLoadHandled = true;
@@ -93,107 +90,87 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
-    openFiltersAndSearch(event) {
-        event.preventDefault();
+    // --- Save/Reset button visibility ---
 
-        this.showFiltersAndSearch();
-    }
-
-    // Puts the table into the "filtering" UI state (open search, show the filter
-    // bar and hide the views tabs). Extracted so it can be triggered both by a
-    // user click and when persisted filters are restored on page load.
-    showFiltersAndSearch() {
-        this.filterBarIsOpen = true;
-
-        if (this.supportsViewsValue) {
-            if (this.hasViewButtonsTarget)
-                this.viewButtonsTarget.classList.remove("hidden");
-            if (this.hasSearchTarget)
-                this.searchTarget.classList.remove("hidden");
-            if (this.hasViewsTarget) this.viewsTarget.classList.add("hidden");
-            if (this.hasFilterListTarget)
-                this.filterListTarget.classList.remove("hidden");
-        } else {
-            if (this.hasControlBarTarget)
-                this.controlBarTarget.classList.add("hidden");
-            if (this.hasViewButtonsTarget)
-                this.viewButtonsTarget.classList.remove("hidden");
-            if (this.hasFilterListTarget)
-                this.filterListTarget.classList.remove("hidden");
+    showSaveReset() {
+        if (this.hasSaveResetButtonsTarget) {
+            this.saveResetButtonsTarget.classList.remove("hidden");
         }
     }
 
-    cancelFiltersAndSearch(event) {
-        event.preventDefault();
-        this.filterBarIsOpen = false;
+    hideSaveReset() {
+        if (this.hasSaveResetButtonsTarget) {
+            this.saveResetButtonsTarget.classList.add("hidden");
+        }
+    }
 
-        // Discard all applied filters and the search query (and their persisted
-        // local storage copies) before collapsing the filter/search chrome.
+    // Called whenever a filter or search changes so the save/reset buttons appear.
+    notifyUnsavedState() {
+        this._updateSaveButtonMode();
+        this.showSaveReset();
+    }
+
+    // --- Cancel / Reset ---
+
+    // Resets all filters, search, and column customisation to the active view's clean state.
+    cancelFiltersAndSearch(event) {
+        if (event) event.preventDefault();
+        this.hideSaveReset();
+        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+
         if (this.hasMensaFilterPillListOutlet) {
             this.mensaFilterPillListOutlet.clearFiltersAndSearch();
         }
-
-        if (this.supportsViewsValue) {
-            this.searchTarget.classList.add("hidden");
-            this.viewButtonsTarget.classList.add("hidden");
-            this.filterListTarget.classList.add("hidden");
-            this.viewsTarget.classList.remove("hidden");
-        } else {
-            this.controlBarTarget.classList.remove("hidden");
-            this.viewButtonsTarget.classList.add("hidden");
-            this.filterListTarget.classList.add("hidden");
+        if (this.hasMensaColumnCustomizerOutlet) {
+            this.mensaColumnCustomizerOutlet.resetToDefault();
         }
     }
 
-    // Called by Stimulus whenever the filterList target element is connected —
-    // including after a turbo-stream swaps the filter pill list for a fresh
-    // render (which always has the .hidden class baked in). If the user had the
-    // bar open at the time, keep it open.
-    filterListTargetConnected(element) {
-        if (this.filterBarIsOpen) {
-            element.classList.remove("hidden");
-        }
-    }
+    // --- Save ---
 
-    // Opens the save dialog (create) or immediately updates the current view.
-    // If a user-created view is active, "save" updates it in place. Otherwise
-    // it opens the dialog to name a new view.
-    saveFiltersAndSearch(event) {
+    toggleSaveDropdown(event) {
         event.preventDefault();
+        event.stopPropagation();
+        if (this.hasSaveDropdownTarget) {
+            this.saveDropdownTarget.classList.toggle("hidden");
+        }
+    }
 
-        // Read the selected view directly from the DOM. The views bar is always
-        // present (just visually hidden in filter mode), so this is reliable
-        // regardless of outlet connection state or localStorage timing.
-        const selectedViewEl = this.element.querySelector(
-            '[data-mensa-views-target="view"].selected',
-        );
-        const viewId = selectedViewEl?.getAttribute("data-view-id") || "";
+    // "Save as new view" — always opens the name dialog
+    saveAsNewView(event) {
+        if (event) event.preventDefault();
+        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+        this._openSaveDialog();
+    }
 
-        // UUID's are user-created views; symbol-like strings ("default",
-        // "active", etc.) are system views. Update in place for user views.
-        if (viewId && /[a-f0-9-]{32}$/.test(viewId)) {
-            this._updateCurrentView(viewId);
+    // "Update view" — updates the currently selected user-owned view in place
+    async updateCurrentViewAction(event) {
+        if (event) event.preventDefault();
+        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+
+        const viewId = this._selectedUserViewId();
+        if (!viewId) {
+            this._openSaveDialog();
             return;
         }
+        await this._updateCurrentView(viewId);
+    }
 
-        if (!this.hasSaveViewDialogTarget) return;
-
-        if (this.hasSaveViewNameTarget) this.saveViewNameTarget.value = "";
-        if (this.hasSaveViewDescriptionTarget)
-            this.saveViewDescriptionTarget.value = "";
-
-        if (typeof this.saveViewDialogTarget.showModal === "function") {
-            this.saveViewDialogTarget.showModal();
+    // Legacy: called from the old "Save" button. Routes to update-in-place for
+    // user views, otherwise opens the dialog.
+    saveFiltersAndSearch(event) {
+        if (event) event.preventDefault();
+        const viewId = this._selectedUserViewId();
+        if (viewId) {
+            this._updateCurrentView(viewId);
         } else {
-            this.saveViewDialogTarget.setAttribute("open", "");
+            this._openSaveDialog();
         }
-
-        if (this.hasSaveViewNameTarget) this.saveViewNameTarget.focus();
     }
 
     async _updateCurrentView(viewId) {
         const state = this.currentViewState();
-        this.filterBarIsOpen = false;
+        this.hideSaveReset();
 
         const response = await patch(`${this.saveViewUrlValue}/${viewId}`, {
             body: JSON.stringify({
@@ -202,16 +179,15 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
-                turbo_frame_id: this.hasTurboFrameTarget
-                    ? this.turboFrameTarget.id
-                    : null,
+                turbo_frame_id: this.hasTurboFrameTarget ? this.turboFrameTarget.id : null,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",
         });
 
-        if (response.ok) {
-            this.collapseToViewsMode();
+        if (response.ok && this.hasMensaFilterPillListOutlet) {
+            this.mensaFilterPillListOutlet.clearPersistedDirtyState();
+            this.mensaFilterPillListOutlet.persistView(viewId);
         }
     }
 
@@ -220,8 +196,6 @@ export default class TableComponentController extends ApplicationController {
         this.closeSaveViewDialog();
     }
 
-    // Closes the dialog when the user clicks the backdrop (outside the form).
-    // A click on the backdrop reports the dialog element itself as the target.
     saveViewDialogBackdrop(event) {
         if (event.target === this.saveViewDialogTarget) {
             this.closeSaveViewDialog();
@@ -230,7 +204,6 @@ export default class TableComponentController extends ApplicationController {
 
     closeSaveViewDialog() {
         if (!this.hasSaveViewDialogTarget) return;
-
         if (typeof this.saveViewDialogTarget.close === "function") {
             this.saveViewDialogTarget.close();
         } else {
@@ -238,19 +211,12 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
-    // Collects the currently applied filters, ordering and search query and
-    // posts them to the server to be stored as a named view for the current
-    // user. On success, the server returns a turbo-stream that updates the
-    // views tabs, filter pill list, and table data in one shot.
     async confirmSaveView(event) {
         event.preventDefault();
 
-        const name = this.hasSaveViewNameTarget
-            ? this.saveViewNameTarget.value.trim()
-            : "";
+        const name = this.hasSaveViewNameTarget ? this.saveViewNameTarget.value.trim() : "";
         if (!name) {
-            if (this.hasSaveViewNameTarget)
-                this.saveViewNameTarget.reportValidity();
+            if (this.hasSaveViewNameTarget) this.saveViewNameTarget.reportValidity();
             return;
         }
 
@@ -259,11 +225,6 @@ export default class TableComponentController extends ApplicationController {
             : "";
 
         const state = this.currentViewState();
-
-        // Clear the open flag before the request so that when the turbo-stream
-        // swaps the filter list target, filterListTargetConnected does not
-        // immediately re-open the bar.
-        this.filterBarIsOpen = false;
 
         const response = await post(this.saveViewUrlValue, {
             body: JSON.stringify({
@@ -274,10 +235,7 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
-                // Sent so the server can reconstruct matching element IDs.
-                turbo_frame_id: this.hasTurboFrameTarget
-                    ? this.turboFrameTarget.id
-                    : null,
+                turbo_frame_id: this.hasTurboFrameTarget ? this.turboFrameTarget.id : null,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",
@@ -285,34 +243,16 @@ export default class TableComponentController extends ApplicationController {
 
         if (response.ok) {
             this.closeSaveViewDialog();
-            this.collapseToViewsMode();
+            this.hideSaveReset();
+            if (this.hasMensaFilterPillListOutlet) {
+                this.mensaFilterPillListOutlet.clearPersistedDirtyState();
+            }
+            // After Turbo processes the stream the views component re-renders with
+            // the new view selected — read its ID from the DOM and persist it.
+            setTimeout(() => this._persistSelectedViewId(), 0);
         }
     }
 
-    // Closes the filter/search bar and restores the views-tab chrome, without
-    // clearing filters. Used after a successful view save where the turbo-stream
-    // response has already updated all the relevant data.
-    collapseToViewsMode() {
-        if (this.supportsViewsValue) {
-            if (this.hasSearchTarget) this.searchTarget.classList.add("hidden");
-            if (this.hasViewButtonsTarget)
-                this.viewButtonsTarget.classList.add("hidden");
-            if (this.hasFilterListTarget)
-                this.filterListTarget.classList.add("hidden");
-            if (this.hasViewsTarget)
-                this.viewsTarget.classList.remove("hidden");
-        } else {
-            if (this.hasControlBarTarget)
-                this.controlBarTarget.classList.remove("hidden");
-            if (this.hasViewButtonsTarget)
-                this.viewButtonsTarget.classList.add("hidden");
-            if (this.hasFilterListTarget)
-                this.filterListTarget.classList.add("hidden");
-        }
-    }
-
-    // Reads the active filters, search query and sort order via the filter pill
-    // list controller, which owns that state.
     currentViewState() {
         if (!this.hasMensaFilterPillListOutlet) {
             return { filters: {}, query: "", order: {} };
@@ -330,17 +270,16 @@ export default class TableComponentController extends ApplicationController {
         };
     }
 
-    // The view target is (re)rendered inside the turbo-frame on every load.
-    viewTargetConnected() {
-        if (!this.hasMensaFilterPillListOutlet) return;
+    viewTargetConnected() {}
+
+    filterListTargetConnected(element) {
+        // The filter bar is always visible in the new design — nothing to toggle.
     }
 
-    // Opens the export dialog. The downloads list is refreshed first (via a
-    // Turbo stream response) so the user always sees their current downloads,
-    // then the dialog is shown.
+    // --- Export ---
+
     export(event) {
         event.preventDefault();
-
         if (!this.hasExportDialogTarget) return;
 
         if (this.hasExportsUrlValue && this.exportsUrlValue) {
@@ -354,7 +293,6 @@ export default class TableComponentController extends ApplicationController {
 
     openExportDialog() {
         if (!this.hasExportDialogTarget) return;
-
         if (typeof this.exportDialogTarget.showModal === "function") {
             this.exportDialogTarget.showModal();
         } else {
@@ -367,7 +305,6 @@ export default class TableComponentController extends ApplicationController {
         this.closeExportDialog();
     }
 
-    // Closes the dialog when the user clicks the backdrop (outside the panel).
     exportDialogBackdrop(event) {
         if (event.target === this.exportDialogTarget) {
             this.closeExportDialog();
@@ -376,7 +313,6 @@ export default class TableComponentController extends ApplicationController {
 
     closeExportDialog() {
         if (!this.hasExportDialogTarget) return;
-
         if (typeof this.exportDialogTarget.close === "function") {
             this.exportDialogTarget.close();
         } else {
@@ -384,30 +320,15 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
-    // Creates a new export honouring the selected scope/format and the currently
-    // applied filters, search and ordering. The dialog stays open so the new
-    // (pending) download appears in the list; it is updated to a download link
-    // via a Turbo stream broadcast once the background job finishes.
     confirmExport(event) {
         event.preventDefault();
-
         if (!this.hasExportsUrlValue) return;
 
         const dialog = this.exportDialogTarget;
-        const scope =
-            dialog.querySelector('input[name="scope"]:checked')?.value || "all";
-        const exportFormat =
-            dialog.querySelector('input[name="export_format"]:checked')
-                ?.value || "csv_excel";
+        const scope = dialog.querySelector('input[name="scope"]:checked')?.value || "all";
+        const exportFormat = dialog.querySelector('input[name="export_format"]:checked')?.value || "csv_excel";
 
         const state = this.currentViewState();
-
-        // The page and query come from the URL that rendered the table currently
-        // on screen (see mensa-filter-pill-list#currentRequestState). This is
-        // authoritative for what the user is viewing, whereas per-key local
-        // storage can be missing the current page/query. Filters and order are
-        // read from the live pills/storage so they stay correct even when a
-        // navigation URL omits them.
         const nav = this.hasMensaFilterPillListOutlet
             ? this.mensaFilterPillListOutlet.currentRequestState()
             : { page: "", query: "", view: "" };
@@ -431,18 +352,65 @@ export default class TableComponentController extends ApplicationController {
     }
 
     get ourUrl() {
-        // Prefer the frame's current src so navigation state (pagination, etc.)
-        // is preserved; fall back to the configured table URL (the frame has no
-        // src until it is loaded) and finally to the current location.
-        if (
-            this.hasTurboFrameTarget &&
-            this.turboFrameTarget.getAttribute("src")
-        ) {
+        if (this.hasTurboFrameTarget && this.turboFrameTarget.getAttribute("src")) {
             return new URL(this.turboFrameTarget.getAttribute("src"));
         }
         if (this.hasTableUrlValue && this.tableUrlValue) {
             return new URL(this.tableUrlValue);
         }
         return new URL(window.location.href);
+    }
+
+    // --- Private ---
+
+    // Reads the currently-selected view ID from the DOM (after Turbo re-renders
+    // the views component) and persists it to localStorage.
+    _persistSelectedViewId() {
+        if (!this.hasMensaFilterPillListOutlet) return;
+        const checked = Array.from(
+            this.element.querySelectorAll('[data-mensa-views-target="view"]'),
+        ).find((el) => {
+            const check = el.querySelector(".mensa-table__views__option-check");
+            return check && !check.classList.contains("invisible");
+        });
+        const viewId = checked?.dataset.viewId || "";
+        this.mensaFilterPillListOutlet.persistView(viewId);
+    }
+
+    // Show the plain "Save" button for system/default views, and the dropdown
+    // "Save ▾" button for user-created views.
+    _updateSaveButtonMode() {
+        if (!this.hasSaveSimpleTarget && !this.hasSaveSplitTarget) return;
+        const isUserView = !!this._selectedUserViewId();
+        this.saveSimpleTargets.forEach((t) => t.classList.toggle("hidden", isUserView));
+        this.saveSplitTargets.forEach((t) => t.classList.toggle("hidden", !isUserView));
+    }
+
+    _selectedUserViewId() {
+        const selectedViewEl = this.element.querySelector(
+            '[data-mensa-views-target="view"]',
+        );
+        // Find the one whose check is visible
+        const checked = Array.from(
+            this.element.querySelectorAll('[data-mensa-views-target="view"]'),
+        ).find((el) => {
+            const check = el.querySelector(".mensa-table__views__option-check");
+            return check && !check.classList.contains("invisible");
+        });
+        const viewId = checked?.getAttribute("data-view-id") || "";
+        // UUID-based IDs are user-created views
+        return viewId && /[a-f0-9-]{32}$/.test(viewId) ? viewId : null;
+    }
+
+    _openSaveDialog() {
+        if (!this.hasSaveViewDialogTarget) return;
+        if (this.hasSaveViewNameTarget) this.saveViewNameTarget.value = "";
+        if (this.hasSaveViewDescriptionTarget) this.saveViewDescriptionTarget.value = "";
+        if (typeof this.saveViewDialogTarget.showModal === "function") {
+            this.saveViewDialogTarget.showModal();
+        } else {
+            this.saveViewDialogTarget.setAttribute("open", "");
+        }
+        if (this.hasSaveViewNameTarget) this.saveViewNameTarget.focus();
     }
 }

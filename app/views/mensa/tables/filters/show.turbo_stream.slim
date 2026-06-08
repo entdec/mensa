@@ -1,16 +1,32 @@
 = turbo_stream.update params[:target] do
   .mensa-table__add_filter__popover_container__heading
     = @column.human_name
-  = form_for(Mensa::Tables::FiltersController::Filter.new, url: '#') do |f|
-    = f.select :value, @column.filter.collection, {include_blank: params[:value].blank?, selected: params[:value]}, data: { action: "keydown.esc->mensa-add-filter#reset keydown.enter->mensa-add-filter#filterValueEntered change->mensa-add-filter#filterValueEntered", autofocus: "autofocus", "mensa-add-filter-target" => "value" }
+  input[type="hidden" data-mensa-add-filter-target="value" value=params[:value]]
+  ul.mensa-table__add_filter__popover_container__values
+    - (@column.filter.collection || []).each do |item|
+      - opt_label = item.is_a?(Array) ? item.first.to_s : item.to_s
+      - opt_value = item.is_a?(Array) ? item.last.to_s : item.to_s
+      - is_selected = params[:value].present? && params[:value].to_s == opt_value
+      li.mensa-table__add_filter__popover_container__value[data-mensa-add-filter-target="valueOption" data-value=opt_value data-label=opt_label data-selected=("true" if is_selected) data-action="click->mensa-add-filter#selectValue mouseenter->mensa-add-filter#highlightItem"]
+        i.mensa-table__add_filter__popover_container__value__check.fa-solid.fa-check class=("invisible" unless is_selected)
+        span.flex-1
+          = opt_label
+        span.mensa-table__add_filter__enter-hint
+          | ↵ Enter
   hr.mensa-table__add_filter__popover_container__separator
   ul.mensa-table__add_filter__popover_container__operators
-    li.mensa-table__add_filter__popover_container__operator data-mensa-add-filter-target="operatorOption" data-operator="equals" data-selected="true" data-action="click->mensa-add-filter#selectOperator"
-      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check
-      | Is
-    li.mensa-table__add_filter__popover_container__operator data-mensa-add-filter-target="operatorOption" data-operator="not_equals" data-action="click->mensa-add-filter#selectOperator"
-      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check.invisible
-      | Is not
+    li.mensa-table__add_filter__popover_container__operator[data-mensa-add-filter-target="operatorOption" data-operator="equals" data-selected=("true" if @operator == "equals") data-action="click->mensa-add-filter#selectOperator mouseenter->mensa-add-filter#highlightItem"]
+      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check class=("invisible" unless @operator == "equals")
+      span.flex-1
+        | Is
+      span.mensa-table__add_filter__enter-hint
+        | ↵ Enter
+    li.mensa-table__add_filter__popover_container__operator[data-mensa-add-filter-target="operatorOption" data-operator="not_equals" data-selected=("true" if @operator == "not_equals") data-action="click->mensa-add-filter#selectOperator mouseenter->mensa-add-filter#highlightItem"]
+      i.mensa-table__add_filter__popover_container__operator__check.fa-solid.fa-check class=("invisible" unless @operator == "not_equals")
+      span.flex-1
+        | Is not
+      span.mensa-table__add_filter__enter-hint
+        | ↵ Enter
   hr.mensa-table__add_filter__popover_container__separator
-  a.mensa-table__add_filter__popover_container__clear href="#" data-action="click->mensa-add-filter#reset"
+  a.mensa-table__add_filter__popover_container__clear[href="#" data-action="click->mensa-add-filter#reset"]
     | Clear

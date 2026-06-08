@@ -3,8 +3,7 @@ import { get } from "@rails/request.js";
 
 export default class FilterPillListComponentController extends ApplicationController {
     static outlets = ["mensa-table", "mensa-filter-pill", "mensa-add-filter"];
-
-    static targets = [];
+    static targets = ["searchInput", "resetSearchButton"];
 
     static values = {
         supportsViews: Boolean,
@@ -13,6 +12,7 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     connect() {
         super.connect();
+        this._monitorResetButton();
     }
 
     // The mensa-table outlet provides `ourUrl`, which we need both to apply and
@@ -22,18 +22,110 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.restoreState();
     }
 
-    // Called when an existing filter pill is clicked. Delegates to the add-filter
-    // controller so the value popover re-opens for that column, pre-selected to
-    // the current value; picking a new value flows back through refreshFilters().
-    editFilter(columnName, value, anchor) {
-        if (!this.hasMensaAddFilterOutlet) return;
+    // --- Search actions (formerly in search component controller) ---
 
-        this.mensaAddFilterOutlet.editColumn(columnName, value, anchor);
+    searchFocused(event) {
+        if (this.hasMensaAddFilterOutlet) {
+            this.mensaAddFilterOutlet.filterColumns("");
+            this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+        }
     }
 
-    // Called when a filter is added/changed. Persists the resulting state and
-    // re-requests the table (keeping the active search and view, resetting paging).
+    monitorSearch(event) {
+        const value = this.hasSearchInputTarget ? this.searchInputTarget.value : "";
+        this._monitorResetButton();
+
+        if (this.hasMensaAddFilterOutlet) {
+            this.mensaAddFilterOutlet.filterColumns(value);
+            if (value.length > 0) {
+                if (this.mensaAddFilterOutlet.visibleColumnCount > 0) {
+                    this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+                } else {
+                    // No matching columns — hide column list so Enter does a text search
+                    this.mensaAddFilterOutlet.hideList();
+                }
+            } else {
+                this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+            }
+        }
+    }
+
+    resetSearch(event) {
+        if (event) event.preventDefault();
+
+        if (this.hasSearchInputTarget) {
+            this.searchInputTarget.value = "";
+            this.searchInputTarget.focus();
+        }
+        if (this.hasResetSearchButtonTarget) {
+            this.resetSearchButtonTarget.classList.add("hidden");
+        }
+        if (this.hasMensaAddFilterOutlet) {
+            this.mensaAddFilterOutlet.hideList();
+            this.mensaAddFilterOutlet.closeValuePopover?.();
+        }
+
+        this.setQuery("");
+    }
+
+    search(event) {
+        event.preventDefault();
+
+        // If the value popover is open, Enter confirms the highlighted/selected item
+        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.isValuePopoverOpen) {
+            this.mensaAddFilterOutlet.confirmHighlightedValue();
+            return;
+        }
+
+        // If the column autocomplete has visible options and one is selected via
+        // keyboard, let the add-filter controller handle it
+        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.hasHighlightedColumn) {
+            this.mensaAddFilterOutlet.confirmHighlightedColumn();
+            return;
+        }
+
+        // Hide column dropdown before searching
+        if (this.hasMensaAddFilterOutlet) {
+            this.mensaAddFilterOutlet.hideList();
+        }
+
+        const query = this.hasSearchInputTarget ? this.searchInputTarget.value : "";
+        if (query.length > 0 && query.length < 3) return;
+
+        this.setQuery(query);
+    }
+
+    navigateDown(event) {
+        event.preventDefault();
+        if (!this.hasMensaAddFilterOutlet) return;
+        if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+            this.mensaAddFilterOutlet.highlightNextValue();
+        } else {
+            this.mensaAddFilterOutlet.highlightNext();
+        }
+    }
+
+    navigateUp(event) {
+        event.preventDefault();
+        if (!this.hasMensaAddFilterOutlet) return;
+        if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+            this.mensaAddFilterOutlet.highlightPrevValue();
+        } else {
+            this.mensaAddFilterOutlet.highlightPrev();
+        }
+    }
+
+    // --- Filter state management ---
+
+    // Called when an existing filter pill is clicked.
+    editFilter(columnName, value, operator, anchor) {
+        if (!this.hasMensaAddFilterOutlet) return;
+        this.mensaAddFilterOutlet.editColumn(columnName, value, operator, anchor);
+    }
+
+    // Called when a filter is added/changed.
     refreshFilters() {
+        this._notifyUnsavedState();
         this.applyState({
             filters: this.collectFilters(),
             query: this.loadQuery(),
@@ -43,9 +135,9 @@ export default class FilterPillListComponentController extends ApplicationContro
         });
     }
 
-    // Called by the search controller when the query is submitted or reset. Keeps
-    // any active filters and view in place while updating the query.
+    // Called by the search controller when the query is submitted or reset.
     setQuery(query) {
+        if (query && query.length > 0) this._notifyUnsavedState();
         this.applyState({
             filters: this.collectFilters(),
             query,
@@ -55,15 +147,8 @@ export default class FilterPillListComponentController extends ApplicationContro
         });
     }
 
-    // Called by the views controller when a view tab is selected. Selecting a view
-    // resets filters, search and paging (the view link itself reloads the data via
-    // the turbo-frame), so here we only persist the new state.
+    // Called by the views controller when a view tab is selected.
     viewSelected(view) {
-        // Selecting a view resets filters, search and paging but keeps the order.
-        // We persist that state and immediately fire a turbo-stream request so
-        // that both the table view and the filter pill list are updated atomically.
-        // The turbo-frame link navigation is suppressed in the views controller so
-        // this single request is the only one that runs.
         const state = {
             filters: {},
             query: "",
@@ -77,9 +162,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.requestState(state);
     }
 
-    // Called by the table controller after a turbo-frame navigation (pagination,
-    // sorting or a view tab). Only the page, view and sort order can change this
-    // way, so we capture them without touching the persisted filters/query.
+    // Called by the table controller after a turbo-frame navigation.
     captureNavigation(src) {
         let url;
         try {
@@ -88,22 +171,17 @@ export default class FilterPillListComponentController extends ApplicationContro
             return;
         }
 
-        // Remember the URL that rendered the table currently on screen so other
-        // controllers (e.g. export) can read the exact page/query/order/view the
-        // user is looking at.
         this.lastTableUrl = url.toString();
-
         this.persistPage(url.searchParams.get("page") || "");
         this.persistView(url.searchParams.get("table_view_id") || "");
-        this.persistOrder(this.parseOrderParams(url.searchParams));
+        const order = this.parseOrderParams(url.searchParams);
+        this.persistOrder(order);
+
+        if (Object.keys(order).length > 0) {
+            this._notifyUnsavedState();
+        }
     }
 
-    // Returns the state of the table currently on screen, read from the URL of
-    // the last table request. That URL is authoritative: it is set both when a
-    // navigation happens (pagination/sort/view, via captureNavigation) and when
-    // filters/search/order change (via requestState), so it always reflects what
-    // the user is actually viewing - including the current page and query, which
-    // per-key local storage can fail to capture.
     currentRequestState() {
         let url;
         try {
@@ -123,8 +201,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             );
             if (filterMatch) {
                 const column = filterMatch[1];
-                (filters[column] = filters[column] || {})[filterMatch[2]] =
-                    value;
+                (filters[column] = filters[column] || {})[filterMatch[2]] = value;
                 return;
             }
             const orderMatch = key.match(/^order\[(.+)\]$/);
@@ -140,30 +217,17 @@ export default class FilterPillListComponentController extends ApplicationContro
         };
     }
 
-    // Removes every applied filter and the search query, forgets them in local
-    // storage and clears the search field, then reloads the table (keeping the
-    // current view).
     clearFiltersAndSearch() {
-        const state = {
-            filters: {},
-            query: "",
-            view: this.loadView(),
-            order: this.loadOrder(),
-            page: "",
-        };
-
-        this.persistState(state);
+        const view = this.loadView();
+        // Wipe all dirty-state entries; keep only the active view.
+        this.clearPersistedDirtyState();
+        this.persistView(view);
         this.setSearchField("");
-        this.requestState(state);
+        // buildUrl reads column_order/hidden_columns from localStorage — now empty,
+        // so the server receives a completely clean request for the current view.
+        this.requestState({ filters: {}, query: "", view, order: {}, page: "" });
     }
 
-    // Restores persisted filters, search query, view and page on initial page
-    // load.
-    //
-    // The table controller defers the turbo-frame load so that, when there is
-    // persisted state, we can fetch the right table together with its pills in a
-    // single request instead of first loading the default frame and then
-    // re-requesting. This means a single backend call and no flash of content.
     restoreState() {
         const table = this.mensaTableOutlet;
         const filters = this.loadFilters();
@@ -171,8 +235,20 @@ export default class FilterPillListComponentController extends ApplicationContro
         const view = this.loadView();
         const page = this.loadPage();
         const order = this.loadOrder();
-
         const columnOrder = this.loadColumnOrder();
+        const hiddenColumns = this.loadHiddenColumns();
+
+        // Show save/reset if any persistent state exists (order, column layout, filters, search)
+        if (
+            Object.keys(filters).length > 0 ||
+            query.length > 0 ||
+            Object.keys(order).length > 0 ||
+            columnOrder.length > 0 ||
+            hiddenColumns.length > 0
+        ) {
+            this._notifyUnsavedState();
+        }
+
         const hasFilterOrSearch =
             Object.keys(filters).length > 0 || query.length > 0;
         const hasState =
@@ -182,22 +258,15 @@ export default class FilterPillListComponentController extends ApplicationContro
             Object.keys(order).length > 0 ||
             columnOrder.length > 0;
 
-        // Filters already on screen (e.g. a view's defaults, or a previous restore
-        // after this controller was re-rendered) mean there is nothing to restore.
         const alreadyRendered = Object.keys(this.renderedFilters()).length > 0;
 
         if (!hasState || alreadyRendered || table.frameLoadHandled) {
-            // Nothing to restore: trigger the frame's normal load. This is idempotent,
-            // so re-renders after a restore (or the table controller's fallback) are a
-            // no-op.
             if (typeof table.loadFrame === "function") {
                 table.loadFrame();
             }
             return;
         }
 
-        // Claim the deferred frame load so the table controller does not also load
-        // the default src.
         table.frameLoadHandled = true;
 
         this.setSearchField(query);
@@ -205,31 +274,13 @@ export default class FilterPillListComponentController extends ApplicationContro
 
         const state = { filters, query, view, page, order };
 
-        if (hasFilterOrSearch) {
-            // Open the filtering chrome so the restored filters/search don't render
-            // above the views, then fetch everything in a single request.
-            if (typeof table.showFiltersAndSearch === "function") {
-                table.showFiltersAndSearch();
-            }
-            this.applyState(state);
-        } else {
-            // Only a view and/or page to restore: stay in "views" mode and request.
-            this.persistAndRequest(state);
-        }
+        // No need to show/hide the filter bar — it's always visible.
+        // Just apply state and load the frame.
+        this.applyState(state);
     }
 
-    // Persists the given state and fetches the table, revealing the filter bar
-    // once rendered (used for user-driven filter/search changes and restores).
     applyState(state) {
-        this.persistAndRequest(state).then(() => {
-            // FIXME: There should be a better way to do this, possibly using
-            // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
-            setTimeout(() => {
-                this.mensaTableOutlet.filterListTarget.classList.remove(
-                    "hidden",
-                );
-            }, 50);
-        });
+        this.persistAndRequest(state);
     }
 
     persistAndRequest(state) {
@@ -237,17 +288,10 @@ export default class FilterPillListComponentController extends ApplicationContro
         return this.requestState(state);
     }
 
-    // Builds the request URL from the given state and fetches the table via
-    // turbo-stream, updating both the filter pills and the table view.
     requestState(state) {
         const url = this.buildUrl(state);
-        // Keep the authoritative "what's on screen" URL in sync for filter/search/
-        // order changes too (these render via a turbo-stream, not a frame load,
-        // so captureNavigation never sees them).
         this.lastTableUrl = url.toString();
-        return get(url, {
-            responseKind: "turbo-stream",
-        });
+        return get(url, { responseKind: "turbo-stream" });
     }
 
     buildUrl(state) {
@@ -261,14 +305,8 @@ export default class FilterPillListComponentController extends ApplicationContro
         url.searchParams.delete("table_view_id");
 
         Object.entries(state.filters || {}).forEach(([columnName, filter]) => {
-            url.searchParams.append(
-                `filters[${columnName}][value]`,
-                filter.value,
-            );
-            url.searchParams.append(
-                `filters[${columnName}][operator]`,
-                filter.operator,
-            );
+            url.searchParams.append(`filters[${columnName}][value]`, filter.value);
+            url.searchParams.append(`filters[${columnName}][operator]`, filter.operator);
         });
 
         Object.entries(state.order || {}).forEach(([columnName, direction]) => {
@@ -279,8 +317,6 @@ export default class FilterPillListComponentController extends ApplicationContro
         if (state.view) url.searchParams.set("table_view_id", state.view);
         if (state.page) url.searchParams.set("page", state.page);
 
-        // Re-apply persisted column order and visibility so that the initial
-        // page-refresh request includes them without needing a second round-trip.
         this.loadColumnOrder().forEach((col) =>
             url.searchParams.append("column_order[]", col),
         );
@@ -291,58 +327,39 @@ export default class FilterPillListComponentController extends ApplicationContro
         return url;
     }
 
-    // Strips any `filters[...]` query parameters from the given URL in place.
     removeFilterParams(url) {
-        const filterKeys = [];
-        url.searchParams.forEach((_value, key) => {
-            if (key.startsWith("filters[")) {
-                filterKeys.push(key);
-            }
-        });
-        filterKeys.forEach((key) => url.searchParams.delete(key));
-    }
-
-    // Strips any `column_order[...]` and `hidden_columns[...]` params from the URL.
-    removeColumnParams(url) {
         const keys = [];
-        url.searchParams.forEach((_value, key) => {
-            if (
-                key.startsWith("column_order") ||
-                key.startsWith("hidden_columns")
-            ) {
-                keys.push(key);
-            }
+        url.searchParams.forEach((_v, key) => {
+            if (key.startsWith("filters[")) keys.push(key);
         });
         keys.forEach((key) => url.searchParams.delete(key));
     }
 
-    // Strips any `order[...]` query parameters from the given URL in place.
-    removeOrderParams(url) {
-        const orderKeys = [];
-        url.searchParams.forEach((_value, key) => {
-            if (key.startsWith("order[")) {
-                orderKeys.push(key);
-            }
+    removeColumnParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (key.startsWith("column_order") || key.startsWith("hidden_columns")) keys.push(key);
         });
-        orderKeys.forEach((key) => url.searchParams.delete(key));
+        keys.forEach((key) => url.searchParams.delete(key));
     }
 
-    // Parses `order[column]=direction` params into a plain object.
-    // An empty value (order[col]=) means the user explicitly cleared that column's
-    // sort; it is preserved so the server can distinguish it from "no params sent".
+    removeOrderParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (key.startsWith("order[")) keys.push(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
+    }
+
     parseOrderParams(searchParams) {
         const order = {};
         searchParams.forEach((value, key) => {
             const match = key.match(/^order\[(.+)\]$/);
-            if (match) {
-                order[match[1]] = value;
-            }
+            if (match) order[match[1]] = value;
         });
         return order;
     }
 
-    // The full set of active filters: existing pills plus the one currently
-    // being added (if any), keyed by column name.
     collectFilters() {
         const filters = this.renderedFilters();
 
@@ -359,110 +376,83 @@ export default class FilterPillListComponentController extends ApplicationContro
         return filters;
     }
 
-    // Filters currently rendered as pills, read straight from the DOM so we
-    // don't depend on outlet connection timing.
     renderedFilters() {
         const filters = {};
 
         this.element
             .querySelectorAll('[data-controller~="mensa-filter-pill"]')
             .forEach((pill) => {
-                const columnName = pill.getAttribute(
-                    "data-mensa-filter-pill-column-name-value",
-                );
+                const columnName = pill.getAttribute("data-mensa-filter-pill-column-name-value");
                 if (!columnName) return;
 
                 filters[columnName] = {
-                    value: pill.getAttribute(
-                        "data-mensa-filter-pill-value-value",
-                    ),
-                    operator: pill.getAttribute(
-                        "data-mensa-filter-pill-operator-value",
-                    ),
+                    value: pill.getAttribute("data-mensa-filter-pill-value-value"),
+                    operator: pill.getAttribute("data-mensa-filter-pill-operator-value"),
                 };
             });
 
         return filters;
     }
 
-    // Reflects the persisted query in the search field (value + reset button).
     setSearchField(query) {
-        const input = this.searchInputElement();
-        if (input) {
-            input.value = query || "";
+        if (this.hasSearchInputTarget) {
+            this.searchInputTarget.value = query || "";
         }
-
-        const button = this.resetSearchButtonElement();
-        if (button) {
-            button.classList.toggle("hidden", !(query && query.length > 0));
-        }
+        this._monitorResetButton();
     }
 
-    // Reflects the persisted view in the views tabs (selected highlight). The
-    // views component lives outside the turbo-stream targets, so we update it here.
     setViewHighlight(view) {
-        // No persisted view: leave the server-rendered default highlight intact.
         if (!view) return;
 
         const root = this.element.closest(".mensa-table");
         if (!root) return;
 
-        root.querySelectorAll('[data-mensa-views-target="view"]').forEach(
-            (link) => {
-                const linkView = link.getAttribute("data-view-id") || "";
-                link.classList.toggle(
-                    "selected",
-                    view !== "" && linkView === view,
-                );
-            },
-        );
+        // Update the views dropdown option checks
+        root.querySelectorAll('[data-mensa-views-target="view"]').forEach((el) => {
+            const linkView = el.getAttribute("data-view-id") || "";
+            const check = el.querySelector(".mensa-table__views__option-check");
+            if (check) {
+                check.classList.toggle("invisible", view !== "" && linkView !== view);
+            }
+        });
+
+        // Update the trigger label
+        const triggerLabel = root.querySelector('[data-mensa-views-target="triggerLabel"]');
+        if (triggerLabel && view) {
+            const viewEl = root.querySelector(`[data-mensa-views-target="view"][data-view-id="${view}"]`);
+            if (viewEl) {
+                const name = viewEl.dataset.viewName || viewEl.querySelector("span")?.textContent?.trim();
+                if (name) triggerLabel.textContent = name;
+            }
+        }
 
         this.updateSearchPlaceholder();
     }
 
-    // Reflects the selected view in the search field placeholder: "Search in
-    // <view>" for a named view, or the plain default placeholder when the
-    // default view is active. Reads the currently highlighted view link, so it
-    // must run after the selected class has been set.
     updateSearchPlaceholder() {
-        const input = this.searchInputElement();
-        if (!input) return;
-
-        const root = this.element.closest(".mensa-table");
-        const selected = root
-            ? root.querySelector('[data-mensa-views-target="view"].selected')
-            : null;
-
-        const viewId = selected
-            ? selected.getAttribute("data-view-id") || ""
-            : "";
-        const isDefault = !selected || viewId === "" || viewId === "default";
-
-        if (isDefault) {
-            input.placeholder = input.dataset.defaultPlaceholder || "";
-        } else {
-            input.placeholder = (input.dataset.viewPlaceholder || "").replace(
-                "{view}",
-                selected.textContent.trim(),
-            );
-        }
+        // Placeholder is always "Search and filter" — no dynamic update needed.
     }
 
+    // Clears all dirty-state localStorage keys so the view is clean after save.
+    clearPersistedDirtyState() {
+        this.writeStorage(this.filtersStorageKey, null);
+        this.writeStorage(this.searchStorageKey, null);
+        this.writeStorage(this.orderStorageKey, null);
+        this.writeStorage(`mensa:column_order:${this.tableNameValue}`, null);
+        this.writeStorage(`mensa:hidden_columns:${this.tableNameValue}`, null);
+    }
+
+    // Keep these for backward-compatibility with other controllers that look up
+    // the search input via helper methods.
     searchInputElement() {
-        const root = this.element.closest(".mensa-table");
-        return root
-            ? root.querySelector('[data-mensa-search-target="searchInput"]')
-            : null;
+        return this.hasSearchInputTarget ? this.searchInputTarget : null;
     }
 
     resetSearchButtonElement() {
-        const root = this.element.closest(".mensa-table");
-        return root
-            ? root.querySelector(
-                  '[data-mensa-search-target="resetSearchButton"]',
-              )
-            : null;
+        return this.hasResetSearchButtonTarget ? this.resetSearchButtonTarget : null;
     }
+
+    // --- Persistence ---
 
     persistState(state) {
         this.persistFilters(state.filters || {});
@@ -490,10 +480,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistQuery(query) {
-        this.writeStorage(
-            this.searchStorageKey,
-            query && query.length > 0 ? query : null,
-        );
+        this.writeStorage(this.searchStorageKey, query && query.length > 0 ? query : null);
     }
 
     loadQuery() {
@@ -501,10 +488,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistView(view) {
-        this.writeStorage(
-            this.viewStorageKey,
-            view && view.length > 0 ? view : null,
-        );
+        this.writeStorage(this.viewStorageKey, view && view.length > 0 ? view : null);
     }
 
     loadView() {
@@ -512,11 +496,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistPage(page) {
-        // Page 1 is the default, so there is nothing worth persisting.
-        this.writeStorage(
-            this.pageStorageKey,
-            page && page !== "1" ? page : null,
-        );
+        this.writeStorage(this.pageStorageKey, page && page !== "1" ? page : null);
     }
 
     loadPage() {
@@ -526,9 +506,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     persistOrder(order) {
         this.writeStorage(
             this.orderStorageKey,
-            order && Object.keys(order).length > 0
-                ? JSON.stringify(order)
-                : null,
+            order && Object.keys(order).length > 0 ? JSON.stringify(order) : null,
         );
     }
 
@@ -544,21 +522,17 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     writeStorage(key, value) {
         if (!this.hasStorage) return;
-
         try {
             if (value === null) {
                 window.localStorage.removeItem(key);
             } else {
                 window.localStorage.setItem(key, value);
             }
-        } catch (e) {
-            // localStorage may be unavailable (private mode / disabled); ignore.
-        }
+        } catch (e) {}
     }
 
     readStorage(key) {
         if (!this.hasStorage) return null;
-
         try {
             return window.localStorage.getItem(key);
         } catch (e) {
@@ -576,13 +550,7 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     loadColumnOrder() {
         try {
-            return (
-                JSON.parse(
-                    this.readStorage(
-                        `mensa:column_order:${this.tableNameValue}`,
-                    ),
-                ) || []
-            );
+            return JSON.parse(this.readStorage(`mensa:column_order:${this.tableNameValue}`)) || [];
         } catch (e) {
             return [];
         }
@@ -590,40 +558,35 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     loadHiddenColumns() {
         try {
-            return (
-                JSON.parse(
-                    this.readStorage(
-                        `mensa:hidden_columns:${this.tableNameValue}`,
-                    ),
-                ) || []
-            );
+            return JSON.parse(this.readStorage(`mensa:hidden_columns:${this.tableNameValue}`)) || [];
         } catch (e) {
             return [];
         }
     }
 
-    get filtersStorageKey() {
-        return `mensa:filters:${this.tableNameValue}`;
-    }
-
-    get searchStorageKey() {
-        return `mensa:search:${this.tableNameValue}`;
-    }
-
-    get viewStorageKey() {
-        return `mensa:view:${this.tableNameValue}`;
-    }
-
-    get pageStorageKey() {
-        return `mensa:page:${this.tableNameValue}`;
-    }
-
-    get orderStorageKey() {
-        return `mensa:order:${this.tableNameValue}`;
-    }
+    get filtersStorageKey() { return `mensa:filters:${this.tableNameValue}`; }
+    get searchStorageKey() { return `mensa:search:${this.tableNameValue}`; }
+    get viewStorageKey() { return `mensa:view:${this.tableNameValue}`; }
+    get pageStorageKey() { return `mensa:page:${this.tableNameValue}`; }
+    get orderStorageKey() { return `mensa:order:${this.tableNameValue}`; }
 
     get ourUrl() {
-        const url = this.mensaTableOutlet.ourUrl;
-        return url;
+        return this.mensaTableOutlet.ourUrl;
+    }
+
+    // --- Private ---
+
+    _monitorResetButton() {
+        if (!this.hasSearchInputTarget) return;
+        const hasValue = this.searchInputTarget.value.length > 0;
+        if (this.hasResetSearchButtonTarget) {
+            this.resetSearchButtonTarget.classList.toggle("hidden", !hasValue);
+        }
+    }
+
+    _notifyUnsavedState() {
+        if (this.hasMensaTableOutlet && typeof this.mensaTableOutlet.notifyUnsavedState === "function") {
+            this.mensaTableOutlet.notifyUnsavedState();
+        }
     }
 }

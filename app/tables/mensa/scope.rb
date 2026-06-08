@@ -20,7 +20,13 @@ module Mensa
       @filtered_scope = scope
       # See https://github.com/textacular/textacular
       # This has problems - not all table fields are searched
-      @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query].present?
+      if params[:query].present?
+        @filtered_scope = if Mensa.config.search == :fuzzy
+          @filtered_scope.fuzzy_search(params[:query])
+        else
+          @filtered_scope.basic_search(params[:query])
+        end
+      end
 
       # Use inject
       active_filters.each do |filter|

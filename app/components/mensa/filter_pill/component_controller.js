@@ -22,6 +22,7 @@ export default class FilterPillComponentController extends ApplicationController
         this.mensaFilterPillListOutlet.editFilter(
             this.columnNameValue,
             this.valueValue,
+            this.operatorValue,
             this.element,
         );
     }

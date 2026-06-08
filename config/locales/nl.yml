@@ -3,9 +3,12 @@ nl:
     add_filter:
       component:
         add_filter: Filter toevoegen
+    filter_pill_list:
+      component:
+        search: Zoeken en filteren
     search:
       component:
-        search: Zoek
+        search: Zoek en filter
         search_in: Zoek in %{view}
         cancel: Annuleer
         save: Bewaar

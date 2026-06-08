@@ -1,14 +1,24 @@
 .mensa-table {
     &__control_bar {
-        @apply pl-2 pt-1.5 pr-2;
-
         &__button {
-            @apply inline-flex items-center justify-center gap-1 cursor-pointer rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 shadow-sm px-2 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors;
+            @apply h-[26px] inline-flex items-center justify-center gap-1 cursor-pointer rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 shadow-sm px-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none transition-colors;
         }
 
         &__badge {
             @apply absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[1.125rem] h-[1.125rem] px-1 rounded-full bg-primary-600 text-white text-[0.625rem] font-semibold leading-none ring-2 ring-white dark:ring-gray-800;
         }
+
+        &__save-dropdown {
+            @apply absolute right-0 top-full z-20 mt-1 min-w-[10rem] rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 px-2;
+        }
+
+        &__save-dropdown-item {
+            @apply w-full flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-left;
+        }
+    }
+
+    &__save-reset {
+        @apply flex items-center gap-1;
     }
 
     &__export-dialog {

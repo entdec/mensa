@@ -11,6 +11,9 @@ export default class ColumnCustomizerController extends ApplicationController {
         this._dragGhost = null;
         this._outsideClickHandler = null;
 
+        // Capture the server-rendered order before localStorage reorders the DOM.
+        this._defaultColumnOrder = this.columnRowTargets.map((r) => r.dataset.columnName);
+
         // 1. Update the DOM immediately (reorder rows, flip data-visible).
         //    CSS [data-visible] rules handle icon display — no JS icon work needed.
         const hasState = this._applyLocalState();
@@ -130,11 +133,27 @@ export default class ColumnCustomizerController extends ApplicationController {
         this._persistAndApply();
     }
 
+    // Resets the popover DOM to the original server-rendered order and makes all
+    // columns visible. Called by the table controller after a view reset.
+    resetToDefault() {
+        if (this._defaultColumnOrder) {
+            this._reorderRows(this._defaultColumnOrder);
+        }
+        this.columnRowTargets.forEach((row) => {
+            row.dataset.visible = "true";
+            const nameEl = row.querySelector(".mensa-table__column_customizer__name");
+            if (nameEl) nameEl.classList.remove("mensa-table__column_customizer__name--hidden");
+        });
+    }
+
     // --- private ---
 
     _persistAndApply() {
         this._persistToStorage();
         this._applyChanges();
+        if (this.hasMensaTableOutlet) {
+            this.mensaTableOutlet.notifyUnsavedState();
+        }
     }
 
     _applyChanges() {
