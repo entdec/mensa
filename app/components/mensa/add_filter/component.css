@@ -77,9 +77,29 @@
     @apply bg-gray-100 dark:bg-gray-700;
 }
 
-/* Show the + trigger only when filter pills precede the add_filter in the DOM */
-.mensa-filter-pill ~ .mensa-table__add_filter .mensa-table__add_filter__trigger {
+/* Show + when user-added (non-view-filter) committed pills are present.
+   User pills are always visible, so no ancestor visibility check needed. */
+.mensa-table__search-bar__pills-area:has(.mensa-filter-pill:not([data-view-filter="true"]):not(.mensa-filter-pill--pending)):not(:has(.mensa-filter-pill--pending))
+    .mensa-table__add_filter
+    .mensa-table__add_filter__trigger {
     @apply inline-flex;
+}
+
+/* Show + when view-defined filter pills are present AND currently visible
+   (eye toggle on). Hidden view filters must not reveal the + button. */
+.mensa-table:not(.mensa-table--view-filters-hidden)
+    .mensa-table__search-bar__pills-area:has(.mensa-filter-pill[data-view-filter="true"]):not(:has(.mensa-filter-pill--pending))
+    .mensa-table__add_filter
+    .mensa-table__add_filter__trigger {
+    @apply inline-flex;
+}
+
+/* While a filter is being configured, collapse the add-filter wrapper so it
+   doesn't create an extra flex gap between the pending pill and the search input.
+   The value popover inside is position:fixed so display:contents doesn't affect it. */
+.mensa-table__search-bar__pills-area:has(.mensa-filter-pill--pending)
+    .mensa-table__add_filter {
+    display: contents;
 }
 
 /* Pending pill while the value popover is open — rounded on both sides (no remove button) */

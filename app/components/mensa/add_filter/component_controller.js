@@ -293,7 +293,12 @@ export default class AddFilterComponentController extends ApplicationController 
             this.valuePopoverTarget.style.top = `${containerRect.bottom + 4}px`;
         }
 
-        if (this.anchorElement) {
+        if (this._pendingPill) {
+            // New filter: place popover at the right edge of the pending pill,
+            // directly below where the text cursor sits in the search input.
+            const rect = this._pendingPill.getBoundingClientRect();
+            this.valuePopoverTarget.style.left = `${rect.right}px`;
+        } else if (this.anchorElement) {
             const anchor = this.anchorElement.getBoundingClientRect();
             this.valuePopoverTarget.style.left = `${anchor.left}px`;
         } else {

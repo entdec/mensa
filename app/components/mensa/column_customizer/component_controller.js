@@ -44,11 +44,21 @@ export default class ColumnCustomizerController extends ApplicationController {
     toggle() {
         if (this.popoverTarget.classList.contains("hidden")) {
             this.popoverTarget.classList.remove("hidden");
+            this._positionPopover();
             this._bindOutsideClick();
         } else {
             this.popoverTarget.classList.add("hidden");
             this._unbindOutsideClick();
         }
+    }
+
+    _positionPopover() {
+        const btn = this.element.querySelector("button");
+        if (!btn) return;
+        const rect = btn.getBoundingClientRect();
+        this.popoverTarget.style.top = `${rect.bottom + 4}px`;
+        this.popoverTarget.style.right = `${window.innerWidth - rect.right}px`;
+        this.popoverTarget.style.left = "auto";
     }
 
     toggleVisibility(event) {

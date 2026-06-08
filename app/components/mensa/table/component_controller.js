@@ -150,8 +150,14 @@ export default class TableComponentController extends ApplicationController {
     toggleSaveDropdown(event) {
         event.preventDefault();
         event.stopPropagation();
-        if (this.hasSaveDropdownTarget) {
-            this.saveDropdownTarget.classList.toggle("hidden");
+        if (!this.hasSaveDropdownTarget) return;
+        const isHidden = this.saveDropdownTarget.classList.contains("hidden");
+        this.saveDropdownTarget.classList.toggle("hidden");
+        if (isHidden) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            this.saveDropdownTarget.style.top = `${rect.bottom + 4}px`;
+            this.saveDropdownTarget.style.right = `${window.innerWidth - rect.right}px`;
+            this.saveDropdownTarget.style.left = "auto";
         }
     }
 

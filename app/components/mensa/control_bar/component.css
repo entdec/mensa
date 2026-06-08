@@ -9,7 +9,7 @@
         }
 
         &__save-dropdown {
-            @apply absolute right-0 top-full z-20 mt-1 min-w-[10rem] rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 px-2;
+            @apply fixed z-50 min-w-[10rem] rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 px-2;
         }
 
         &__save-dropdown-item {
