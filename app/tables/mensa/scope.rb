@@ -71,8 +71,6 @@ module Mensa
     def pagy_object
       return if @pagy_details && @records
 
-      puts "selected_scope: #{selected_scope.to_sql}"
-
       @pagy_details, @records = selected_scope.is_a?(Array) ? pagy(:offset, ordered_scope, anchor_string: 'data-turbo-frame="_self"') : pagy(:offset, selected_scope, anchor_string: 'data-turbo-frame="_self"')
     end
 
