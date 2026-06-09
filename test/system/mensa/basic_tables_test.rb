@@ -9,6 +9,26 @@ class BasicTablesTest < ApplicationSystemTestCase
     assert_equal "All users", find("span.mensa-table__views__trigger-label").text
   end
 
+  test "tables without filterable columns show a search-only input" do
+    visit search_only_users_url
+
+    assert_text "Search-only users"
+    assert_equal "Search", find("input.mensa-table__search-bar__input")[:placeholder]
+    assert_no_selector ".mensa-table__add_filter__trigger"
+  end
+
+  test "typing in a search-only table does not open any filter popover" do
+    visit search_only_users_url
+
+    input = find("input.mensa-table__search-bar__input")
+    input.click
+    input.set("Oliver")
+
+    assert_equal "Oliver", input.value
+    assert_no_selector ".mensa-table__add_filter"
+    assert_no_selector ".mensa-table__add_filter__popover_container"
+  end
+
   test "clicking a row navigates to the row's linked path" do
     visit users_url
     assert_selector "tbody tr", wait: 15
