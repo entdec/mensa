@@ -1,8 +1,8 @@
 en:
   mensa:
     operators:
-      equals: Equals
-      not_equals: Not equals
+      equals: Is
+      not_equals: Is not
       contains: Contains
       is_current: Is current
     add_filter:
@@ -11,6 +11,7 @@ en:
     filter_pill_list:
       component:
         search: Search and filter
+        search_only: Search
     search:
       component:
         search_in: Search in %{view}

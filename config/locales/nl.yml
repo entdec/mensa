@@ -1,11 +1,17 @@
 nl:
   mensa:
+    operators:
+      equals: Is
+      not_equals: Is niet
+      contains: Bevat
+      is_current: Is huidige
     add_filter:
       component:
         add_filter: Filter toevoegen
     filter_pill_list:
       component:
         search: Zoeken en filteren
+        search_only: Zoeken
     search:
       component:
         search: Zoek en filter
