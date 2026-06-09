@@ -17,9 +17,7 @@ class UsersTable < Mensa::Base
       collection -> { User.ROLES }
     end
   end
-  column :customer_id do
-    internal true
-  end
+  internal :customer_id
   column(:customer_name) do
     attribute "customers.name"
     render do

@@ -82,5 +82,13 @@ module Mensa::Config
     option :view_columns_ordering, default: true
 
     option :view, dsl_hash: Mensa::Config::ViewDsl
+
+    # Syntactic sugar for `column :carrier_id do internal true end`.
+    def internal(name, &block)
+      column(name) do
+        internal true
+        instance_exec(&block) if block
+      end
+    end
   end
 end

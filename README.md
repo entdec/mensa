@@ -115,7 +115,7 @@ Mensa selects only the data it needs, based on the columns. Sometimes it needs a
 This can be done by adding `internal true` to the column definition, or shorter: use `internal` instead
 
 ```ruby
-internal :born_on 
+internal :born_on
 column :age do
   attribute "EXTRACT(YEAR FROM AGE(born_on))::int"
 end
