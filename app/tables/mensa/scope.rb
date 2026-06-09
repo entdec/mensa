@@ -78,11 +78,9 @@ module Mensa
     # (even with blank values), use only those — blank means "explicitly no sort".
     # Falls back to the view/config default only when no order params were sent.
     def effective_order
-      if params.key?(:order)
-        (params[:order] || {}).symbolize_keys.compact_blank.transform_values(&:to_sym)
-      else
-        (config[:order] || {}).symbolize_keys.compact_blank.transform_values(&:to_sym)
-      end
+      result = params.key?(:order) ? (params[:order] || {}) : (config[:order] || {})
+      result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
+      result.transform_keys { column(_1).attribute_for_condition }
     end
 
     # Builds an order hash for URL generation. Merges current order with overrides;
