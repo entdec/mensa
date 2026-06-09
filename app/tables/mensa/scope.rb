@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Mensa
+  # scope -> filtered_scope -> ordered_scope -> selected_scope ->
   module Scope
     extend ActiveSupport::Concern
 
