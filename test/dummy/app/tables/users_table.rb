@@ -5,7 +5,7 @@ class UsersTable < Mensa::Base
 
   render do
     html
-    xlsx
+    csv
   end
 
   column(:first_name)

@@ -5,7 +5,7 @@
 #     render do # default Standard components
 #       html # Mensa::TableComponent::Default
 #       json # Mensa::JsonRenderer::Default
-#       xlsx # Mensa::XlsxRenderer::Default
+#       csv # Mensa::CsvRenderer::Default
 #     end
 #
 #     column(:first_name) do
