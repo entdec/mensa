@@ -7,12 +7,6 @@ module Mensa
     included do
     end
 
-    # Returns the records we want to display, using the Active Record Query Interface
-    # By default it returns all records
-    def scope
-      model.all
-    end
-
     # Returns the scope, but filtered
     def filtered_scope
       return @filtered_scope if @filtered_scope
@@ -89,7 +83,7 @@ module Mensa
     def order_hash(new_params = {})
       base = params[:order]&.symbolize_keys || config[:order]&.symbolize_keys || {}
       merged = base.merge(new_params.symbolize_keys)
-      merged.transform_values { |v| v.nil? ? "" : v.to_s }
+      merged.transform_values { |v| v.nil? ? "" : v.to_sym }
     end
   end
 end

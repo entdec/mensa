@@ -40,7 +40,7 @@ class TableTest < ActiveSupport::TestCase
 
     t = TestTable.new(result)
     result = t.send(:order_hash, {first_name: nil})
-    assert_equal({}, result)
+    assert_equal({first_name: ""}, result)
   end
 
   test "it sets order correctly" do

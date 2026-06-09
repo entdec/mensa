@@ -4,7 +4,7 @@ require "pry"
 class FilterTest < ActiveSupport::TestCase
   test "we can initialize a filter" do
     t = CustomerTable.new({filters: {country: {value: "NL"}}})
-    f = t.column(:country).filter
+    f = t.active_filters.first
     assert_equal :country, f.column.name
     assert_equal "NL", f.value
     assert_equal :equals, f.operator
