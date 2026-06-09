@@ -8,5 +8,6 @@ module Mensa::Config
     option :scope
     option :multiple, default: false
     option :as
+    option :operators
   end
 end

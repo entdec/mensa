@@ -61,6 +61,7 @@ class UserTable < ApplicationTable
       collection -> { }
       scope -> { where(name: ...) }
     end
+    operators [:equals, :not_equals] # Optional, mensa tries to deduce this from the column information
   end
 
   column(:nr_of_roles) do

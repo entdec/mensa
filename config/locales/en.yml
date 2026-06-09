@@ -1,5 +1,10 @@
 en:
   mensa:
+    operators:
+      equals: Equals
+      not_equals: Not equals
+      contains: Contains
+      is_current: Is current
     add_filter:
       component:
         add_filter: Add filter

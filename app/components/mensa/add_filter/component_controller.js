@@ -39,7 +39,12 @@ export default class AddFilterComponentController extends ApplicationController 
             // Defer one macrotask so Stimulus has time to wire up outlets.
             setTimeout(() => {
                 if (this.hasMensaFilterPillListOutlet) {
-                    this.editColumn(reopen.column, reopen.values, reopen.operator || "equals", null);
+                    this.editColumn(
+                        reopen.column,
+                        reopen.values,
+                        reopen.operator || "equals",
+                        null,
+                    );
                 }
             }, 0);
         }
@@ -88,7 +93,9 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     hideList() {
-        this.filterListItemTargets.forEach((i) => i.classList.remove("highlighted"));
+        this.filterListItemTargets.forEach((i) =>
+            i.classList.remove("highlighted"),
+        );
         this.filterListTarget.classList.add("hidden");
         this._unbindOutsideClick();
     }
@@ -97,7 +104,8 @@ export default class AddFilterComponentController extends ApplicationController 
     filterColumns(query) {
         const q = (query || "").toLowerCase();
         this.filterListItemTargets.forEach((item) => {
-            const label = item.querySelector(".label")?.textContent?.toLowerCase() || "";
+            const label =
+                item.querySelector(".label")?.textContent?.toLowerCase() || "";
             item.classList.toggle("hidden", q.length > 0 && !label.includes(q));
         });
     }
@@ -107,21 +115,31 @@ export default class AddFilterComponentController extends ApplicationController 
     filterValues(query) {
         const q = (query || "").toLowerCase();
         this.valueOptionTargets.forEach((item) => {
-            const label = (item.dataset.label || item.dataset.value || "").toLowerCase();
+            const label = (
+                item.dataset.label ||
+                item.dataset.value ||
+                ""
+            ).toLowerCase();
             item.classList.toggle("hidden", q.length > 0 && !label.includes(q));
         });
     }
 
     get visibleColumnCount() {
-        return this.filterListItemTargets.filter((i) => !i.classList.contains("hidden")).length;
+        return this.filterListItemTargets.filter(
+            (i) => !i.classList.contains("hidden"),
+        ).length;
     }
 
     get hasHighlightedColumn() {
-        return !!this.filterListItemTargets.find((i) => i.classList.contains("highlighted"));
+        return !!this.filterListItemTargets.find((i) =>
+            i.classList.contains("highlighted"),
+        );
     }
 
     confirmHighlightedColumn() {
-        const item = this.filterListItemTargets.find((i) => i.classList.contains("highlighted"));
+        const item = this.filterListItemTargets.find((i) =>
+            i.classList.contains("highlighted"),
+        );
         if (item) item.click();
     }
 
@@ -146,9 +164,13 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // Keyboard navigation: move highlight down/up in the column list
     highlightNext() {
-        const items = this.filterListItemTargets.filter((i) => !i.classList.contains("hidden"));
+        const items = this.filterListItemTargets.filter(
+            (i) => !i.classList.contains("hidden"),
+        );
         if (!items.length) return;
-        const current = items.findIndex((i) => i.classList.contains("highlighted"));
+        const current = items.findIndex((i) =>
+            i.classList.contains("highlighted"),
+        );
         const next = current < items.length - 1 ? current + 1 : 0;
         items.forEach((i) => i.classList.remove("highlighted"));
         items[next].classList.add("highlighted");
@@ -156,9 +178,13 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     highlightPrev() {
-        const items = this.filterListItemTargets.filter((i) => !i.classList.contains("hidden"));
+        const items = this.filterListItemTargets.filter(
+            (i) => !i.classList.contains("hidden"),
+        );
         if (!items.length) return;
-        const current = items.findIndex((i) => i.classList.contains("highlighted"));
+        const current = items.findIndex((i) =>
+            i.classList.contains("highlighted"),
+        );
         const prev = current > 0 ? current - 1 : items.length - 1;
         items.forEach((i) => i.classList.remove("highlighted"));
         items[prev].classList.add("highlighted");
@@ -167,7 +193,9 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // Mouse hover on column list items — keeps highlight in sync with cursor
     columnItemHovered(event) {
-        this.filterListItemTargets.forEach((i) => i.classList.remove("highlighted"));
+        this.filterListItemTargets.forEach((i) =>
+            i.classList.remove("highlighted"),
+        );
         event.currentTarget.classList.add("highlighted");
     }
 
@@ -175,7 +203,9 @@ export default class AddFilterComponentController extends ApplicationController 
     highlightNextValue() {
         const items = this._valuePopoverItems;
         if (!items.length) return;
-        const current = items.findIndex((i) => i.classList.contains("highlighted"));
+        const current = items.findIndex((i) =>
+            i.classList.contains("highlighted"),
+        );
         const next = current < items.length - 1 ? current + 1 : 0;
         items.forEach((i) => i.classList.remove("highlighted"));
         items[next].classList.add("highlighted");
@@ -185,7 +215,9 @@ export default class AddFilterComponentController extends ApplicationController 
     highlightPrevValue() {
         const items = this._valuePopoverItems;
         if (!items.length) return;
-        const current = items.findIndex((i) => i.classList.contains("highlighted"));
+        const current = items.findIndex((i) =>
+            i.classList.contains("highlighted"),
+        );
         const prev = current > 0 ? current - 1 : items.length - 1;
         items.forEach((i) => i.classList.remove("highlighted"));
         items[prev].classList.add("highlighted");
@@ -194,19 +226,28 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // Mouse hover on value/operator items — keeps highlight in sync with cursor
     highlightItem(event) {
-        this._valuePopoverItems.forEach((i) => i.classList.remove("highlighted"));
+        this._valuePopoverItems.forEach((i) =>
+            i.classList.remove("highlighted"),
+        );
         event.currentTarget.classList.add("highlighted");
     }
 
     // Confirm the highlighted (or pre-selected) item in the value popover via Enter
     confirmHighlightedValue() {
-        let item = this._valuePopoverItems.find((i) => i.classList.contains("highlighted"));
+        let item = this._valuePopoverItems.find((i) =>
+            i.classList.contains("highlighted"),
+        );
         // Fall back to pre-selected value option if nothing is keyboard-highlighted (single only)
         if (!item && !this.isMultipleMode && this.hasValueOptionTarget) {
-            item = this.valueOptionTargets.find((opt) => opt.dataset.selected === "true");
+            item = this.valueOptionTargets.find(
+                (opt) => opt.dataset.selected === "true",
+            );
         }
         if (!item) return;
-        if (this.hasValueOptionTarget && this.valueOptionTargets.includes(item)) {
+        if (
+            this.hasValueOptionTarget &&
+            this.valueOptionTargets.includes(item)
+        ) {
             if (this.isMultipleMode) {
                 this._toggleValueItem(item);
             } else {
@@ -227,7 +268,10 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     get isValuePopoverOpen() {
-        return this.hasValuePopoverTarget && !this.valuePopoverTarget.classList.contains("hidden");
+        return (
+            this.hasValuePopoverTarget &&
+            !this.valuePopoverTarget.classList.contains("hidden")
+        );
     }
 
     get isMultipleMode() {
@@ -244,15 +288,17 @@ export default class AddFilterComponentController extends ApplicationController 
         if (this.isMultipleMode) {
             return this.hasValueOptionTarget
                 ? this.valueOptionTargets
-                    .filter((opt) => opt.dataset.selected === "true")
-                    .map((opt) => opt.dataset.value)
+                      .filter((opt) => opt.dataset.selected === "true")
+                      .map((opt) => opt.dataset.value)
                 : [];
         }
         return this.hasValueTarget ? this.valueTarget.value : "";
     }
 
     get hasHighlightedValue() {
-        return this._valuePopoverItems.some((i) => i.classList.contains("highlighted"));
+        return this._valuePopoverItems.some((i) =>
+            i.classList.contains("highlighted"),
+        );
     }
 
     get _valuePopoverItems() {
@@ -268,7 +314,9 @@ export default class AddFilterComponentController extends ApplicationController 
         url.pathname += `/filters/${this.selectedFilterColumn}`;
         url.searchParams.append("target", this.valuePopoverTarget.id);
         if (Array.isArray(this.editingValue)) {
-            this.editingValue.forEach((v) => url.searchParams.append("value[]", v));
+            this.editingValue.forEach((v) =>
+                url.searchParams.append("value[]", v),
+            );
         } else if (this.editingValue) {
             url.searchParams.append("value", this.editingValue);
         }
@@ -285,7 +333,8 @@ export default class AddFilterComponentController extends ApplicationController 
             // keeps working — especially after the popover is re-opened programmatically
             // following a multi-select turbo-stream re-render.
             if (this.hasMensaFilterPillListOutlet) {
-                const input = this.mensaFilterPillListOutlet.searchInputElement?.();
+                const input =
+                    this.mensaFilterPillListOutlet.searchInputElement?.();
                 if (input) input.focus({ preventScroll: true });
             }
         });
@@ -333,7 +382,8 @@ export default class AddFilterComponentController extends ApplicationController 
 
         let label = event.target.closest("li").querySelector(".label");
         this._columnLabel = label.innerText;
-        if (this.hasDescriptionTarget) this.descriptionTarget.innerText = `${this._columnLabel} is`;
+        if (this.hasDescriptionTarget)
+            this.descriptionTarget.innerText = `${this._columnLabel} is`;
 
         this._showPendingPill(this._columnLabel);
         this.hideList();
@@ -356,11 +406,29 @@ export default class AddFilterComponentController extends ApplicationController 
             }
         });
 
+        const requiresValue = this.operatorRequiresValue(
+            selected.dataset.operator,
+        );
+        if (!requiresValue) {
+            if (this.hasValueTarget) this.valueTarget.value = "";
+            if (this.hasValueOptionTarget) {
+                this.valueOptionTargets.forEach((opt) => {
+                    delete opt.dataset.selected;
+                    const check = opt.querySelector(
+                        ".mensa-table__add_filter__popover_container__value__check",
+                    );
+                    check?.classList.add("invisible");
+                });
+            }
+        }
+
         // Always reflect the new operator in the description immediately.
         this._updateDescription();
 
         // Apply to the table immediately when a value is already selected.
-        if (this.isMultipleMode) {
+        if (!requiresValue) {
+            this.mensaFilterPillListOutlet.refreshFilters();
+        } else if (this.isMultipleMode) {
             if (this.selectedValues.length > 0) {
                 _pendingMultiReopen = {
                     column: this._selectedFilterColumn,
@@ -383,6 +451,13 @@ export default class AddFilterComponentController extends ApplicationController 
         return selected?.dataset.operator ?? "equals";
     }
 
+    operatorRequiresValue(operator = this.operator) {
+        const selected = this.operatorOptionTargets.find(
+            (opt) => opt.dataset.operator === operator,
+        );
+        return selected ? selected.dataset.requiresValue !== "false" : true;
+    }
+
     // Called via Escape — close the value popover.
     closeValuePopover() {
         this._closePopover();
@@ -390,7 +465,8 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // Called by the Clear link.
     reset(event) {
-        if (this.hasDescriptionTarget) this.descriptionTarget.innerText = "Add filter";
+        if (this.hasDescriptionTarget)
+            this.descriptionTarget.innerText = "Add filter";
         this.selectedFilterColumn = null;
         this._columnLabel = null;
         this._removePendingPill();
@@ -422,15 +498,17 @@ export default class AddFilterComponentController extends ApplicationController 
         if (this.isMultipleMode) {
             const labels = this.hasValueOptionTarget
                 ? this.valueOptionTargets
-                    .filter((opt) => opt.dataset.selected === "true")
-                    .map((opt) => opt.dataset.label || opt.dataset.value)
+                      .filter((opt) => opt.dataset.selected === "true")
+                      .map((opt) => opt.dataset.label || opt.dataset.value)
                 : [];
             valueLabel = labels.length > 0 ? labels.join(", ") : null;
         } else {
             const value = this.hasValueTarget ? this.valueTarget.value : "";
             if (value) {
                 const option = this.hasValueOptionTarget
-                    ? this.valueOptionTargets.find((opt) => opt.dataset.value === value)
+                    ? this.valueOptionTargets.find(
+                          (opt) => opt.dataset.value === value,
+                      )
                     : null;
                 valueLabel = option?.dataset.label || value;
             }
@@ -446,8 +524,14 @@ export default class AddFilterComponentController extends ApplicationController 
         const isSelected = item.dataset.selected === "true";
         const newState = !isSelected;
         item.dataset.selected = newState ? "true" : "";
-        const checkbox = item.querySelector(".mensa-table__add_filter__checkbox");
-        if (checkbox) checkbox.classList.toggle("mensa-table__add_filter__checkbox--checked", newState);
+        const checkbox = item.querySelector(
+            ".mensa-table__add_filter__checkbox",
+        );
+        if (checkbox)
+            checkbox.classList.toggle(
+                "mensa-table__add_filter__checkbox--checked",
+                newState,
+            );
         this._updateDescription();
         // Stash reopen state before the turbo-stream destroys both this controller
         // and the filter-pill-list controller. The new add-filter instance reads
@@ -497,7 +581,9 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     _closePopover() {
-        this._valuePopoverItems.forEach((i) => i.classList.remove("highlighted"));
+        this._valuePopoverItems.forEach((i) =>
+            i.classList.remove("highlighted"),
+        );
         this.editingValue = null;
         this.editingOperator = null;
         this.anchorElement = null;
@@ -554,5 +640,4 @@ export default class AddFilterComponentController extends ApplicationController 
             this._outsideClickHandler = null;
         }
     }
-
 }

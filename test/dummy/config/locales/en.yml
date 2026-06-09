@@ -1,5 +1,5 @@
 en:
-  menu:
-    table:
-      view_menu:
-        export: Export
+  activerecord:
+    attributes:
+      user:
+        customer_name: Customer

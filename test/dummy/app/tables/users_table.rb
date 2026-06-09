@@ -25,6 +25,9 @@ class UsersTable < Mensa::Base
         link_to user.customer_name, customer_path(user.customer_id) if user.customer_id
       end
     end
+    filter do
+      collection -> { Customer.select(:name).order(:name).pluck(:name) }
+    end
   end
 
   link { |user| edit_user_path(user) }

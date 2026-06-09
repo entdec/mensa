@@ -35,7 +35,9 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     monitorSearch(event) {
-        const value = this.hasSearchInputTarget ? this.searchInputTarget.value : "";
+        const value = this.hasSearchInputTarget
+            ? this.searchInputTarget.value
+            : "";
         this._monitorResetButton();
 
         if (this.hasMensaAddFilterOutlet) {
@@ -79,14 +81,20 @@ export default class FilterPillListComponentController extends ApplicationContro
         event.preventDefault();
 
         // If the value popover is open, Enter confirms the highlighted/selected item
-        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.isValuePopoverOpen) {
+        if (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.isValuePopoverOpen
+        ) {
             this.mensaAddFilterOutlet.confirmHighlightedValue();
             return;
         }
 
         // If the column autocomplete has visible options and one is selected via
         // keyboard, let the add-filter controller handle it
-        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.hasHighlightedColumn) {
+        if (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.hasHighlightedColumn
+        ) {
             this.mensaAddFilterOutlet.confirmHighlightedColumn();
             return;
         }
@@ -96,7 +104,9 @@ export default class FilterPillListComponentController extends ApplicationContro
             this.mensaAddFilterOutlet.hideList();
         }
 
-        const query = this.hasSearchInputTarget ? this.searchInputTarget.value : "";
+        const query = this.hasSearchInputTarget
+            ? this.searchInputTarget.value
+            : "";
         if (query.length > 0 && query.length < 3) return;
 
         this.setQuery(query);
@@ -127,7 +137,12 @@ export default class FilterPillListComponentController extends ApplicationContro
     // Called when an existing filter pill is clicked.
     editFilter(columnName, value, operator, anchor) {
         if (!this.hasMensaAddFilterOutlet) return;
-        this.mensaAddFilterOutlet.editColumn(columnName, value, operator, anchor);
+        this.mensaAddFilterOutlet.editColumn(
+            columnName,
+            value,
+            operator,
+            anchor,
+        );
     }
 
     // Called when a filter is added/changed.
@@ -142,7 +157,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         });
     }
 
-// Called by the search controller when the query is submitted or reset.
+    // Called by the search controller when the query is submitted or reset.
     setQuery(query) {
         if (query && query.length > 0) this._notifyUnsavedState();
         this.applyState({
@@ -216,13 +231,18 @@ export default class FilterPillListComponentController extends ApplicationContro
             if (multiMatch) {
                 const column = multiMatch[1];
                 const f = (filters[column] = filters[column] || {});
-                f.value = Array.isArray(f.value) ? [...f.value, value] : [value];
+                f.value = Array.isArray(f.value)
+                    ? [...f.value, value]
+                    : [value];
                 return;
             }
-            const filterMatch = key.match(/^filters\[(.+?)\]\[(value|operator)\]$/);
+            const filterMatch = key.match(
+                /^filters\[(.+?)\]\[(value|operator)\]$/,
+            );
             if (filterMatch) {
                 const column = filterMatch[1];
-                (filters[column] = filters[column] || {})[filterMatch[2]] = value;
+                (filters[column] = filters[column] || {})[filterMatch[2]] =
+                    value;
                 return;
             }
             const orderMatch = key.match(/^order\[(.+)\]$/);
@@ -246,7 +266,13 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.setSearchField("");
         // buildUrl reads column_order/hidden_columns from localStorage — now empty,
         // so the server receives a completely clean request for the current view.
-        this.requestState({ filters: {}, query: "", view, order: {}, page: "" });
+        this.requestState({
+            filters: {},
+            query: "",
+            view,
+            order: {},
+            page: "",
+        });
     }
 
     restoreState() {
@@ -326,14 +352,25 @@ export default class FilterPillListComponentController extends ApplicationContro
         url.searchParams.delete("table_view_id");
 
         Object.entries(state.filters || {}).forEach(([columnName, filter]) => {
-            if (Array.isArray(filter.value)) {
-                filter.value.forEach((v) =>
-                    url.searchParams.append(`filters[${columnName}][value][]`, v),
-                );
-            } else {
-                url.searchParams.append(`filters[${columnName}][value]`, filter.value ?? "");
+            if (Object.prototype.hasOwnProperty.call(filter, "value")) {
+                if (Array.isArray(filter.value)) {
+                    filter.value.forEach((v) =>
+                        url.searchParams.append(
+                            `filters[${columnName}][value][]`,
+                            v,
+                        ),
+                    );
+                } else {
+                    url.searchParams.append(
+                        `filters[${columnName}][value]`,
+                        filter.value ?? "",
+                    );
+                }
             }
-            url.searchParams.append(`filters[${columnName}][operator]`, filter.operator);
+            url.searchParams.append(
+                `filters[${columnName}][operator]`,
+                filter.operator,
+            );
         });
 
         Object.entries(state.order || {}).forEach(([columnName, direction]) => {
@@ -365,7 +402,11 @@ export default class FilterPillListComponentController extends ApplicationContro
     removeColumnParams(url) {
         const keys = [];
         url.searchParams.forEach((_v, key) => {
-            if (key.startsWith("column_order") || key.startsWith("hidden_columns")) keys.push(key);
+            if (
+                key.startsWith("column_order") ||
+                key.startsWith("hidden_columns")
+            )
+                keys.push(key);
         });
         keys.forEach((key) => url.searchParams.delete(key));
     }
@@ -390,17 +431,22 @@ export default class FilterPillListComponentController extends ApplicationContro
     collectFilters() {
         const filters = this.renderedFilters();
 
-        if (this.hasMensaAddFilterOutlet && this.mensaAddFilterOutlet.selectedFilterColumn) {
+        if (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.selectedFilterColumn
+        ) {
             const isMultiple = this.mensaAddFilterOutlet.isMultipleMode;
-            const value = isMultiple
-                ? this.mensaAddFilterOutlet.selectedValues
-                : this.mensaAddFilterOutlet.hasValueTarget
-                    ? this.mensaAddFilterOutlet.valueTarget.value
-                    : "";
-            filters[this.mensaAddFilterOutlet.selectedFilterColumn] = {
-                value,
+            const filter = {
                 operator: this.mensaAddFilterOutlet.operator,
             };
+            if (this.mensaAddFilterOutlet.operatorRequiresValue()) {
+                filter.value = isMultiple
+                    ? this.mensaAddFilterOutlet.selectedValues
+                    : this.mensaAddFilterOutlet.hasValueTarget
+                      ? this.mensaAddFilterOutlet.valueTarget.value
+                      : "";
+            }
+            filters[this.mensaAddFilterOutlet.selectedFilterColumn] = filter;
         }
 
         return filters;
@@ -412,16 +458,37 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.element
             .querySelectorAll('[data-controller~="mensa-filter-pill"]')
             .forEach((pill) => {
-                const columnName = pill.getAttribute("data-mensa-filter-pill-column-name-value");
+                const columnName = pill.getAttribute(
+                    "data-mensa-filter-pill-column-name-value",
+                );
                 if (!columnName) return;
 
-                const rawValue = pill.getAttribute("data-mensa-filter-pill-value-value");
+                const operator = pill.getAttribute(
+                    "data-mensa-filter-pill-operator-value",
+                );
+                const operatorWithoutValue =
+                    pill.getAttribute(
+                        "data-mensa-filter-pill-operator-without-value-value",
+                    ) === "true";
+                const rawValue = pill.getAttribute(
+                    "data-mensa-filter-pill-value-value",
+                );
+
+                if (operatorWithoutValue) {
+                    filters[columnName] = { operator };
+                    return;
+                }
+
                 let value;
-                try { value = JSON.parse(rawValue); } catch { value = rawValue; }
+                try {
+                    value = JSON.parse(rawValue);
+                } catch {
+                    value = rawValue;
+                }
 
                 filters[columnName] = {
                     value,
-                    operator: pill.getAttribute("data-mensa-filter-pill-operator-value"),
+                    operator,
                 };
             });
 
@@ -442,20 +509,33 @@ export default class FilterPillListComponentController extends ApplicationContro
         if (!root) return;
 
         // Update the views dropdown option checks
-        root.querySelectorAll('[data-mensa-views-target="view"]').forEach((el) => {
-            const linkView = el.getAttribute("data-view-id") || "";
-            const check = el.querySelector(".mensa-table__views__option-check");
-            if (check) {
-                check.classList.toggle("invisible", view !== "" && linkView !== view);
-            }
-        });
+        root.querySelectorAll('[data-mensa-views-target="view"]').forEach(
+            (el) => {
+                const linkView = el.getAttribute("data-view-id") || "";
+                const check = el.querySelector(
+                    ".mensa-table__views__option-check",
+                );
+                if (check) {
+                    check.classList.toggle(
+                        "invisible",
+                        view !== "" && linkView !== view,
+                    );
+                }
+            },
+        );
 
         // Update the trigger label
-        const triggerLabel = root.querySelector('[data-mensa-views-target="triggerLabel"]');
+        const triggerLabel = root.querySelector(
+            '[data-mensa-views-target="triggerLabel"]',
+        );
         if (triggerLabel && view) {
-            const viewEl = root.querySelector(`[data-mensa-views-target="view"][data-view-id="${view}"]`);
+            const viewEl = root.querySelector(
+                `[data-mensa-views-target="view"][data-view-id="${view}"]`,
+            );
             if (viewEl) {
-                const name = viewEl.dataset.viewName || viewEl.querySelector("span")?.textContent?.trim();
+                const name =
+                    viewEl.dataset.viewName ||
+                    viewEl.querySelector("span")?.textContent?.trim();
                 if (name) triggerLabel.textContent = name;
             }
         }
@@ -483,7 +563,9 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     resetSearchButtonElement() {
-        return this.hasResetSearchButtonTarget ? this.resetSearchButtonTarget : null;
+        return this.hasResetSearchButtonTarget
+            ? this.resetSearchButtonTarget
+            : null;
     }
 
     // --- Persistence ---
@@ -514,7 +596,10 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistQuery(query) {
-        this.writeStorage(this.searchStorageKey, query && query.length > 0 ? query : null);
+        this.writeStorage(
+            this.searchStorageKey,
+            query && query.length > 0 ? query : null,
+        );
     }
 
     loadQuery() {
@@ -522,7 +607,10 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistView(view) {
-        this.writeStorage(this.viewStorageKey, view && view.length > 0 ? view : null);
+        this.writeStorage(
+            this.viewStorageKey,
+            view && view.length > 0 ? view : null,
+        );
     }
 
     loadView() {
@@ -530,7 +618,10 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistPage(page) {
-        this.writeStorage(this.pageStorageKey, page && page !== "1" ? page : null);
+        this.writeStorage(
+            this.pageStorageKey,
+            page && page !== "1" ? page : null,
+        );
     }
 
     loadPage() {
@@ -540,7 +631,9 @@ export default class FilterPillListComponentController extends ApplicationContro
     persistOrder(order) {
         this.writeStorage(
             this.orderStorageKey,
-            order && Object.keys(order).length > 0 ? JSON.stringify(order) : null,
+            order && Object.keys(order).length > 0
+                ? JSON.stringify(order)
+                : null,
         );
     }
 
@@ -584,7 +677,13 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     loadColumnOrder() {
         try {
-            return JSON.parse(this.readStorage(`mensa:column_order:${this.tableNameValue}`)) || [];
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:column_order:${this.tableNameValue}`,
+                    ),
+                ) || []
+            );
         } catch (e) {
             return [];
         }
@@ -592,17 +691,33 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     loadHiddenColumns() {
         try {
-            return JSON.parse(this.readStorage(`mensa:hidden_columns:${this.tableNameValue}`)) || [];
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:hidden_columns:${this.tableNameValue}`,
+                    ),
+                ) || []
+            );
         } catch (e) {
             return [];
         }
     }
 
-    get filtersStorageKey() { return `mensa:filters:${this.tableNameValue}`; }
-    get searchStorageKey() { return `mensa:search:${this.tableNameValue}`; }
-    get viewStorageKey() { return `mensa:view:${this.tableNameValue}`; }
-    get pageStorageKey() { return `mensa:page:${this.tableNameValue}`; }
-    get orderStorageKey() { return `mensa:order:${this.tableNameValue}`; }
+    get filtersStorageKey() {
+        return `mensa:filters:${this.tableNameValue}`;
+    }
+    get searchStorageKey() {
+        return `mensa:search:${this.tableNameValue}`;
+    }
+    get viewStorageKey() {
+        return `mensa:view:${this.tableNameValue}`;
+    }
+    get pageStorageKey() {
+        return `mensa:page:${this.tableNameValue}`;
+    }
+    get orderStorageKey() {
+        return `mensa:order:${this.tableNameValue}`;
+    }
 
     get ourUrl() {
         return this.mensaTableOutlet.ourUrl;
@@ -619,7 +734,10 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     _notifyUnsavedState() {
-        if (this.hasMensaTableOutlet && typeof this.mensaTableOutlet.notifyUnsavedState === "function") {
+        if (
+            this.hasMensaTableOutlet &&
+            typeof this.mensaTableOutlet.notifyUnsavedState === "function"
+        ) {
             this.mensaTableOutlet.notifyUnsavedState();
         }
     }

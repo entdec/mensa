@@ -36,7 +36,7 @@
             }
 
             &__values {
-                @apply mb-2;
+                @apply mb-2 max-h-[20rem] overflow-y-scroll;
             }
 
             &__value {
@@ -79,7 +79,11 @@
 
 /* Show + when user-added (non-view-filter) committed pills are present.
    User pills are always visible, so no ancestor visibility check needed. */
-.mensa-table__search-bar__pills-area:has(.mensa-filter-pill:not([data-view-filter="true"]):not(.mensa-filter-pill--pending)):not(:has(.mensa-filter-pill--pending))
+.mensa-table__search-bar__pills-area:has(
+        .mensa-filter-pill:not([data-view-filter="true"]):not(
+                .mensa-filter-pill--pending
+            )
+    ):not(:has(.mensa-filter-pill--pending))
     .mensa-table__add_filter
     .mensa-table__add_filter__trigger {
     @apply inline-flex;
@@ -88,7 +92,9 @@
 /* Show + when view-defined filter pills are present AND currently visible
    (eye toggle on). Hidden view filters must not reveal the + button. */
 .mensa-table:not(.mensa-table--view-filters-hidden)
-    .mensa-table__search-bar__pills-area:has(.mensa-filter-pill[data-view-filter="true"]):not(:has(.mensa-filter-pill--pending))
+    .mensa-table__search-bar__pills-area:has(
+        .mensa-filter-pill[data-view-filter="true"]
+    ):not(:has(.mensa-filter-pill--pending))
     .mensa-table__add_filter
     .mensa-table__add_filter__trigger {
     @apply inline-flex;
