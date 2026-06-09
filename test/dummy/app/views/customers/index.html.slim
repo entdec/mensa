@@ -1,6 +1,6 @@
 .grid.grid-cols-1.gap-4
   .col-span-1
-    = sts.card :customers, title: "Customers", content_padding: false do |card|
+    = sts.card :customers, title: "Customers", description: "Locale: #{I18n.locale}, Current user: #{Current.user.first_name} #{Current.user.last_name}, Current customer: #{Current.customer_name}", content_padding: false do |card|
       - card.with_action do
         = link_to "Users", users_path, class: "button btn-primary"
       = table :customers
