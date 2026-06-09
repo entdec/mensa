@@ -20,6 +20,9 @@
           - if is_user_view
             button.mensa-table__views__option-menu[type="button" data-action="mensa-views#toggleSubmenu" data-view-id=view.id title="View options"]
               i.fa-solid.fa-ellipsis
+          - else
+            .mensa-table__views__option-system
+              i.fa-solid.fa-ban
 
     / Per-view submenu (shown via JS positioning)
     .mensa-table__views__submenu.hidden data-mensa-views-target="submenu"

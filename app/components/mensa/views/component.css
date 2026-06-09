@@ -32,6 +32,14 @@
             &:hover &-menu {
                 @apply opacity-100;
             }
+
+            &-system {
+                @apply p-1.5 text-gray-400 opacity-0;
+            }
+
+            &:hover &-system {
+                @apply p-1.5 text-gray-300 opacity-100;
+            }
         }
 
         &__submenu {
