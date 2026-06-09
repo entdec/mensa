@@ -35,6 +35,16 @@ Nice to haves:
 Add tables in your app/tables folder, inheriting from ApplicationTable.
 This in turn should inherit from Mensa::Base.
 
+You can give columns an arbitrary name, it can match the database column, translations will be taken from `activerecord.attributes.<model>.<column>`:
+
+```yaml
+en: 
+  activerecord:
+    attributes:
+      user:
+        name: Full name
+```
+
 ```ruby
 class UserTable < ApplicationTable
   model User # implicit from name
