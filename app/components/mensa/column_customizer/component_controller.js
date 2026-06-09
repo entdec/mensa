@@ -12,7 +12,9 @@ export default class ColumnCustomizerController extends ApplicationController {
         this._outsideClickHandler = null;
 
         // Capture the server-rendered order before localStorage reorders the DOM.
-        this._defaultColumnOrder = this.columnRowTargets.map((r) => r.dataset.columnName);
+        this._defaultColumnOrder = this.columnRowTargets.map(
+            (r) => r.dataset.columnName,
+        );
 
         // 1. Update the DOM immediately (reorder rows, flip data-visible).
         //    CSS [data-visible] rules handle icon display — no JS icon work needed.
@@ -151,8 +153,13 @@ export default class ColumnCustomizerController extends ApplicationController {
         }
         this.columnRowTargets.forEach((row) => {
             row.dataset.visible = "true";
-            const nameEl = row.querySelector(".mensa-table__column_customizer__name");
-            if (nameEl) nameEl.classList.remove("mensa-table__column_customizer__name--hidden");
+            const nameEl = row.querySelector(
+                ".mensa-table__column_customizer__name",
+            );
+            if (nameEl)
+                nameEl.classList.remove(
+                    "mensa-table__column_customizer__name--hidden",
+                );
         });
     }
 
@@ -170,6 +177,7 @@ export default class ColumnCustomizerController extends ApplicationController {
         if (!this.hasMensaTableOutlet) return;
 
         const url = this.mensaTableOutlet.ourUrl;
+        this._preserveActiveView(url);
 
         // Strip stale column customizer params.
         const toDelete = [];
@@ -291,6 +299,7 @@ export default class ColumnCustomizerController extends ApplicationController {
                 }
             });
 
+            this._preserveActiveView(url);
             tableEl.dataset.mensaTableTableUrlValue = url.toString();
             return true;
         } catch (e) {
@@ -314,6 +323,13 @@ export default class ColumnCustomizerController extends ApplicationController {
                 list.appendChild(row);
             }
         });
+    }
+
+    _preserveActiveView(url) {
+        const view =
+            this.mensaTableOutlet?.mensaFilterPillListOutlet?.loadView?.() ||
+            "";
+        if (view) url.searchParams.set("table_view_id", view);
     }
 
     get _columnOrderKey() {
