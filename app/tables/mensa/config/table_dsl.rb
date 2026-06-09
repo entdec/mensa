@@ -55,6 +55,7 @@ module Mensa::Config
         raise "No model found for #{self.class.name}"
       end
     }
+    option :scope, default: -> { model.all }
     option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :link
 

@@ -92,6 +92,10 @@ class UserTable < ApplicationTable
       ConfirmUsersJob.perform_later(records.to_a)
     end
   end
+
+  scope do
+    User.all
+  end
 end
 ```
 
@@ -111,13 +115,12 @@ Initial support for custom-views is there, but pretty rudimentary:
 
 ### Fast
 
-Mensa selects only the data it needs, based on the columns. Sometimes it needs additional columns to do it's work, but you don't want them displayed.
-This can be done by adding `internal true` to the column definition, or shorter: use `internal` instead
+Mensa selects only the data it needs, based on the columns. Sometimes it needs additional columns to do it's work, but you don't want them displayed. This can be done by adding `internal true` to the column definition, or shorter: use `internal` instead. If your table scope joins an association, Mensa also auto-adds the foreign key column as internal when it is needed.
 
 ```ruby
 internal :born_on
 column :age do
-  attribute "EXTRACT(YEAR FROM AGE(born_on))::int"
+  attribute "EXTRACT(YEAR FROM AGE(born_on))::int" # here born_on is used internally, so we ned to select is
 end
 ```
 

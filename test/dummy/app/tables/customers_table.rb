@@ -31,4 +31,8 @@ class CustomersTable < Mensa::Base
       value "DE"
     end
   end
+
+  scope do
+    Customer.all
+  end
 end

@@ -17,7 +17,6 @@ class UsersTable < Mensa::Base
       collection -> { User.ROLES }
     end
   end
-  internal :customer_id
   column(:customer_name) do
     attribute "customers.name"
     render do
@@ -68,9 +67,7 @@ class UsersTable < Mensa::Base
     end
   end
 
-  private
-
-  def scope
+  scope do
     User.all.left_outer_joins(:customer)
   end
 end

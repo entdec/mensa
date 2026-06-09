@@ -11,6 +11,7 @@ module Mensa
     attr_reader :params
 
     config_reader :model
+    config_reader :scope
     config_reader :link, call: false
     config_reader :supports_views?
     config_reader :supports_custom_views?
@@ -23,6 +24,8 @@ module Mensa
     def initialize(config = {})
       @params = config.to_h.deep_symbolize_keys
       @config = self.class.definition.merge(@params || {})
+
+      ensure_internal_columns_for_joined_associations
 
       params[:hidden_columns]&.each do |column_name|
         c = columns.find { |c| c.name == column_name.to_sym }
@@ -154,6 +157,47 @@ module Mensa
 
     def original_view_context
       @original_view_context || component.original_view_context
+    end
+
+    private
+
+    def ensure_internal_columns_for_joined_associations
+      config[:columns] ||= {}
+
+      auto_internal_column_names.each do |column_name|
+        config[:columns][column_name] ||= {internal: true}
+      end
+    end
+
+    def auto_internal_column_names
+      joined_association_names.filter_map do |association_name|
+        reflection = model.reflect_on_association(association_name)
+        reflection&.foreign_key&.to_sym
+      end.uniq
+    end
+
+    def joined_association_names
+      relation = scope
+      return [] unless relation.respond_to?(:joins_values) && relation.respond_to?(:left_outer_joins_values)
+
+      (relation.joins_values + relation.left_outer_joins_values).flat_map do |join_value|
+        association_names_from_join_value(join_value)
+      end.compact.uniq
+    end
+
+    def association_names_from_join_value(join_value)
+      case join_value
+      when Symbol, String
+        [join_value.to_sym]
+      when Array
+        join_value.flat_map { |value| association_names_from_join_value(value) }
+      when Hash
+        join_value.flat_map do |association_name, nested_join_values|
+          [association_name.to_sym, *association_names_from_join_value(nested_join_values)]
+        end
+      else
+        []
+      end
     end
   end
 end

@@ -55,4 +55,12 @@ class TableTest < ActiveSupport::TestCase
     assert_equal Proc, result.class
     assert_equal 1, result.arity
   end
+
+  test "it automatically adds internal fk columns for joined associations" do
+    t = UsersTable.new({})
+
+    assert t.column(:customer_id).internal?
+    assert_includes t.display_columns.map(&:name), :customer_name
+    assert_not_includes t.display_columns.map(&:name), :customer_id
+  end
 end
