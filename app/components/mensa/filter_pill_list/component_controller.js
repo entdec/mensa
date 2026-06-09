@@ -25,7 +25,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     // --- Search actions (formerly in search component controller) ---
 
     searchFocused(event) {
-        if (this.hasMensaAddFilterOutlet) {
+        if (this._supportsColumnFilters()) {
             // Don't open the column list while the value popover is already showing —
             // focusing the search input for keyboard nav must not clobber the popover.
             if (this.mensaAddFilterOutlet.isValuePopoverOpen) return;
@@ -40,7 +40,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             : "";
         this._monitorResetButton();
 
-        if (this.hasMensaAddFilterOutlet) {
+        if (this._supportsColumnFilters()) {
             if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
                 this.mensaAddFilterOutlet.filterValues(value);
                 return;
@@ -69,7 +69,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         if (this.hasResetSearchButtonTarget) {
             this.resetSearchButtonTarget.classList.add("hidden");
         }
-        if (this.hasMensaAddFilterOutlet) {
+        if (this._supportsColumnFilters()) {
             this.mensaAddFilterOutlet.hideList();
             this.mensaAddFilterOutlet.closeValuePopover?.();
         }
@@ -82,7 +82,7 @@ export default class FilterPillListComponentController extends ApplicationContro
 
         // If the value popover is open, Enter confirms the highlighted/selected item
         if (
-            this.hasMensaAddFilterOutlet &&
+            this._supportsColumnFilters() &&
             this.mensaAddFilterOutlet.isValuePopoverOpen
         ) {
             this.mensaAddFilterOutlet.confirmHighlightedValue();
@@ -92,7 +92,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         // If the column autocomplete has visible options and one is selected via
         // keyboard, let the add-filter controller handle it
         if (
-            this.hasMensaAddFilterOutlet &&
+            this._supportsColumnFilters() &&
             this.mensaAddFilterOutlet.hasHighlightedColumn
         ) {
             this.mensaAddFilterOutlet.confirmHighlightedColumn();
@@ -100,7 +100,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         }
 
         // Hide column dropdown before searching
-        if (this.hasMensaAddFilterOutlet) {
+        if (this._supportsColumnFilters()) {
             this.mensaAddFilterOutlet.hideList();
         }
 
@@ -113,8 +113,8 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     navigateDown(event) {
+        if (!this._supportsColumnFilters()) return;
         event.preventDefault();
-        if (!this.hasMensaAddFilterOutlet) return;
         if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
             this.mensaAddFilterOutlet.highlightNextValue();
         } else {
@@ -123,8 +123,8 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     navigateUp(event) {
+        if (!this._supportsColumnFilters()) return;
         event.preventDefault();
-        if (!this.hasMensaAddFilterOutlet) return;
         if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
             this.mensaAddFilterOutlet.highlightPrevValue();
         } else {
@@ -543,8 +543,13 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.updateSearchPlaceholder();
     }
 
-    updateSearchPlaceholder() {
-        // Placeholder is always "Search and filter" — no dynamic update needed.
+    updateSearchPlaceholder() {}
+
+    _supportsColumnFilters() {
+        return (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.filterListItemTargets.length > 0
+        );
     }
 
     // Clears all dirty-state localStorage keys so the view is clean after save.
