@@ -50,7 +50,11 @@ module Mensa
     end
 
     def active_record_column_type
-      active_record_column&.type  
+      active_record_column&.type
+    end
+
+    def type
+      config[:type] || active_record_column_type
     end
 
     def attribute_for_condition

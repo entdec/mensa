@@ -16,11 +16,11 @@ module Mensa
     class << self
       def OPERATORS
         [
-          [:is, I18n.t("operators.is", scope: :mensa), true],
-          [:isnt, I18n.t("operators.isnt", scope: :mensa), true],
-          [:matches, I18n.t("operators.matches", scope: :mensa), true],
-          [:does_not_match, I18n.t("operators.does_not_match", scope: :mensa), true],
-          [:is_current, I18n.t("operators.is_current", scope: :mensa), false]
+          [:is, I18n.t("mensa.operators.is"), true],
+          [:isnt, I18n.t("mensa.operators.isnt"), true],
+          [:matches, I18n.t("mensa.operators.matches"), true],
+          [:does_not_match, I18n.t("mensa.operators.does_not_match"), true],
+          [:is_current, I18n.t("mensa.operators.is_current"), false]
         ].freeze
       end
     end

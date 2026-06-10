@@ -15,6 +15,7 @@ module Mensa::Config
     # Mensa doesn't select the whole records, to only select what we need
     option :internal, default: false
     option :method
+    option :type
 
     option :visible, default: true
     option :render, dsl: Mensa::Config::RenderDsl
