@@ -1,9 +1,10 @@
 nl:
   mensa:
     operators:
-      equals: Is
-      not_equals: Is niet
-      contains: Bevat
+      is: Is
+      isnt: Is niet
+      matches: Bevat
+      does_not_match: Bevat niet
       is_current: Is huidige
     add_filter:
       component:

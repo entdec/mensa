@@ -55,7 +55,7 @@ module Mensa
         user: @user,
         format: "plain_csv",
         scope: "all",
-        config: {filters: {role: {value: "admin", operator: "equals"}}}
+        config: {filters: {role: {value: "admin", operator: "is"}}}
       )
 
       Mensa::ExportJob.perform_now(export.id)

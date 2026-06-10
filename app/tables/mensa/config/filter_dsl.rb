@@ -2,7 +2,7 @@ module Mensa::Config
   class FilterDsl
     include DslLogic
 
-    option :operator, default: :equals
+    option :operator, default: :is
     option :value
     option :collection
     option :scope

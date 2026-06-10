@@ -42,7 +42,7 @@ export default class AddFilterComponentController extends ApplicationController 
                     this.editColumn(
                         reopen.column,
                         reopen.values,
-                        reopen.operator || "equals",
+                        reopen.operator || "is",
                         null,
                     );
                 }
@@ -442,13 +442,13 @@ export default class AddFilterComponentController extends ApplicationController 
         }
     }
 
-    // Returns the currently selected operator, defaulting to "equals"
+    // Returns the currently selected operator, defaulting to "is"
     get operator() {
-        if (!this.hasOperatorOptionTarget) return "equals";
+        if (!this.hasOperatorOptionTarget) return "is";
         const selected = this.operatorOptionTargets.find(
             (opt) => opt.dataset.selected === "true",
         );
-        return selected?.dataset.operator ?? "equals";
+        return selected?.dataset.operator ?? "is";
     }
 
     operatorRequiresValue(operator = this.operator) {
@@ -482,12 +482,14 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     // --- private ---
+    // TODO: Pull these from server
 
     get operatorLabel() {
         const labels = {
-            equals: "is",
-            not_equals: "is not",
-            matches: "contains",
+            is: "is",
+            isnt: "is not",
+            matches: "matches",
+            does_not_match: "does not match",
         };
         return labels[this.operator] ?? "is";
     }

@@ -29,6 +29,8 @@ class UsersTable < Mensa::Base
       collection -> { Customer.select(:name).order(:name).pluck(:name) }
     end
   end
+  column(:created_at)
+  column(:updated_at)
 
   link { |user| edit_user_path(user) }
 
@@ -43,7 +45,7 @@ class UsersTable < Mensa::Base
   view :users do
     name "Users"
     filter :role do
-      operator :equals
+      operator :is
       value "user"
     end
     hidden_columns [:role]

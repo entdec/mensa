@@ -13,7 +13,7 @@ module Mensa
         assert_difference -> { Mensa::Export.count }, 1 do
           assert_enqueued_with(job: Mensa::ExportJob) do
             post mensa.table_exports_path("users"),
-              params: {export_format: "plain_csv", scope: "all", query: "", filters: {role: {value: "admin", operator: "equals"}}},
+              params: {export_format: "plain_csv", scope: "all", query: "", filters: {role: {value: "admin", operator: "is"}}},
               as: :json
           end
         end

@@ -20,7 +20,7 @@ module Mensa
         @table = Mensa.for_name(params[:table_id], config)
         @table.original_view_context = helpers
         @column = @table.column(params[:id])
-        @operator = params[:operator].presence || "equals"
+        @operator = params[:operator].presence || "is"
         @multiple = @column.filter.multiple?
         @values = Array(params[:value]).flatten.compact
         respond_to do |format|

@@ -1,9 +1,10 @@
 en:
   mensa:
     operators:
-      equals: Is
-      not_equals: Is not
-      contains: Contains
+      is: Is
+      isnt: Is not
+      matches: Contains
+      does_not_match: Does not contain
       is_current: Is current
     add_filter:
       component:

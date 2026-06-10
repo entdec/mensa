@@ -45,6 +45,14 @@ module Mensa
       end
     end
 
+    def active_record_column
+      @active_record_column ||= table.model&.columns&.find { _1.name == name.to_s }
+    end
+
+    def active_record_column_type
+      active_record_column&.type  
+    end
+
     def attribute_for_condition
       return @attribute_for_condition if @attribute_for_condition
 

@@ -61,7 +61,7 @@ class UserTable < ApplicationTable
       collection -> { }
       scope -> { where(name: ...) }
     end
-    operators [:equals, :not_equals] # Optional, mensa tries to deduce this from the column information
+    operators [:is, :isnt] # Optional, mensa tries to deduce this from the column information
   end
 
   column(:nr_of_roles) do
@@ -92,7 +92,7 @@ class UserTable < ApplicationTable
   view :concept do
     name "Concept"
     filter :state do
-      operator :equals
+      operator :is
       value "concept"
     end
   end

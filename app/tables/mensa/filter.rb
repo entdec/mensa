@@ -16,9 +16,10 @@ module Mensa
     class << self
       def OPERATORS
         [
-          [:equals, I18n.t("operators.equals", scope: :mensa), true],
-          [:not_equals, I18n.t("operators.not_equals", scope: :mensa), true],
-          [:contains, I18n.t("operators.contains", scope: :mensa), true],
+          [:is, I18n.t("operators.is", scope: :mensa), true],
+          [:isnt, I18n.t("operators.isnt", scope: :mensa), true],
+          [:matches, I18n.t("operators.matches", scope: :mensa), true],
+          [:does_not_match, I18n.t("operators.does_not_match", scope: :mensa), true],
           [:is_current, I18n.t("operators.is_current", scope: :mensa), false]
         ].freeze
       end
@@ -66,12 +67,14 @@ module Mensa
         case operator
         when :is_current
           record_scope.where("#{column.attribute_for_condition} = ?", Current.send(column.name))
-        when :contains
+        when :matches
           record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
-        when :equals
+        when :does_not_match
+          record_scope.where.not("#{column.attribute_for_condition} NOT LIKE ?", "%#{normalize(value)}%")
+        when :is
           val = value.is_a?(Array) ? value : normalize(value)
           record_scope.where(column.attribute_for_condition => val)
-        when :not_equals
+        when :isnt
           val = value.is_a?(Array) ? value : normalize(value)
           record_scope.where.not(column.attribute_for_condition => val)
         else
@@ -82,10 +85,14 @@ module Mensa
     end
 
     def operators
-      return config[:operators] if config[:operators].present?
-
       operators = Mensa::Filter.OPERATORS.dup
-      operators.delete_if { |op| op[0] == :is_current } unless Current.methods.include?(column.name)
+      if config[:operators].present?
+        operators = operators.select { |op| config[:operators].include?(op[0]) }
+      else
+        operators.delete_if { |op| op[0] == :is_current } unless Current.methods.include?(column.name)
+        operators.delete_if { |op| op[0] == :matches } if collection.present?
+        operators.delete_if { |op| op[0] == :does_not_match } if collection.present?
+      end
       operators
     end
 

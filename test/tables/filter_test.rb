@@ -19,7 +19,7 @@ class FilterTest < ActiveSupport::TestCase
     f = t.active_filters.first
     assert_equal :country, f.column.name
     assert_equal "NL", f.value
-    assert_equal :equals, f.operator
+    assert_equal :is, f.operator
   end
 
   test "we return that the table has filters" do
@@ -27,15 +27,15 @@ class FilterTest < ActiveSupport::TestCase
     assert t.filters?
   end
 
-  test "we return filtered rows with no operator (equals)" do
+  test "we return filtered rows with no operator (is)" do
     t = CustomerTable.new({filters: {country: {value: "NL"}}})
     t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
     assert t.filters?
     assert_equal 4, t.rows.size
   end
 
-  test "we return filtered rows with contains operator" do
-    t = CustomerTable.new({filters: {country: {value: "NL", operator: :contains}}})
+  test "we return filtered rows with matches operator" do
+    t = CustomerTable.new({filters: {country: {value: "NL", operator: :matches}}})
     t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
     assert t.filters?
     assert_equal 4, t.rows.size
