@@ -46,6 +46,6 @@ class FilterTest < ActiveSupport::TestCase
     f = t.active_filters.first
 
     refute f.operator_with_value?
-    assert_equal "Role Is current", f.to_s
+    assert_equal "Role is current", f.to_s
   end
 end
