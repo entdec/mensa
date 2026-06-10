@@ -1,7 +1,7 @@
 import { application } from "mensa/controllers/application";
 
-// import AddFilterComponentController from 'components/add_filter/component_controller';
-// application.register('mensa-add-filter', AddFilterComponentController)
+import LinkController from "mensa/controllers/link_controller";
+application.register("mensa-link", LinkController);
 
 import AddFilterComponentController from "mensa/components/add_filter/component_controller";
 application.register("mensa-add-filter", AddFilterComponentController);

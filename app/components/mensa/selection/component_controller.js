@@ -60,7 +60,7 @@ export default class SelectionController extends ApplicationController {
         this.updateSelectionState();
     }
 
-    // Stops click events from bubbling up to the row's satis-link handler,
+    // Stops click events from bubbling up to the row's mensa-link handler,
     // preventing accidental navigation when the user clicks a checkbox cell.
     stopPropagation(event) {
         event.stopPropagation();

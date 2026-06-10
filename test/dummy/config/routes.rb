@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :users
   resources :customers
   resources :search_only_users, only: :index
+  resources :headerless_users, only: :index
 
   mount Mensa::Engine => "/mensa"
 end

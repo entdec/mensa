@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "csv"
   spec.add_dependency "rubyzip", ">= 1.2.2"
   spec.add_dependency "pagy", ">=43"
+  spec.add_dependency "pg", ">= 1.6"
   spec.add_dependency "textacular", ">=5"
   spec.add_dependency "view_component", "~> 3.11"
 

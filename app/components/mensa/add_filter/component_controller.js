@@ -1,5 +1,4 @@
 import ApplicationController from "mensa/controllers/application_controller";
-// import { debounce } from '@entdec/satis'
 import { get } from "@rails/request.js";
 
 // Survives the turbo-stream re-render that destroys both the filter-pill-list

@@ -12,7 +12,7 @@ class BasicTablesTest < ApplicationSystemTestCase
   test "tables without filterable columns show a search-only input" do
     visit search_only_users_url
 
-    assert_text "Search-only users"
+    assert_text "Search only users"
     assert_equal "Search", find("input.mensa-table__search-bar__input")[:placeholder]
     assert_no_selector ".mensa-table__add_filter__trigger"
   end
@@ -27,6 +27,15 @@ class BasicTablesTest < ApplicationSystemTestCase
     assert_equal "Oliver", input.value
     assert_no_selector ".mensa-table__add_filter"
     assert_no_selector ".mensa-table__add_filter__popover_container"
+  end
+
+  test "headerless tables render rows without a table header" do
+    visit headerless_users_url
+
+    assert_text "Headerless users"
+    assert_selector "tbody tr", wait: 15
+    assert_no_selector "thead"
+    assert_no_selector "span.mensa-table__views__trigger-label"
   end
 
   test "clicking a row navigates to the row's linked path" do
@@ -60,28 +69,28 @@ class BasicTablesTest < ApplicationSystemTestCase
 
     first_names = all("tbody tr td:nth-child(3)").map(&:text)
     assert_equal first_names, first_names.sort_by(&:downcase),
-                  "First names should be in ascending order after sort"
+      "First names should be in ascending order after sort"
   end
 
   test "clicking the same sortable column header a second time sorts descending" do
-      visit users_url
-      assert_selector "tbody tr", wait: 15
+    visit users_url
+    assert_selector "tbody tr", wait: 15
 
-      find("thead a", text: "First name").click
-      assert_selector "tbody tr", wait: 15
-      first_asc = first("tbody tr td:nth-child(3)").text
+    find("thead a", text: "First name").click
+    assert_selector "tbody tr", wait: 15
+    first_asc = first("tbody tr td:nth-child(3)").text
 
-      find("thead a", text: "First name").click
-      assert_selector "tbody tr", wait: 15
+    find("thead a", text: "First name").click
+    assert_selector "tbody tr", wait: 15
 
-      last_names = all("tbody tr td:nth-child(3)").map(&:text)
-      assert_equal last_names, last_names.sort_by(&:downcase).reverse,
-                   "First names should be in descending order after second click"
+    last_names = all("tbody tr td:nth-child(3)").map(&:text)
+    assert_equal last_names, last_names.sort_by(&:downcase).reverse,
+      "First names should be in descending order after second click"
 
-      first_desc = last_names.first
-      assert_not_equal first_asc, first_desc,
-                       "Ascending and descending first rows should differ"
-    end
+    first_desc = last_names.first
+    assert_not_equal first_asc, first_desc,
+      "Ascending and descending first rows should differ"
+  end
 
   test "Multiselect and batch action" do
     visit users_url

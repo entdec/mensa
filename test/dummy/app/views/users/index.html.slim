@@ -1,6 +1,4 @@
-.grid.grid-cols-1.gap-4
-  .col-span-1
-    = sts.card :users, title: "Users", description: "Locale: #{I18n.locale}, Current user: #{Current.user.first_name} #{Current.user.last_name}, Current customer: #{Current.customer_name}", content_padding: false do |card|
-      - card.with_action do
-        = link_to "Customers", customers_path, class: "button btn-primary"
-      = table :users
+.max-w.rounded-lg.overflow-hidden.shadow-lg
+  .bg-white.border-b-2.border-neutral-100.px-6.py-3.dark:border-white/10
+    | Users
+  = table :users

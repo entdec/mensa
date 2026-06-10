@@ -129,12 +129,6 @@ module Mensa
       )
     end
 
-    def menu
-      Satis::Menus::Builder.build([:table, :view_menu]) do |m|
-        m.item :export, icon: "fal fa-file-export", link: nil
-      end
-    end
-
     def all_views
       views = system_views
       views += TableView.where(table_name: name).where(user: [nil, current_user])

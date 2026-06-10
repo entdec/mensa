@@ -46,7 +46,7 @@ module Mensa
     end
 
     def active_record_column
-      @active_record_column ||= table.model&.columns&.find { _1.name == name.to_s }
+      @active_record_column ||= table.model&.columns&.find { it.name == name.to_s }
     end
 
     def active_record_column_type
@@ -83,15 +83,6 @@ module Mensa
         table.model.human_attribute_name name
       else
         name.to_s.humanize
-      end
-    end
-
-    def menu
-      Satis::Menus::Builder.build(:filter_menu, event: "click") do |m|
-        if sortable?
-          m.item :sort_ascending, icon: "fa-solid fa-arrow-up-short-wide", link: table.path(order: {name => :asc}), link_attributes: {"data-turbo-frame": "_self"}
-          m.item :sort_descending, icon: "fa-solid fa-arrow-down-wide-short", link: table.path(order: {name => :desc}), link_attributes: {"data-turbo-frame": "_self"}
-        end
       end
     end
   end

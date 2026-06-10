@@ -1,6 +1,6 @@
 # Mensa
 
-Fast and awesome tables, with pagination, sorting, filtering and custom views.
+Fast and awesome tables, with pagination, sorting, filtering, batch processing, column hiding, column ordering and custom views.
 
 ![table](./docs/table.png)
 ![filters](./docs/filters.png)
@@ -12,13 +12,13 @@ Features:
 - [x] very fast
 - [x] row-links
 - [x] sorting
-- [x] tables without headers (and without most of the above)
 - [x] filtering of multiple columns
 - [X] Hide filter icon in case there are no filters
 - [X] column ordering
 - [X] editing of existing filters
 - [X] view selection and exports per view
 - [X] multiple selection of rows and batch processing
+- [x] tables without headers (and without most of the above)
 
 Todo/Fixme:
 - [ ] exports can be mailed - daily/weekly/monthly/quarterly/bi-yearly/yearly (time configurable)

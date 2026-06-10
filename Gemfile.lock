@@ -1,10 +1,11 @@
 PATH
   remote: .
   specs:
-    mensa (0.3.0)
+    mensa (0.3.1)
       csv
       importmap-rails
       pagy (>= 43)
+      pg (>= 1.6)
       rails (>= 7.1)
       rubyzip (>= 1.2.2)
       slim
@@ -96,7 +97,6 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     bigdecimal (4.1.2)
-    browser (6.2.0)
     builder (3.3.0)
     capybara (3.40.0)
       addressable
@@ -116,7 +116,6 @@ GEM
     debug (1.11.1)
       irb (~> 1.10)
       reline (>= 0.3.8)
-    diffy (3.4.4)
     drb (2.2.3)
     erb (6.0.4)
     erubi (1.13.1)
@@ -135,10 +134,6 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.19.8)
-    jsonb_accessor (1.4.2)
-      activerecord (>= 6.1)
-      activesupport (>= 6.1)
-      pg (>= 0.18.1)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
@@ -305,16 +300,6 @@ GEM
       ruby-lsp (>= 0.26.0, < 0.27.0)
     ruby-progressbar (1.13.0)
     rubyzip (3.3.1)
-    satis (2.3.5)
-      browser
-      diffy
-      importmap-rails
-      jsonb_accessor (~> 1.4)
-      rails (>= 6)
-      stimulus-rails
-      tailwindcss-rails
-      turbo-rails
-      view_component
     securerandom (0.4.1)
     selenium-webdriver (4.44.0)
       base64 (~> 0.2)
@@ -418,7 +403,6 @@ DEPENDENCIES
   rubocop-rails
   ruby-lsp
   ruby-lsp-rails
-  satis (~> 2)
   selenium-webdriver (~> 4.17)
   slim (~> 5.2)
   sprockets-rails

@@ -1,11 +1,11 @@
 require "pagy"
-require "satis"
 require "textacular"
 require "slim"
 require "tailwindcss-rails"
 require "importmap-rails"
 require "turbo-rails"
 require "stimulus-rails"
+require "view_component"
 
 module Mensa
   class Engine < ::Rails::Engine
