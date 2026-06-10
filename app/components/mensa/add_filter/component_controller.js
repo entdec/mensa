@@ -243,7 +243,12 @@ export default class AddFilterComponentController extends ApplicationController 
                 (opt) => opt.dataset.selected === "true",
             );
         }
-        if (!item) return;
+        if (!item) {
+            if (this.hasValueTarget && this.valueTarget.value) {
+                this._applyManualValue();
+            }
+            return;
+        }
         if (
             this.hasValueOptionTarget &&
             this.valueOptionTargets.includes(item)
@@ -265,6 +270,15 @@ export default class AddFilterComponentController extends ApplicationController 
         } else {
             this._selectValueItem(event.currentTarget);
         }
+    }
+
+    manualValueChanged() {
+        this._updateDescription();
+    }
+
+    applyManualValue(event) {
+        event.preventDefault();
+        this._applyManualValue();
     }
 
     get isValuePopoverOpen() {
@@ -332,7 +346,11 @@ export default class AddFilterComponentController extends ApplicationController 
             // Restore focus to the search input so keyboard navigation (↑↓ Enter)
             // keeps working — especially after the popover is re-opened programmatically
             // following a multi-select turbo-stream re-render.
-            if (this.hasMensaFilterPillListOutlet) {
+            const manualInput = this._manualValueInput;
+            if (manualInput) {
+                manualInput.focus({ preventScroll: true });
+                manualInput.select?.();
+            } else if (this.hasMensaFilterPillListOutlet) {
                 const input =
                     this.mensaFilterPillListOutlet.searchInputElement?.();
                 if (input) input.focus({ preventScroll: true });
@@ -495,7 +513,8 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     _updateDescription() {
-        if (!this._columnLabel || !this.hasDescriptionTarget) return;
+        if (!this._columnLabel) return;
+
         let valueLabel;
         if (this.isMultipleMode) {
             const labels = this.hasValueOptionTarget
@@ -515,11 +534,15 @@ export default class AddFilterComponentController extends ApplicationController 
                 valueLabel = option?.dataset.label || value;
             }
         }
-        if (valueLabel) {
-            this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel} ${valueLabel}`;
-        } else {
-            this.descriptionTarget.innerText = `${this._columnLabel} ${this.operatorLabel}`;
+
+        const text = valueLabel
+            ? `${this._columnLabel} ${this.operatorLabel} ${valueLabel}`
+            : `${this._columnLabel} ${this.operatorLabel}`;
+
+        if (this.hasDescriptionTarget) {
+            this.descriptionTarget.innerText = text;
         }
+        this._updatePendingPill(valueLabel);
     }
 
     _toggleValueItem(item) {
@@ -564,6 +587,13 @@ export default class AddFilterComponentController extends ApplicationController 
         this.mensaFilterPillListOutlet.refreshFilters();
     }
 
+    _applyManualValue() {
+        if (!this.hasValueTarget || !this.valueTarget.value) return;
+        this._updateDescription();
+        this._removePendingPill();
+        this.mensaFilterPillListOutlet.refreshFilters();
+    }
+
     // Position the column list below the search container, aligned to the trigger
     // element (search input or + button). Uses fixed positioning with viewport
     // coordinates so it escapes any ancestor overflow clipping.
@@ -600,9 +630,34 @@ export default class AddFilterComponentController extends ApplicationController 
         this._removePendingPill();
         const pill = document.createElement("div");
         pill.className = "mensa-filter-pill mensa-filter-pill--pending";
-        pill.innerHTML = `<div class="mensa-filter-pill__chip mensa-filter-pill__chip--pending"><span class="mensa-filter-pill__column">${this._escapeHtml(columnLabel)}</span><span class="mensa-filter-pill__operator">is</span></div>`;
+        pill.innerHTML = `<div class="mensa-filter-pill__chip mensa-filter-pill__chip--pending"><span class="mensa-filter-pill__column">${this._escapeHtml(columnLabel)}</span><span class="mensa-filter-pill__operator">${this._escapeHtml(this.operatorLabel)}</span></div>`;
         this.element.insertAdjacentElement("beforebegin", pill);
         this._pendingPill = pill;
+    }
+
+    _updatePendingPill(valueLabel = null) {
+        if (!this._pendingPill) return;
+
+        const operator = this._pendingPill.querySelector(
+            ".mensa-filter-pill__operator",
+        );
+        if (operator) operator.textContent = this.operatorLabel;
+
+        let value = this._pendingPill.querySelector(
+            ".mensa-filter-pill__value",
+        );
+        if (valueLabel) {
+            if (!value) {
+                value = document.createElement("span");
+                value.className = "mensa-filter-pill__value";
+                this._pendingPill
+                    .querySelector(".mensa-filter-pill__chip")
+                    ?.appendChild(value);
+            }
+            value.textContent = valueLabel;
+        } else if (value) {
+            value.remove();
+        }
     }
 
     _removePendingPill() {
@@ -618,6 +673,12 @@ export default class AddFilterComponentController extends ApplicationController 
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;");
+    }
+
+    get _manualValueInput() {
+        if (!this.hasValueTarget) return null;
+        const input = this.valueTarget;
+        return input.matches('input:not([type="hidden"])') ? input : null;
     }
 
     _bindOutsideClick() {

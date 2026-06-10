@@ -5,7 +5,6 @@ class CustomersTable < Mensa::Base
 
   column(:name) do
     filter do
-
     end
   end
   column(:industry) do
@@ -25,6 +24,10 @@ class CustomersTable < Mensa::Base
       operators [:is, :isnt]
     end
   end
+  column(:number_of_employees) do
+    filter
+  end
+  column(:market_cap)
   column(:created_at)
   column(:updated_at)
 

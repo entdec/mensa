@@ -70,7 +70,7 @@ module Mensa
         when :matches
           record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
         when :does_not_match
-          record_scope.where.not("#{column.attribute_for_condition} NOT LIKE ?", "%#{normalize(value)}%")
+          record_scope.where("#{column.attribute_for_condition} NOT LIKE ?", "%#{normalize(value)}%")
         when :is
           val = value.is_a?(Array) ? value : normalize(value)
           record_scope.where(column.attribute_for_condition => val)
@@ -89,9 +89,11 @@ module Mensa
       if config[:operators].present?
         operators = operators.select { |op| config[:operators].include?(op[0]) }
       else
-        operators.delete_if { |op| op[0] == :is_current } unless Current.methods.include?(column.name)
+        operators.delete_if { |op| op[0] == :is_current } unless Current.method_defined?(column.name, false)
         operators.delete_if { |op| op[0] == :matches } if collection.present?
         operators.delete_if { |op| op[0] == :does_not_match } if collection.present?
+        operators.delete_if { |op| op[0] == :matches } if column.type == :integer
+        operators.delete_if { |op| op[0] == :does_not_match } if column.type == :integer
       end
       operators
     end

@@ -3,8 +3,8 @@ nl:
     operators:
       is: Is
       isnt: Is niet
-      matches: Bevat
-      does_not_match: Bevat niet
+      matches: Matcht
+      does_not_match: Matcht niet
       is_current: Is huidige
     add_filter:
       component:

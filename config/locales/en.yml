@@ -3,8 +3,8 @@ en:
     operators:
       is: Is
       isnt: Is not
-      matches: Contains
-      does_not_match: Does not contain
+      matches: Matches
+      does_not_match: Does not match
       is_current: Is current
     add_filter:
       component:

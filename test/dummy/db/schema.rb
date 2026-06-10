@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_085343) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -48,7 +48,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_085343) do
     t.datetime "created_at", null: false
     t.string "industry"
     t.string "isin"
+    t.bigint "market_cap"
     t.string "name"
+    t.integer "number_of_employees"
     t.string "stock_symbol"
     t.datetime "updated_at", null: false
   end
