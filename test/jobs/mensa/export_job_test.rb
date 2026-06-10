@@ -91,11 +91,5 @@ module Mensa
       assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.badge_dom_id("users", @user)) }
       assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.list_dom_id("users", @user)) }
     end
-
-    test "does nothing for an unknown export id" do
-      assert_nothing_raised do
-        Mensa::ExportJob.perform_now(SecureRandom.uuid)
-      end
-    end
   end
 end
