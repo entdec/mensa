@@ -133,8 +133,9 @@ module Mensa
 
     private
 
+    # Unused at the moment
     def normalize(query)
-      query.to_s.gsub(/\s(?![&!|])/, '\\\\ ')
+      query # .to_s.gsub(/\s(?![&!|])/, '\\\\ ')
     end
   end
 end
