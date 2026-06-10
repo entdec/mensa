@@ -46,5 +46,20 @@ module Mensa
         column.sanitize? ? sanitize(value.to_s) : value.to_s.html_safe
       end
     end
+
+    def to_csv
+      case value
+      when NilClass
+        ""
+      when TrueClass, FalseClass
+        value.to_s
+      when Date
+        respond_to?(:dt) ? dt(value) : value.strftime("%d.%m.%Y")
+      when Time, DateTime
+        respond_to?(:ln) ? ln(value) : value.strftime("%d-%m-%Y %H:%M:%S")
+      else
+        strip_tags(value.to_s)
+      end
+    end
   end
 end

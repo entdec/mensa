@@ -9,8 +9,7 @@ module Mensa
   class ExportJob < ApplicationJob
     queue_as :default
 
-    def perform(export_id)
-      export = Mensa::Export.find_by(id: export_id)
+    def perform(export)
       return unless export
 
       export.update(status: "processing")
@@ -65,7 +64,7 @@ module Mensa
       csv = CSV.new(io)
       csv << table.display_columns.map(&:name)
       export_rows(table, export).each do |row|
-        csv << table.display_columns.map { |column| row.value(column) }
+        csv << table.display_columns.map { |column| Mensa::Cell.new(row: row, column: column).render(:csv) }
       end
       io.rewind
       data = io.read
@@ -88,9 +87,8 @@ module Mensa
     end
 
     def export_rows(table, export)
-      return table.ordered_scope.map { |row| Mensa::Row.new(table, row) } unless export.scope == "current_page"
-
-      table.paged_scope.map { |row| Mensa::Row.new(self, row) }
+      scope = (export.scope == "current_page") ? table.paged_scope : table.selected_scope
+      scope.map { |row| Mensa::Row.new(table, row) }
     end
 
     def finalize(export, status:, filename: nil)

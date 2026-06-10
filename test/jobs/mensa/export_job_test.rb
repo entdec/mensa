@@ -64,6 +64,22 @@ module Mensa
       assert_equal User.where(role: "admin").count, rows.length - 1
     end
 
+    test "exports selected aliased columns such as customer_name" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      customer_name_index = rows.first.index("customer_name")
+      refute_nil customer_name_index
+
+      first_user = User.left_outer_joins(:customer).order(:id).select(:id, "customers.name AS customer_name").first
+      exported_customer_names = rows.drop(1).map { |row| row[customer_name_index] }
+
+      assert_includes exported_customer_names, first_user.customer_name
+      assert exported_customer_names.all?(&:present?)
+    end
+
     test "invokes the export callbacks with the export" do
       started = nil
       completed = nil
