@@ -20,3 +20,5 @@ test/dummy/config/tailwind.config.js
 .envrc
 
 **/**/.DS_Store
+mise.toml
+todo.md
