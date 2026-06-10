@@ -105,7 +105,7 @@ module Mensa
         operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if collection.present?
         operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if column.type == :integer || column.type == :date || column.type == :datetime
         operators.delete_if { |op| [:is, :isnt].include?(op[0]) } if column.type == :date || column.type == :datetime
-        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string
+        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string || column.type.blank?
       end
       operators
     end
