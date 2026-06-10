@@ -1,11 +1,15 @@
 en:
   mensa:
     operators:
-      is: Is
-      isnt: Is not
-      matches: Matches
-      does_not_match: Does not match
-      is_current: Is current
+      is: is
+      isnt: isn't
+      matches: matches
+      does_not_match: doesn't match
+      is_current: is current
+      gt: greater than
+      lt: less than
+      gteq: greater than or equal to
+      lteq: less than or equal to
     add_filter:
       component:
         add_filter: Add filter

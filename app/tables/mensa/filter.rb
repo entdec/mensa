@@ -20,6 +20,10 @@ module Mensa
           [:isnt, I18n.t("mensa.operators.isnt"), true],
           [:matches, I18n.t("mensa.operators.matches"), true],
           [:does_not_match, I18n.t("mensa.operators.does_not_match"), true],
+          [:gt, I18n.t("mensa.operators.gt"), true],
+          [:gteq, I18n.t("mensa.operators.gteq"), true],
+          [:lt, I18n.t("mensa.operators.lt"), true],
+          [:lteq, I18n.t("mensa.operators.lteq"), true],
           [:is_current, I18n.t("mensa.operators.is_current"), false]
         ].freeze
       end
@@ -77,6 +81,14 @@ module Mensa
         when :isnt
           val = value.is_a?(Array) ? value : normalize(value)
           record_scope.where.not(column.attribute_for_condition => val)
+        when :gt
+          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].gt(normalize(value)))
+        when :lt
+          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].lt(normalize(value)))
+        when :gteq
+          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].gteq(normalize(value)))
+        when :lteq
+          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].lteq(normalize(value)))
         else
           # Ignore unknown operators
           record_scope
@@ -90,10 +102,9 @@ module Mensa
         operators = operators.select { |op| config[:operators].include?(op[0]) }
       else
         operators.delete_if { |op| op[0] == :is_current } unless Current.method_defined?(column.name, false)
-        operators.delete_if { |op| op[0] == :matches } if collection.present?
-        operators.delete_if { |op| op[0] == :does_not_match } if collection.present?
-        operators.delete_if { |op| op[0] == :matches } if column.type == :integer
-        operators.delete_if { |op| op[0] == :does_not_match } if column.type == :integer
+        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if collection.present?
+        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if column.type == :integer
+        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string
       end
       operators
     end

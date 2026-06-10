@@ -1,11 +1,15 @@
 nl:
   mensa:
     operators:
-      is: Is
-      isnt: Is niet
-      matches: Matcht
-      does_not_match: Matcht niet
-      is_current: Is huidige
+      is: is
+      isnt: is niet
+      matches: matcht
+      does_not_match: matcht niet
+      is_current: is huidige
+      gt: groter dan
+      lt: kleiner dan
+      gteq: groter dan of gelijk aan
+      lteq: kleiner dan of gelijk aan
     add_filter:
       component:
         add_filter: Filter toevoegen

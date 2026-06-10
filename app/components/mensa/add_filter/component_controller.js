@@ -18,6 +18,7 @@ export default class AddFilterComponentController extends ApplicationController 
         "operatorOption", // individual operator list items
     ];
     static values = {
+        operatorLabels: Object,
         supportsViews: Boolean,
     };
 
@@ -500,16 +501,9 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     // --- private ---
-    // TODO: Pull these from server
 
     get operatorLabel() {
-        const labels = {
-            is: "is",
-            isnt: "is not",
-            matches: "matches",
-            does_not_match: "does not match",
-        };
-        return labels[this.operator] ?? "is";
+        return this.operatorLabelsValue?.[this.operator] ?? this.operator;
     }
 
     _updateDescription() {
