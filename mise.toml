@@ -4,4 +4,5 @@ ruby = "3.4.7"
 
 [env]
 RUBY_VERSION="3.4.7"
-SELENIUM_URL="http://selenium:4444/"
+# SELENIUM_URL="http://selenium:4444/"
+SELENIUM_URL="http://host.docker.internal:4444/"
