@@ -13,7 +13,7 @@ module Mensa
     test "generates a CSV, attaches it and marks the export completed" do
       export = Mensa::Export.create!(table_name: "users", user: @user, format: "csv_excel", scope: "all")
 
-      Mensa::ExportJob.perform_now(export.id)
+      Mensa::ExportJob.perform_now(export)
       export.reload
 
       assert export.completed?
@@ -33,7 +33,7 @@ module Mensa
     test "plain CSV format omits the BOM" do
       export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
 
-      Mensa::ExportJob.perform_now(export.id)
+      Mensa::ExportJob.perform_now(export)
 
       assert_not export.reload.asset.download.force_encoding("UTF-8").start_with?("\uFEFF")
     end
@@ -41,7 +41,7 @@ module Mensa
     test "current_page scope only exports the visible page" do
       export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "current_page")
 
-      Mensa::ExportJob.perform_now(export.id)
+      Mensa::ExportJob.perform_now(export)
 
       rows = CSV.parse(export.reload.asset.download)
       # The header plus a single (paginated) page of records, which is fewer
@@ -58,7 +58,7 @@ module Mensa
         config: {filters: {role: {value: "admin", operator: "is"}}}
       )
 
-      Mensa::ExportJob.perform_now(export.id)
+      Mensa::ExportJob.perform_now(export)
 
       rows = CSV.parse(export.reload.asset.download)
       assert_equal User.where(role: "admin").count, rows.length - 1
@@ -71,7 +71,7 @@ module Mensa
       Mensa.config.callbacks[:export_complete] = ->(export) { completed = export }
 
       export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
-      Mensa::ExportJob.perform_now(export.id)
+      Mensa::ExportJob.perform_now(export)
 
       assert_equal export.id, started&.id
       assert_equal export.id, completed&.id
@@ -84,7 +84,7 @@ module Mensa
       stream = Mensa::Export.stream_name("users", @user)
 
       broadcasts = capture_turbo_stream_broadcasts(stream) do
-        Mensa::ExportJob.perform_now(export.id)
+        Mensa::ExportJob.perform_now(export)
       end
 
       assert_equal 2, broadcasts.size

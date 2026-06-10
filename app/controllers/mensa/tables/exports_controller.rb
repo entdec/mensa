@@ -28,7 +28,7 @@ module Mensa
         )
 
         if export.save
-          Mensa::ExportJob.perform_later(export.id)
+          Mensa::ExportJob.perform_later(export)
 
           respond_to do |format|
             format.turbo_stream { render turbo_stream: [list_stream, badge_stream] }
