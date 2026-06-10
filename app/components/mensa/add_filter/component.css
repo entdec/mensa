@@ -56,7 +56,7 @@
             }
 
             &__operator {
-                @apply flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+                @apply flex items-center gap-2 py-1.5 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
 
                 &__check {
                     @apply w-4 flex-none inline-flex items-center justify-center text-xs;
