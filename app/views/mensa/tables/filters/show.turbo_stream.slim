@@ -21,8 +21,7 @@
             span.mensa-table__add_filter__enter-hint
               | ↵ Enter
     - else
-      - input_type = @column.type == :integer ? "number" : "text"
-      input.mensa-table__add_filter__popover_container__input[type=input_type value=@values.first autocomplete="off" inputmode=(@column.type == :integer ? "numeric" : nil) step=(@column.type == :integer ? 1 : nil) data-mensa-add-filter-target="value" data-action="input->mensa-add-filter#manualValueChanged keydown.enter->mensa-add-filter#applyManualValue"]
+      input.mensa-table__add_filter__popover_container__input[type=@column.filter.input_type value=@values.first autocomplete="off" inputmode=(@column.type == :integer ? "numeric" : nil) step=(@column.type == :integer ? 1 : (@column.type == :datetime ? 1 : nil)) data-mensa-add-filter-target="value" data-action="input->mensa-add-filter#manualValueChanged keydown.enter->mensa-add-filter#applyManualValue"]
     hr.mensa-table__add_filter__popover_container__separator
   ul.mensa-table__add_filter__popover_container__operators
     - @column.filter.operators.each do |operator_name, label, requires_value|

@@ -27,9 +27,15 @@ class CustomersTable < Mensa::Base
   column(:number_of_employees) do
     filter
   end
-  column(:market_cap)
-  column(:created_at)
-  column(:updated_at)
+  column(:market_cap) do
+    filter
+  end
+  column(:created_at) do
+    filter
+  end
+  column(:updated_at) do
+    filter
+  end
 
   link { |customer| edit_customer_path(customer) }
 

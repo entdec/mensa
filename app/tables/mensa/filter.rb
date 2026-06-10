@@ -103,7 +103,8 @@ module Mensa
       else
         operators.delete_if { |op| op[0] == :is_current } unless Current.method_defined?(column.name, false)
         operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if collection.present?
-        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if column.type == :integer
+        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if column.type == :integer || column.type == :date || column.type == :datetime
+        operators.delete_if { |op| [:is, :isnt].include?(op[0]) } if column.type == :date || column.type == :datetime
         operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string
       end
       operators
@@ -115,6 +116,19 @@ module Mensa
 
     def operator_with_value?
       Mensa::Filter.OPERATORS.find { |op| op[0] == operator }[2]
+    end
+
+    def input_type
+      case column.type
+      when :integer
+        "number"
+      when :date
+        "date"
+      when :datetime
+        "datetime-local"
+      else
+        "text"
+      end
     end
 
     private
