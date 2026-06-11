@@ -1,0 +1,56 @@
+<div class="mensa-table__control_bar" data-mensa-table-target="controlBar">
+  <div class="flex items-center gap-1 py-0">
+    <% if view_columns_ordering? %>
+      <%= render Mensa::ColumnCustomizer::Component.new(table: table) %>
+    <% end %>
+
+    <div class="mensa-table__save-reset hidden" data-mensa-table-target="saveResetButtons">
+      <button class="mensa-table__control_bar__button" type="button" title="<%= t(".reset", default: "Reset") %>" data-action="mensa-table#cancelFiltersAndSearch">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <% if table.current_user && table.supports_custom_views? %>
+        <div class="relative">
+          <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="saveSimple" data-action="mensa-table#saveAsNewView">
+            <%= t(".save", default: "Save") %>
+          </button>
+          <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="saveSplit" data-action="mensa-table#toggleSaveDropdown">
+            <%= t(".save", default: "Save") %>
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </button>
+          <ul class="mensa-table__control_bar__save-dropdown hidden" data-mensa-table-target="saveDropdown">
+            <li>
+              <button class="mensa-table__control_bar__save-dropdown-item" type="button" data-action="mensa-table#updateCurrentViewAction">
+                <%= t(".update_view", default: "Update view") %>
+              </button>
+            </li>
+            <li>
+              <button class="mensa-table__control_bar__save-dropdown-item" type="button" data-action="mensa-table#saveAsNewView">
+                <%= t(".save_as_new_view", default: "Save as new view") %>
+              </button>
+            </li>
+          </ul>
+        </div>
+      <% else %>
+        <button class="mensa-table__control_bar__button" type="button" data-action="mensa-table#saveAsNewView">
+          <%= t(".save", default: "Save") %>
+        </button>
+      <% end %>
+    </div>
+
+    <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="eyeButton" data-action="click->mensa-table#toggleViewFilters">
+      <i class="fa-solid fa-eye"></i>
+    </button>
+
+    <% if table.exportable? %>
+      <button class="mensa-table__control_bar__button relative" type="button" data-action="mensa-table#export">
+        <i data-mensa-table-target="exportIcon" class="<%= Mensa.config.icons[:control_bar_export] %>"></i>
+        <%= helpers.render partial: "mensa/exports/badge", locals: {table_name: table.name, user: table.current_user} %>
+      </button>
+    <% end %>
+  </div>
+
+  <% if table.exportable? %>
+    <%= helpers.turbo_stream_from Mensa::Export.stream_name(table.name, table.current_user) %>
+    <%= helpers.render partial: "mensa/exports/dialog", locals: {table: table} %>
+  <% end %>
+</div>

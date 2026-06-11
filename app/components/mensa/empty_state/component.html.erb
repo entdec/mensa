@@ -1,0 +1,10 @@
+<div class="mensa-empty-state">
+  <div class="mensa-empty-state__icon">
+    <i class="<%= Mensa.config.icons[:search] %>"></i>
+  </div>
+  <h3 class="mensa-empty-state__title"><%= t("mensa.empty_state.title", model: model_name_plural) %></h3>
+  <p class="mensa-empty-state__subtitle"><%= t("mensa.empty_state.subtitle") %></p>
+  <button class="mensa-empty-state__button" type="button" data-action="click->mensa-table#cancelFiltersAndSearch">
+    <%= t("mensa.empty_state.clear_button") %>
+  </button>
+</div>

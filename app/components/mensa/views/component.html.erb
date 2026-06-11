@@ -1,0 +1,74 @@
+<% current_view = table.all_views.find { |v| v.id == table.table_view&.id } || table.all_views.first %>
+<% current_view_name = current_view&.name || t(".all", default: "All") %>
+<% current_view_id = current_view&.id || "" %>
+
+<div class="mensa-table__views"
+     id="mensa-views-<%= table.table_id %>"
+     data-mensa-table-target="views"
+     data-controller="mensa-views"
+     data-mensa-views-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
+     data-mensa-views-table-id-value="<%= table.table_id %>"
+     data-mensa-views-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>">
+  <button class="mensa-table__views__trigger" type="button" data-action="mensa-views#toggleDropdown" data-mensa-views-target="trigger" aria-haspopup="listbox">
+    <span class="mensa-table__views__trigger-label" data-mensa-views-target="triggerLabel"><%= current_view_name %></span>
+    <i class="fa-solid fa-sort mensa-table__views__trigger-icon"></i>
+  </button>
+
+  <div class="mensa-table__views__dropdown hidden" data-mensa-views-target="dropdown">
+    <ul role="listbox">
+      <% table.all_views.each do |view| %>
+        <% is_selected = view.id == table.table_view&.id || (view.id == :default && table.table_view.blank?) %>
+        <% is_user_view = view.id.is_a?(String) && view.id.match?(/\A[0-9a-f-]{32,}\z/i) %>
+        <li class="mensa-table__views__option" role="option" data-view-id="<%= view.id %>" data-view-name="<%= view.name %>" data-mensa-views-target="view">
+          <button class="mensa-table__views__option-btn" type="button" data-action="mensa-views#select" data-view-id="<%= view.id %>">
+            <i class="mensa-table__views__option-check fa-solid fa-check<%= " invisible" unless is_selected %>"></i>
+            <span><%= view.name %></span>
+          </button>
+          <% if is_user_view %>
+            <button class="mensa-table__views__option-menu" type="button" data-action="mensa-views#toggleSubmenu" data-view-id="<%= view.id %>" title="View options">
+              <i class="fa-solid fa-ellipsis"></i>
+            </button>
+          <% else %>
+            <div class="mensa-table__views__option-system">
+              <i class="fa-solid fa-ban"></i>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+
+    <div class="mensa-table__views__submenu hidden" data-mensa-views-target="submenu">
+      <button class="mensa-table__views__submenu-item" type="button" data-action="mensa-views#renameView">
+        <i class="fa-solid fa-pencil"></i>
+        <%= t(".rename_view", default: "Rename view") %>
+      </button>
+      <button class="mensa-table__views__submenu-item" type="button" data-action="mensa-views#duplicateView">
+        <i class="fa-solid fa-copy"></i>
+        <%= t(".duplicate_view", default: "Duplicate view") %>
+      </button>
+      <button class="mensa-table__views__submenu-item mensa-table__views__submenu-item--danger" type="button" data-action="mensa-views#deleteView">
+        <i class="fa-solid fa-trash"></i>
+        <%= t(".delete_view", default: "Delete view") %>
+      </button>
+    </div>
+  </div>
+
+  <dialog class="mensa-table__views__rename-dialog" data-mensa-views-target="renameDialog" data-action="click->mensa-views#renameDialogBackdrop">
+    <form class="mensa-table__views__rename-form" data-action="submit->mensa-views#confirmRename">
+      <input type="hidden" data-mensa-views-target="renameViewId">
+      <h3 class="mensa-table__views__rename-title"><%= t(".rename_view", default: "Rename view") %></h3>
+      <label class="mensa-table__views__rename-label">
+        <%= t(".view_name", default: "Name") %>
+        <input class="mensa-table__views__rename-input" type="text" required placeholder="<%= t(".view_name_placeholder", default: "View name") %>" data-mensa-views-target="renameInput">
+      </label>
+      <div class="mensa-table__views__rename-actions">
+        <button class="mensa-table__views__rename-btn mensa-table__views__rename-btn--secondary" type="button" data-action="mensa-views#cancelRename">
+          <%= t(".cancel", default: "Cancel") %>
+        </button>
+        <button class="mensa-table__views__rename-btn mensa-table__views__rename-btn--primary" type="submit">
+          <%= t(".rename", default: "Rename") %>
+        </button>
+      </div>
+    </form>
+  </dialog>
+</div>

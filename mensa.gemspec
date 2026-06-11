@@ -37,7 +37,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "textacular", ">=5"
   spec.add_dependency "view_component", "~> 3.11"
 
-  spec.add_dependency "slim"
   spec.add_dependency "tailwindcss-rails", "~> 3.3"
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"

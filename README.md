@@ -1,6 +1,7 @@
 # Mensa
 
 Fast and awesome tables, with pagination, sorting, filtering, batch processing, column hiding, column ordering and custom views.
+Due to search, it only works with postgresql at the moment.
 
 ![table](./docs/table.png)
 ![filters](./docs/filters.png)
@@ -52,16 +53,7 @@ class UserTable < ApplicationTable
   order name: :desc
 
   column(:name) do
-    attribute :name # Optional, we can deduct this from the column name
-    sortable true
-    sanitize true
-    internal false
-    visible true
-    filter do
-      collection -> { }
-      scope -> { where(name: ...) }
-    end
-    operators [:is, :isnt] # Optional, mensa tries to deduce this from the column information
+    filter
   end
 
   column(:nr_of_roles) do
@@ -112,17 +104,14 @@ end
 
 You can show your tables on the page using the following:
 
-```slim
-  = table :users
+```erb
+<%= table :users %>
 ```
 
 #### Custom views
 
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
-
-Initial support for custom-views is there, but pretty rudimentary:
-
-`Mensa::TableView.create(table: "users", name: "Guests", config: {filters: {role: {value: "guest"}}})`
+When you enable these, they are stored in the database and can be used across sessions, by the user who created them.
 
 ### Fast
 
@@ -159,22 +148,9 @@ If you're not using devcontainers:
 ### Docs
 
 Using the following in your view will render Mensa::Table::Component
-```slim
-  = table :users
+```erb
+<%= table :users %>
 ```
-
-The Mensa::Table::Component will render:
-- Mensa::Search::Component
-- Mensa::FilterPillList::Component
-  - Mensa::FilterPill::Component
-  - Mensa::AddFilter::Component
-- Mensa::Views::Component
-  - renders a views list
-  - Mensa::ControlBar::Component
-    - search icon
-    - filter icon
-    - export icon
-- turbo-frame with the actual table you see  (which is rendered by Mensa::View::Component)
 
 ## Installation
 

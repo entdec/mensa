@@ -10,7 +10,7 @@ gem "sprockets-rails"
 gem "pry"
 gem "capybara", "~> 3.40"
 gem "selenium-webdriver", "~> 4.17"
-gem "slim", "~> 5.2"
+
 gem "debug"
 gem "overmind", require: false
 gem "rack-mini-profiler"

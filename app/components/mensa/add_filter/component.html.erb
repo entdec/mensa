@@ -1,0 +1,31 @@
+<div class="mensa-table__add_filter"
+     data-controller="mensa-add-filter"
+     data-mensa-add-filter-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
+     data-mensa-add-filter-operator-labels-value="<%= operator_labels.to_json %>">
+  <button class="mensa-table__add_filter__trigger"
+          type="button"
+          title="<%= t("mensa.add_filter.add", default: "Add filter") %>"
+          data-action="mensa-add-filter#openAllColumns">
+    <i class="fa-solid fa-circle-plus"></i>
+  </button>
+
+  <ul class="hidden fixed z-50 max-h-96 overflow-auto rounded-lg bg-white p-2 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 sm:text-sm"
+      data-mensa-add-filter-target="filterList">
+    <% table.columns.select(&:filter?).each do |column| %>
+      <li class="text-gray-900 hover:bg-gray-100 relative flex cursor-default select-none items-center gap-2 rounded-md px-3 py-2 dark:text-gray-300 dark:hover:bg-gray-700"
+          data-mensa-add-filter-target="filterListItem"
+          data-action="click->mensa-add-filter#selectColumn mouseenter->mensa-add-filter#columnItemHovered"
+          data-filter-column-name="<%= column.name %>">
+        <div class="label block flex-1 truncate font-normal"><%= column.human_name %></div>
+        <div class="check hidden flex items-center text-primary-600">
+          <div class="fal fa-check"></div>
+        </div>
+        <span class="mensa-table__add_filter__enter-hint">↵ Enter</span>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="hidden mensa-table__add_filter__popover_container"
+       data-mensa-add-filter-target="valuePopover"
+       id="mensa-filter-pill-value-<%= SecureRandom.base36 %>"></div>
+</div>

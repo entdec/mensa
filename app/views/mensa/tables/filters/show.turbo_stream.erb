@@ -1,0 +1,58 @@
+<%= turbo_stream.update params[:target] do %>
+  <div class="mensa-table__add_filter__popover_container__heading"><%= @column.human_name %></div>
+  <% if @column.filter.operator_with_value? %>
+    <% collection = @column.filter.collection %>
+    <% if collection.present? %>
+      <% unless @multiple %>
+        <input type="hidden" data-mensa-add-filter-target="value" value="<%= @values.first %>">
+      <% end %>
+      <ul class="mensa-table__add_filter__popover_container__values" data-multiple="<%= 'true' if @multiple %>">
+        <% collection.each do |item| %>
+          <% opt_label = item.is_a?(Array) ? item.first.to_s : item.to_s %>
+          <% opt_value = item.is_a?(Array) ? item.last.to_s : item.to_s %>
+          <% is_selected = @values.include?(opt_value) %>
+          <li class="mensa-table__add_filter__popover_container__value"
+              data-mensa-add-filter-target="valueOption"
+              data-value="<%= opt_value %>"
+              data-label="<%= opt_label %>"
+              data-selected="<%= 'true' if is_selected %>"
+              data-action="click->mensa-add-filter#selectValue mouseenter->mensa-add-filter#highlightItem">
+            <% if @multiple %>
+              <span class="mensa-table__add_filter__checkbox<%= ' mensa-table__add_filter__checkbox--checked' if is_selected %>"></span>
+            <% else %>
+              <i class="mensa-table__add_filter__popover_container__value__check fa-solid fa-check<%= ' invisible' unless is_selected %>"></i>
+            <% end %>
+            <span class="flex-1"><%= opt_label %></span>
+            <span class="mensa-table__add_filter__enter-hint">↵ Enter</span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <input class="mensa-table__add_filter__popover_container__input"
+             type="<%= @column.filter.input_type %>"
+             value="<%= @values.first %>"
+             autocomplete="off"
+             inputmode="<%= @column.type == :integer ? 'numeric' : nil %>"
+             step="<%= @column.type == :integer ? 1 : (@column.type == :datetime ? 1 : nil) %>"
+             data-mensa-add-filter-target="value"
+             data-action="input->mensa-add-filter#manualValueChanged keydown.enter->mensa-add-filter#applyManualValue">
+    <% end %>
+    <hr class="mensa-table__add_filter__popover_container__separator">
+  <% end %>
+  <ul class="mensa-table__add_filter__popover_container__operators">
+    <% @column.filter.operators.each do |operator_name, label, requires_value| %>
+      <li class="mensa-table__add_filter__popover_container__operator"
+          data-mensa-add-filter-target="operatorOption"
+          data-operator="<%= operator_name %>"
+          data-requires-value="<%= requires_value ? 'true' : 'false' %>"
+          data-selected="<%= 'true' if @operator == operator_name.to_s %>"
+          data-action="click->mensa-add-filter#selectOperator mouseenter->mensa-add-filter#highlightItem">
+        <i class="mensa-table__add_filter__popover_container__operator__check fa-solid fa-check<%= ' invisible' unless @operator == operator_name.to_s %>"></i>
+        <span class="flex-1"><%= label %></span>
+        <span class="mensa-table__add_filter__enter-hint">↵ Enter</span>
+      </li>
+    <% end %>
+  </ul>
+  <hr class="mensa-table__add_filter__popover_container__separator">
+  <a class="mensa-table__add_filter__popover_container__clear" href="#" data-action="click->mensa-add-filter#reset">Clear</a>
+<% end %>

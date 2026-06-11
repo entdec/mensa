@@ -1,0 +1,52 @@
+<% user = table.current_user %>
+<% exports = Mensa::Export.for_table(table.name).for_user(user).recent %>
+<dialog class="mensa-table__export-dialog" data-mensa-table-target="exportDialog" data-action="click->mensa-table#exportDialogBackdrop">
+  <div class="mensa-table__export-dialog__panel">
+    <header class="mensa-table__export-dialog__header">
+      <h2 class="mensa-table__export-dialog__title"><%= t("mensa.exports.title", default: "Export %{table}", table: table.name.to_s.humanize) %></h2>
+      <button class="mensa-table__export-dialog__close" type="button" data-action="mensa-table#cancelExport" aria-label="<%= t("mensa.exports.close", default: "Close") %>">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+
+    <div class="mensa-table__export-dialog__body">
+      <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, exports: exports} %>
+
+      <form class="mensa-table__export-dialog__form" data-action="submit->mensa-table#confirmExport">
+        <fieldset class="mensa-table__export-dialog__fieldset">
+          <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.new_export", default: "New export") %></legend>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="scope" value="all" checked>
+            <span><%= t("mensa.exports.scope_all", default: "All records (matching current filters)") %></span>
+          </label>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="scope" value="current_page">
+            <span><%= t("mensa.exports.scope_current_page", default: "Current page") %></span>
+          </label>
+        </fieldset>
+
+        <fieldset class="mensa-table__export-dialog__fieldset">
+          <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.export_as", default: "Export as") %></legend>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="export_format" value="csv_excel" checked>
+            <span><%= t("mensa.exports.format_excel", default: "CSV for Excel, Numbers, or other spreadsheet programs") %></span>
+          </label>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="export_format" value="plain_csv">
+            <span><%= t("mensa.exports.format_plain", default: "Plain CSV file") %></span>
+          </label>
+        </fieldset>
+
+        <div class="mensa-table__export-dialog__actions">
+          <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--secondary" type="button" data-action="mensa-table#cancelExport">
+            <%= t("mensa.exports.cancel", default: "Cancel") %>
+          </button>
+          <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--primary" type="submit">
+            <i class="fa-solid fa-file-export"></i>
+            <%= t("mensa.exports.submit", default: "Export") %>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</dialog>

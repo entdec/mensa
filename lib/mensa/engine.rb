@@ -1,6 +1,5 @@
 require "pagy"
 require "textacular"
-require "slim"
 require "tailwindcss-rails"
 require "importmap-rails"
 require "turbo-rails"

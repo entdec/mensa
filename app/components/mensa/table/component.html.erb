@@ -1,0 +1,25 @@
+<div class="mensa-table"
+     id="table-<%= table.table_id %>"
+     data-mensa-table-supports-views-value="<%= table.supports_views? %>"
+     data-mensa-table-table-url-value="<%= helpers.mensa.table_url(table.name, {turbo_frame_id: table.table_id}.merge(params)) %>"
+     data-mensa-table-save-view-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
+     data-mensa-table-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
+     data-mensa-table-exports-url-value="<%= helpers.mensa.table_exports_path(table.name) %>"
+     data-controller="mensa-table"
+     data-mensa-table-mensa-filter-pill-outlet="[data-controller='mensa-filter-pill']"
+     data-mensa-table-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
+     data-mensa-table-mensa-column-customizer-outlet="[data-controller='mensa-column-customizer']">
+  <div class="mensa-table__toolbar">
+    <div class="mensa-table__search-container">
+      <% if table.supports_views? && table.show_header? %>
+        <%= render Mensa::Views::Component.new(table: table) %>
+      <% end %>
+      <div class="flex min-w-0 flex-1" id="filters-<%= table.table_id %>">
+        <%= render Mensa::FilterPillList::Component.new(table: table) %>
+      </div>
+    </div>
+    <%= render Mensa::ControlBar::Component.new(table: table) %>
+  </div>
+  <%= render Mensa::Search::Component.new(table: table) %>
+  <turbo-frame id="<%= table.table_id %>" target="_top" data-mensa-table-target="turboFrame" data-turbo-permanent=""></turbo-frame>
+</div>

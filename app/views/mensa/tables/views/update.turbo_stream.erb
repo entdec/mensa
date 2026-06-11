@@ -1,0 +1,11 @@
+<%= turbo_stream.replace "mensa-views-#{@table.table_id}" do %>
+  <%= render Mensa::Views::Component.new(table: @table) %>
+<% end %>
+
+<%= turbo_stream.update "filters-#{@table.table_id}" do %>
+  <%= render Mensa::FilterPillList::Component.new(table: @table) %>
+<% end %>
+
+<%= turbo_stream.update @table.table_id do %>
+  <%= render Mensa::View::Component.new(@table) %>
+<% end %>

@@ -1,9 +1,0 @@
-.mensa-filter-pill data-controller="mensa-filter-pill" data-mensa-filter-pill-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-#{filter.table.table_id}" data-mensa-filter-pill-column-name-value=filter.column.name data-mensa-filter-pill-value-value=(filter.operator_with_value? ? (filter.value.is_a?(Array) ? filter.value.to_json : filter.value) : nil ) data-mensa-filter-pill-operator-value=filter.operator data-mensa-filter-pill-operator-without-value-value=("true" unless filter.operator_with_value?) data-view-filter=("true" if view_filter?)
-  button.mensa-filter-pill__chip[type="button" data-action="click->mensa-filter-pill#edit"]
-    span.mensa-filter-pill__column = filter.column.human_name
-    span.mensa-filter-pill__operator = filter.operator_label
-    - formatted_value = filter.value.is_a?(Array) ? filter.value.join(", ") : filter.value
-    - if formatted_value.present? && filter.operator_with_value?
-      span.mensa-filter-pill__value = formatted_value
-  button.mensa-filter-pill__remove[type="button" title="Remove filter" data-action="click->mensa-filter-pill#remove"]
-    i.fa-solid.fa-xmark

@@ -1,5 +1,0 @@
-/ Download counter shown on the export button. Hidden while there are no
-/ completed downloads. Replaced via Turbo stream when a job finishes.
-- count = Mensa::Export.completed_count(table_name, user)
-span id=Mensa::Export.badge_dom_id(table_name, user) class="mensa-table__control_bar__badge #{'hidden' unless count.positive?}" aria-hidden=(count.positive? ? "false" : "true")
-  = count

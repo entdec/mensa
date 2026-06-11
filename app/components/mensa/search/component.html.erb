@@ -1,0 +1,26 @@
+<% if table.current_user %>
+  <dialog class="mensa-table__save-view-dialog" data-mensa-table-target="saveViewDialog" data-action="click->mensa-table#saveViewDialogBackdrop">
+    <form class="mensa-table__save-view-dialog__form" data-action="submit->mensa-table#confirmSaveView">
+      <header class="mensa-table__save-view-dialog__header">
+        <h2 class="mensa-table__save-view-dialog__title"><%= t(".save_view_title", default: "Save view") %></h2>
+        <p class="mensa-table__save-view-dialog__subtitle"><%= t(".save_view_subtitle", default: "Save the current filters, ordering and search as a reusable view.") %></p>
+      </header>
+      <label class="mensa-table__save-view-dialog__field">
+        <span class="mensa-table__save-view-dialog__label"><%= t(".view_name", default: "Name") %></span>
+        <input class="mensa-table__save-view-dialog__input" type="text" required placeholder="<%= t(".view_name_placeholder", default: "e.g. Active customers") %>" data-mensa-table-target="saveViewName">
+      </label>
+      <label class="mensa-table__save-view-dialog__field">
+        <span class="mensa-table__save-view-dialog__label"><%= t(".view_description", default: "Description") %></span>
+        <textarea class="mensa-table__save-view-dialog__textarea" rows="3" placeholder="<%= t(".view_description_placeholder", default: "Optional notes about this view") %>" data-mensa-table-target="saveViewDescription"></textarea>
+      </label>
+      <div class="mensa-table__save-view-dialog__actions">
+        <button class="mensa-table__save-view-dialog__button mensa-table__save-view-dialog__button--secondary" type="button" data-action="mensa-table#cancelSaveView">
+          <%= t(".cancel") %>
+        </button>
+        <button class="mensa-table__save-view-dialog__button mensa-table__save-view-dialog__button--primary" type="submit">
+          <%= t(".save") %>
+        </button>
+      </div>
+    </form>
+  </dialog>
+<% end %>

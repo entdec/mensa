@@ -1,0 +1,32 @@
+<div id="<%= Mensa::Export.list_dom_id(table_name, user) %>" class="mensa-table__export-dialog__downloads">
+  <h3 class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.available_downloads", default: "Available downloads") %></h3>
+  <% if exports.blank? %>
+    <p class="mensa-table__export-dialog__empty"><%= t("mensa.exports.empty", default: "You have no downloads yet. Create one below.") %></p>
+  <% else %>
+    <ul class="mensa-table__export-dialog__list">
+      <% exports.each do |export| %>
+        <li class="mensa-table__export-dialog__item">
+          <div class="mensa-table__export-dialog__item-info">
+            <span class="mensa-table__export-dialog__item-name"><%= export.filename.presence || t("mensa.exports.item_name", default: "%{table} export", table: export.table_name.to_s.humanize) %></span>
+            <span class="mensa-table__export-dialog__item-meta"><%= export.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+          </div>
+          <div class="mensa-table__export-dialog__item-action">
+            <% if export.downloadable? %>
+              <%= link_to mensa.download_table_export_path(export.table_name, export), class: "mensa-table__export-dialog__download", data: {turbo: false} do %>
+                <i class="fa-solid fa-download"></i>
+                <%= t("mensa.exports.download", default: "Download") %>
+              <% end %>
+            <% elsif export.failed? %>
+              <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--failed"><%= t("mensa.exports.failed", default: "Failed") %></span>
+            <% else %>
+              <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--pending">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <%= t("mensa.exports.processing", default: "Preparing…") %>
+              </span>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
