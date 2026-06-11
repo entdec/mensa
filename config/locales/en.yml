@@ -10,6 +10,7 @@ en:
       lt: less than
       gteq: greater than or equal to
       lteq: less than or equal to
+      is_empty: is empty
     add_filter:
       component:
         add_filter: Add filter

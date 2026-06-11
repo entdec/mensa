@@ -24,7 +24,8 @@ module Mensa
           [:gteq, I18n.t("mensa.operators.gteq"), true],
           [:lt, I18n.t("mensa.operators.lt"), true],
           [:lteq, I18n.t("mensa.operators.lteq"), true],
-          [:is_current, I18n.t("mensa.operators.is_current"), false]
+          [:is_current, I18n.t("mensa.operators.is_current"), false],
+          [:is_empty, I18n.t("mensa.operators.is_empty"), false]
         ].freeze
       end
     end
@@ -69,6 +70,12 @@ module Mensa
         record_scope.instance_exec(normalize(value), &scope)
       else
         case operator
+        when :is_empty
+          if column.type == :string
+            record_scope.where("#{column.attribute_for_condition} IS NULL OR #{column.attribute_for_condition} = ''")
+          else
+            record_scope.where("#{column.attribute_for_condition} IS NULL")
+          end
         when :is_current
           record_scope.where("#{column.attribute_for_condition} = ?", Current.send(column.name))
         when :matches

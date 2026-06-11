@@ -10,6 +10,7 @@ nl:
       lt: kleiner dan
       gteq: groter dan of gelijk aan
       lteq: kleiner dan of gelijk aan
+      is_empty: is leeg
     add_filter:
       component:
         add_filter: Filter toevoegen
