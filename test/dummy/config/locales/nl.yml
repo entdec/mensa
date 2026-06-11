@@ -1,4 +1,7 @@
 nl:
+  activerecord:
+    models:
+      user: Gebruiker
   menu:
     table:
       view_menu:

@@ -21,7 +21,7 @@ module Mensa
 
       respond_to do |format|
         format.turbo_stream # Used for filterering
-        format.html
+        format.html # You shouldn't get here
       end
     end
   end
