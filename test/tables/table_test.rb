@@ -63,4 +63,13 @@ class TableTest < ActiveSupport::TestCase
     assert_includes t.display_columns.map(&:name), :customer_name
     assert_not_includes t.display_columns.map(&:name), :customer_id
   end
+
+  test "internal helper disables filtering on the generated column" do
+    t = TestTable.new({})
+    column = t.column(:customer_id)
+
+    assert_equal true, column.internal?
+    assert_equal false, column.filter?
+    assert_nil column.filter
+  end
 end

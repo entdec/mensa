@@ -41,6 +41,27 @@ class DslLogicTest < ActiveSupport::TestCase
     assert subject.columns.key?(:first_name)
   end
 
+  test "dsl option stores false when explicitly passed" do
+    class NestedDsl
+      include Mensa::Config::DslLogic
+
+      option :enabled, default: true
+    end
+
+    class ParentDsl
+      include Mensa::Config::DslLogic
+
+      option :name
+      option :nested, dsl: NestedDsl
+    end
+
+    subject = ParentDsl.new(nil) do
+      nested false
+    end
+
+    assert_equal false, subject.config[:nested]
+  end
+
   test "internal column is a column with internal set to true" do
     subject = TestTable.new({})
     assert_equal true, subject.column(:customer_id).internal?

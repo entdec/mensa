@@ -88,6 +88,7 @@ module Mensa::Config
     def internal(name, &block)
       column(name) do
         internal true
+        filter false
         instance_exec(&block) if block
       end
     end

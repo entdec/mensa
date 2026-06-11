@@ -59,8 +59,8 @@ module Mensa::Config
       # by calling option :render, dsl: Mensa::RenderDsl
       #
       def dsl_option(option_name, klass)
-        define_method(option_name) do |name = nil, &block|
-          config[option_name.to_sym] = block && klass.new(name, &block).config
+        define_method(option_name) do |value = nil, &block|
+          config[option_name.to_sym] = block ? klass.new(value, &block).config : value
         end
       end
 

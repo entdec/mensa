@@ -159,7 +159,7 @@ module Mensa
       config[:columns] ||= {}
 
       auto_internal_column_names.each do |column_name|
-        config[:columns][column_name] ||= {internal: true}
+        config[:columns][column_name] ||= {internal: true, filter: false}
       end
     end
 

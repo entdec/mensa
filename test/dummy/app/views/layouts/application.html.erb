@@ -16,15 +16,15 @@
   </head>
 
   <body class="mx-10 my-10 bg-gray-100">
-    <div class="pb-2 text-center text-sm text-gray-500">
+    <%= yield %>
+    <div class="pt-2 text-center text-sm text-gray-500">
       Locale: <%= I18n.locale %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
     </div>
-    <div class="flex justify-center gap-4 pb-2 text-center text-sm text-gray-500">
+    <div class="flex justify-center gap-4 pt-2 text-center text-sm text-gray-500">
       <%= link_to "Users", users_path %>
       <%= link_to "Search only users", search_only_users_path %>
       <%= link_to "Headerless users", headerless_users_path %>
       <%= link_to "Customers", customers_path %>
     </div>
-    <%= yield %>
   </body>
 </html>

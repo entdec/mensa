@@ -3,10 +3,7 @@
 class CustomersTable < Mensa::Base
   model Customer
 
-  column(:name) do
-    filter do
-    end
-  end
+  column(:name)
   column(:industry) do
     filter do
       collection -> { Customer.pluck(:industry).uniq.compact.sort }
@@ -19,23 +16,11 @@ class CustomersTable < Mensa::Base
       multiple true
     end
   end
-  column(:isin) do
-    filter do
-      operators [:is, :isnt]
-    end
-  end
-  column(:number_of_employees) do
-    filter
-  end
-  column(:market_cap) do
-    filter
-  end
-  column(:created_at) do
-    filter
-  end
-  column(:updated_at) do
-    filter
-  end
+  column(:isin)
+  column(:number_of_employees)
+  column(:market_cap)
+  column(:created_at)
+  column(:updated_at)
 
   link { |customer| edit_customer_path(customer) }
 

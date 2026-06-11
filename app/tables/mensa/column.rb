@@ -69,7 +69,7 @@ module Mensa
 
     # Returns true if the column supports filtering
     def filter?
-      config.key?(:filter)
+      config[:filter] != false
     end
 
     def filter
