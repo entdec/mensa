@@ -1,7 +1,8 @@
 <% if action.show.call(row.record) %>
   <%= link_to(action.link ? table.original_view_context.instance_exec(row.record, &action.link) : "", {class: "action", title: action.title}.merge(action.link_attributes || {})) do %>
-    <% if action.icon %>
-      <i class="fa <%= action.icon %>"></i>
+
+    <% if icon = action.icon(row.record) %>
+      <i class="fa <%= icon %>"></i>
     <% else %>
       <%= name %>
     <% end %>

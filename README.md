@@ -65,6 +65,8 @@ class UserTable < ApplicationTable
     title "Delete row"
     link { |user| user_path(user) }
     icon "fa-regular fa-trash"
+    # You could also give it a block, which takes the record as an argument, to choose icons dynamically
+    # icon { |product| product.inventory? ? "fal fa-shelves" : "fal fa-shelves-empty" }
     link_attributes data: {"turbo-confirm": "Are you sure you want to delete the user?", "turbo-method": :delete}
     show ->(user) { true }
   end
