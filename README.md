@@ -129,21 +129,19 @@ end
 ### Coding
 
 - Checkout this repo
-- Setup your direnv, add the following to your `.envrc`:
+- Setup your direnv, add the following to your `mise.toml`:
 
   ```
-  export BUNDLE_RUBYGEMS__PKG__GITHUB__COM=ghp_xxxxxxw
-  export RBENV_VERSION=$(cat .ruby-version)
+  [tools]
+  node = "24"
+  ruby = "3.4.7"
+  
+  [env]
+  RUBY_VERSION="3.4.7"
   ```
 
 - Run `direnv allow`
-
-If you use devcontainers:
-- Open with Visual Studio Code (or with any other editor) and reopen in container.
-- Run `bin/overmind s`
-
-If you're not using devcontainers:
-- Run `bin/overmind s`
+- Run `overmind s`
 
 ### Docs
 
@@ -175,7 +173,7 @@ $ gem install mensa
 Always use `bundle` to install the gem. Next use the install generator to install migrations, add an initializer and do other setup:
 
 ```bash
-$  bin/rails g mensa:install
+$  rails g mensa:install
 ```
 
 ### Exports

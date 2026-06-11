@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+class <%= name.camelize %>Table < Mensa::Base
+  model <%= name.camelize %>
+
+  <%-
+  klass = class_name&.safe_constantize
+  if klass.present?
+  -%>
+  <%- klass.columns.each do |column| -%>
+  column(:<%= column.name %>)
+    <%- end -%>
+  <%- end -%>
+
+  scope do
+    <%= class_name %>.all
+  end
+end

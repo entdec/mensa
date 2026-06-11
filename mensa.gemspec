@@ -18,7 +18,8 @@ Gem::Specification.new do |spec|
     Mensa requires additional setup. Please run the following
     command to install the necessary files:
 
-    bin/rails mensa:install:migrations
+    rails g mensa:install
+    rails mensa:install:migrations
   MESSAGE
 
   spec.metadata["homepage_uri"] = spec.homepage
@@ -41,6 +42,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"
-
-  spec.add_development_dependency "sqlite3", "~> 2.8"
 end
