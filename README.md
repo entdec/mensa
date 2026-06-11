@@ -173,7 +173,14 @@ $ gem install mensa
 Always use `bundle` to install the gem. Next use the install generator to install migrations, add an initializer and do other setup:
 
 ```bash
-$  rails g mensa:install
+$ rails g mensa:install
+$ rails mensa:install:migrations
+```
+
+Next you can run the generator to generate a table:
+
+```bash
+$ rails g mensa:table:generate <model_name>
 ```
 
 ### Exports
