@@ -1,5 +1,4 @@
 require "pagy"
-require "textacular"
 require "tailwindcss-rails"
 require "importmap-rails"
 require "turbo-rails"

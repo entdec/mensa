@@ -5,7 +5,7 @@ class ColumnTest < ActiveSupport::TestCase
   test "it returns the quoted attribute" do
     t = TestTable.new({})
     subject = t.column(:first_name)
-    assert_equal "first_name", subject.attribute
+    assert_equal "users.first_name", subject.attribute
   end
   test "it return the specified attribute" do
     t = TestTable.new({})

@@ -10,7 +10,6 @@ PATH
       rubyzip (>= 1.2.2)
       stimulus-rails
       tailwindcss-rails (~> 3.3)
-      textacular (>= 5)
       turbo-rails
       view_component (~> 3.11)
 
@@ -337,8 +336,6 @@ GEM
     tailwindcss-ruby (3.4.19-arm64-darwin)
     tailwindcss-ruby (3.4.19-x86_64-darwin)
     tailwindcss-ruby (3.4.19-x86_64-linux)
-    textacular (5.7.0)
-      activerecord (>= 5.0)
     thor (1.5.0)
     timeout (0.6.1)
     tsort (0.2.0)

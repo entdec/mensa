@@ -22,7 +22,7 @@ module Mensa
 
     def sort_direction
       value = table.config.dig(:order, name)
-      value.present? ? value.to_sym : nil
+      value.presence&.to_sym
     end
 
     def next_sort_direction
@@ -41,12 +41,22 @@ module Mensa
       @attribute = if config[:attribute].present?
         "#{config[:attribute]} AS #{name}"
       elsif table.model.column_names.include? name.to_s
-        name.to_s
+        "#{table.model.table_name}.#{name}"
+      end
+    end
+
+    def raw_attribute
+      return @raw_attribute if @raw_attribute
+
+      @raw_attribute = if config[:attribute].present?
+        config[:attribute]
+      elsif table.model.column_names.include? name.to_s
+        "#{table.model.table_name}.#{name}"
       end
     end
 
     def active_record_column
-      @active_record_column ||= table.model&.columns&.find { it.name == name.to_s }
+      @active_record_column ||= table.model&.columns&.find { |column| column.name == name.to_s }
     end
 
     def active_record_column_type
@@ -61,9 +71,9 @@ module Mensa
       return @attribute_for_condition if @attribute_for_condition
 
       @attribute_for_condition = if config[:attribute].present?
-        config[:attribute]
+        raw_attribute
       elsif table.model.column_names.include? name.to_s
-        name.to_s
+        "#{table.model.table_name}.#{name}"
       end
     end
 

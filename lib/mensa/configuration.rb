@@ -78,13 +78,7 @@ module Mensa
 
     option :row_actions_position, default: :back
     # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
-    option :search, default: -> {
-      @_search_cache ||= begin
-        (ActiveRecord::Base.connection.execute("SELECT extname FROM pg_extension where extname='pg_trgm';")&.first&.[]("extname") == "pg_trgm") ? :fuzzy : :basic
-      rescue
-        :basic
-      end
-    }, proc: true
+    option :search, default: :basic
 
     def initialize
       set_defaults!

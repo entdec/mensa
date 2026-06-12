@@ -4,6 +4,7 @@ module Mensa
   # scope -> filtered_scope -> ordered_scope -> selected_scope ->
   module Scope
     extend ActiveSupport::Concern
+    include Search
 
     included do
     end
@@ -13,15 +14,7 @@ module Mensa
       return @filtered_scope if @filtered_scope
 
       @filtered_scope = scope
-      # See https://github.com/textacular/textacular
-      # This has problems - not all table fields are searched
-      if params[:query].present?
-        @filtered_scope = if Mensa.config.search == :fuzzy
-          @filtered_scope.fuzzy_search(params[:query])
-        else
-          @filtered_scope.basic_search(params[:query])
-        end
-      end
+      @filtered_scope = search(@filtered_scope, params[:query]) if params[:query].present?
 
       # Use inject
       active_filters.each do |filter|
@@ -36,7 +29,13 @@ module Mensa
       return @ordered_scope if @ordered_scope
 
       @ordered_scope = filtered_scope
-      @ordered_scope = @ordered_scope.reorder(effective_order)
+      @ordered_scope = if effective_order.present?
+        @ordered_scope.reorder(effective_order)
+      elsif search_order_clause.present?
+        @ordered_scope.reorder(Arel.sql(search_order_clause))
+      else
+        @ordered_scope.reorder(nil)
+      end
 
       @ordered_scope
     end
@@ -75,7 +74,7 @@ module Mensa
     def effective_order
       result = params.key?(:order) ? (params[:order] || {}) : (config[:order] || {})
       result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
-      result.transform_keys { column(_1).attribute_for_condition }
+      result.transform_keys { |column_name| column(column_name).attribute_for_condition }
     end
 
     # Builds an order hash for URL generation. Merges current order with overrides;
