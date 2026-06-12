@@ -16,6 +16,7 @@ nl:
       lteq: kleiner dan of gelijk aan
       is_empty: is leeg
     add_filter:
+      add: Filter toevoegen
       component:
         add_filter: Filter toevoegen
     filter_pill_list:
