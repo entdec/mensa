@@ -1,7 +1,7 @@
 <div class="mensa-table"
      id="table-<%= table.table_id %>"
      data-mensa-table-supports-views-value="<%= table.supports_views? %>"
-     data-mensa-table-table-url-value="<%= helpers.mensa.table_url(table.name, {turbo_frame_id: table.table_id}.merge(params)) %>"
+     data-mensa-table-table-url-value="<%= table.path(turbo_frame_id: table.table_id, user_params: params) %>"
      data-mensa-table-save-view-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
      data-mensa-table-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
      data-mensa-table-exports-url-value="<%= helpers.mensa.table_exports_path(table.name) %>"

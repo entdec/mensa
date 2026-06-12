@@ -8,8 +8,8 @@ module Mensa
 
     attr_writer :original_view_context
     attr_accessor :component, :name, :table_view, :request
-    attr_reader :params
 
+    config_reader :params
     config_reader :model
     config_reader :scope
     config_reader :link, call: false
@@ -22,12 +22,12 @@ module Mensa
     config_reader :export_with_password?
 
     def initialize(config = {})
-      @params = config.to_h.deep_symbolize_keys
-      @config = self.class.definition.merge(@params || {})
+      normalized_config = config.to_h.deep_symbolize_keys
+      @config = self.class.definition.merge(normalized_config)
+      @params = (@config[:params].presence || {}).deep_symbolize_keys
+      @config[:params] = @params
 
-      ensure_internal_columns_for_joined_associations
-
-      params[:hidden_columns]&.each do |column_name|
+      current_hidden_columns&.each do |column_name|
         c = columns.find { |c| c.name == column_name.to_sym }
         c.config[:visible] = false
       end
@@ -48,12 +48,17 @@ module Mensa
 
     # Returns all columns
     def columns
+      ensure_internal_columns_for_joined_associations
       @columns ||= column_order.map { |column_name| Mensa::Column.new(column_name, config: config.dig(:columns, column_name), table: self) }
     end
 
     # Returns a column by name
     # @param [String] name
     def column(name)
+      found_column = columns.find { |c| c.name == name.to_sym }
+      return found_column if found_column || @internal_columns_ensured
+
+      @columns = nil
       columns.find { |c| c.name == name.to_sym }
     end
 
@@ -117,16 +122,19 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {}, turbo_frame_id: nil, table_view_id: params[:table_view_id], column_order: params[:column_order], hidden_columns: params[:hidden_columns])
+    def path(order: {}, turbo_frame_id: current_turbo_frame_id, table_view_id: current_table_view_id, column_order: current_column_order, hidden_columns: current_hidden_columns, user_params: nil)
       # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
-      original_view_context.mensa.table_path(
-        name,
+      path = original_view_context.mensa.table_path(name)
+      query = {
+        params: user_params || params,
         order: order_hash(order),
         turbo_frame_id: turbo_frame_id,
         table_view_id: table_view_id,
         column_order: column_order,
         hidden_columns: hidden_columns
-      )
+      }.compact.to_query
+
+      query.present? ? "#{path}?#{query}" : path
     end
 
     def all_views
@@ -146,21 +154,53 @@ module Mensa
     def table_id
       return @table_id if @table_id
 
-      @table_id = params[:turbo_frame_id] || "#{name.to_s.gsub("/", "__")}-#{SecureRandom.base36}"
+      @table_id = current_turbo_frame_id || "#{name.to_s.gsub("/", "__")}-#{SecureRandom.base36}"
     end
 
     def original_view_context
       @original_view_context || component.original_view_context
     end
 
+    def current_query
+      config[:query]
+    end
+
+    def current_order
+      config[:order]
+    end
+
+    def current_order_provided?
+      config.key?(:order)
+    end
+
+    def current_table_view_id
+      config[:table_view_id]
+    end
+
+    def current_column_order
+      config[:column_order]
+    end
+
+    def current_hidden_columns
+      config[:hidden_columns]
+    end
+
+    def current_turbo_frame_id
+      config[:turbo_frame_id]
+    end
+
     private
 
     def ensure_internal_columns_for_joined_associations
+      return if @internal_columns_ensured
+
       config[:columns] ||= {}
 
       auto_internal_column_names.each do |column_name|
         config[:columns][column_name] ||= {internal: true, filter: false}
       end
+
+      @internal_columns_ensured = true
     end
 
     def auto_internal_column_names

@@ -14,7 +14,7 @@ module Mensa
       return @filtered_scope if @filtered_scope
 
       @filtered_scope = scope
-      @filtered_scope = search(@filtered_scope, params[:query]) if params[:query].present?
+      @filtered_scope = search(@filtered_scope, current_query) if current_query.present?
 
       # Use inject
       active_filters.each do |filter|
@@ -44,6 +44,8 @@ module Mensa
     def selected_scope
       return @selected_scope if @selected_scope
 
+      ensure_internal_columns_for_joined_associations
+
       @selected_scope = ordered_scope
       @selected_scope = @selected_scope.select([:id] + columns.filter_map(&:attribute))
 
@@ -72,7 +74,7 @@ module Mensa
     # (even with blank values), use only those — blank means "explicitly no sort".
     # Falls back to the view/config default only when no order params were sent.
     def effective_order
-      result = params.key?(:order) ? (params[:order] || {}) : (config[:order] || {})
+      result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
       result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
       result.transform_keys { |column_name| column(column_name).attribute_for_condition }
     end
@@ -81,7 +83,7 @@ module Mensa
     # nil values become "" so they appear in the URL as order[col]= (which tells
     # the server the user explicitly cleared that column's sort direction).
     def order_hash(new_params = {})
-      base = params[:order]&.symbolize_keys || config[:order]&.symbolize_keys || {}
+      base = current_order&.symbolize_keys || config[:order]&.symbolize_keys || {}
       merged = base.merge(new_params.symbolize_keys)
       merged.transform_values { |v| v.nil? ? "" : v.to_sym }
     end

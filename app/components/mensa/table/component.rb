@@ -8,11 +8,11 @@ module Mensa
       attr_reader :table
       attr_reader :params
 
-      def initialize(table_name, config = {}, **options)
-        @table = Mensa.for_name(table_name, config)
+      def initialize(table_name, params: {}, **options)
+        @params = params
+        @table = Mensa.for_name(table_name, {params: params})
         @table.original_view_context = options[:original_view_context]
         @table.component = self
-        @params = options[:params] || {}
       end
     end
   end

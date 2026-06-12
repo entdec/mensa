@@ -273,7 +273,7 @@ export default class ColumnCustomizerController extends ApplicationController {
         if (!urlStr) return false;
 
         try {
-            const url = new URL(urlStr);
+            const url = new URL(urlStr, window.location.origin);
 
             const toDelete = [];
             url.searchParams.forEach((_, key) => {

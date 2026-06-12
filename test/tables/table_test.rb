@@ -1,6 +1,16 @@
 require "test_helper"
 require "pry"
 
+class InitializeExplodingScopeTable < Mensa::Base
+  model User
+
+  column(:first_name)
+
+  scope do
+    raise "scope should not run during initialize"
+  end
+end
+
 class TableTest < ActiveSupport::TestCase
   test "it returns the right column" do
     t = TestTable.new({})

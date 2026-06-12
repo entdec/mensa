@@ -73,6 +73,8 @@ class UsersTable < Mensa::Base
   end
 
   scope do
-    User.all.left_outer_joins(:customer)
+    scope = User.all.left_outer_joins(:customer)
+    scope = scope.where(customers: {name: params[:customer_name]}) if params[:customer_name]
+    scope
   end
 end

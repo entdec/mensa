@@ -23,8 +23,8 @@ class DslLogicTest < ActiveSupport::TestCase
       config_reader :columns
 
       def initialize(config = {})
-        @params = config.to_h.deep_symbolize_keys
-        @config = self.class.definition.merge(@params || {})
+        normalized_config = config.to_h.deep_symbolize_keys
+        @config = self.class.definition.merge(normalized_config)
       end
     end
 

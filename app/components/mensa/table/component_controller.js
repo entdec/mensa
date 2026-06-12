@@ -526,10 +526,13 @@ export default class TableComponentController extends ApplicationController {
             this.hasTurboFrameTarget &&
             this.turboFrameTarget.getAttribute("src")
         ) {
-            return new URL(this.turboFrameTarget.getAttribute("src"));
+            return new URL(
+                this.turboFrameTarget.getAttribute("src"),
+                window.location.origin,
+            );
         }
         if (this.hasTableUrlValue && this.tableUrlValue) {
-            return new URL(this.tableUrlValue);
+            return new URL(this.tableUrlValue, window.location.origin);
         }
         return new URL(window.location.href);
     }

@@ -1,0 +1,9 @@
+<turbo-frame id="<%= @frame_id %>">
+  <div class="mensa-empty-state">
+    <div class="mensa-empty-state__icon">
+      <i class="fa-solid fa-circle-exclamation"></i>
+    </div>
+    <h3 class="mensa-empty-state__title">Could not load table</h3>
+    <p class="mensa-empty-state__subtitle"><%= @error_message %></p>
+  </div>
+</turbo-frame>

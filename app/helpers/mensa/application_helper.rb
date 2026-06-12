@@ -1,7 +1,7 @@
 module Mensa
   module ApplicationHelper
-    def table(name, config = {}, **options)
-      component = ::Mensa::Table::Component.new(name, config, **options)
+    def table(name, params: {}, **options)
+      component = ::Mensa::Table::Component.new(name, params: params, **options)
       component.original_view_context = self
       render(component)
     end

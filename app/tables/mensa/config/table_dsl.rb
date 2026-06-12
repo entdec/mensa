@@ -48,6 +48,7 @@ module Mensa::Config
   class TableDsl
     include DslLogic
 
+    option :params, default: {}
     option :model, default: -> {
       begin
         self.class.name.demodulize.to_s.classify.gsub("Table", "").singularize.constantize
