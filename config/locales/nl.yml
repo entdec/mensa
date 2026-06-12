@@ -41,8 +41,22 @@ nl:
       available_downloads: Beschikbare downloads
       empty: Je hebt nog geen downloads. Maak er hieronder een aan.
       item_name: "%{table} export"
+      repeats_with_interval: "Herhaalt %{interval}"
+      repeat_section: Herhalen
+      repeat: Herhalen
+      repeat_once: "Eenmalig"
+      repeat_repeating: Herhalend
+      repeat_intervals:
+        daily: dagelijks
+        weekly: wekelijks
+        monthly: maandelijks
+        quarterly: per kwartaal
+        bi-yearly: halfjaarlijks
+        yearly: jaarlijks
       download: Downloaden
+      delete: Export verwijderen
       processing: Bezig…
+      waiting: Wachtend
       failed: Mislukt
       new_export: Nieuwe export
       scope_all: Alle records (volgens huidige filters)

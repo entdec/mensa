@@ -23,6 +23,7 @@ module Mensa
           user: current_mensa_user,
           format: params[:export_format].to_s.presence_in(Mensa::Export::FORMATS) || "csv_excel",
           scope: params[:scope].to_s.presence_in(Mensa::Export::SCOPES) || "all",
+          repeat: params[:repeat].to_s.presence_in(Mensa::Export::REPEATS) || "",
           config: params.permit(:query, :page, order: {}, filters: {}).to_h,
           status: "pending"
         )
@@ -42,6 +43,20 @@ module Mensa
         end
       end
 
+      # Deletes an export from the current user's download list. The attached
+      # asset is purged automatically when the record is destroyed.
+      def destroy
+        export = exports.find(params[:id])
+        export.destroy
+        Mensa::Export.broadcast_refresh(export.table_name, export.user)
+
+        respond_to do |format|
+          format.turbo_stream { render turbo_stream: [list_stream, badge_stream] }
+          format.json { head :no_content }
+          format.html { redirect_back fallback_location: mensa.table_exports_path(params[:table_id]) }
+        end
+      end
+
       # Streams the generated CSV and then removes the export, purging the
       # attached asset. Downloads are single-use: routing them through the
       # controller (instead of a direct Active Storage link) gives us a hook to
@@ -56,12 +71,17 @@ module Mensa
 
         send_data data, filename: filename, type: content_type, disposition: "attachment"
 
-        # Clean up after a successful send. `has_one_attached :asset` purges the
-        # blob when the record is destroyed (dependent: :purge_later). Never let
-        # cleanup failures break the download itself.
+        # One-off exports are single-use and are deleted after download.
+        # Repeating exports stay in place and can be removed explicitly via the
+        # trash action.
         begin
-          export.destroy
-          Mensa::Export.broadcast_refresh(export.table_name, export.user)
+          if export.repeating?
+            export.asset.purge_later
+            Mensa::Export.broadcast_refresh(export.table_name, export.user)
+          else
+            export.destroy
+            Mensa::Export.broadcast_refresh(export.table_name, export.user)
+          end
         rescue => e
           Mensa.config.logger&.warn("Mensa::Export cleanup failed for #{export.id}: #{e.class}: #{e.message}")
         end

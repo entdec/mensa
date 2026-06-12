@@ -20,8 +20,9 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_select "turbo-cable-stream-source"
   end
 
-  test "the badge shows the number of completed downloads" do
-    Mensa::Export.create!(table_name: "users", user: User.first, status: "completed", filename: "users_export.csv")
+  test "the badge shows the number of downloadable exports" do
+    export = Mensa::Export.create!(table_name: "users", user: User.first, status: "completed", filename: "users_export.csv")
+    export.asset.attach(io: StringIO.new("a,b\n1,2\n"), filename: "users_export.csv", content_type: "text/csv")
 
     get root_path
 

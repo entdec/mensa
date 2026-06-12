@@ -7,17 +7,21 @@ module Mensa
     STATUSES = %w[pending processing completed failed].freeze
     FORMATS = %w[csv_excel plain_csv].freeze
     SCOPES = %w[all current_page].freeze
+    REPEATS = ["", "daily", "weekly", "monthly", "quarterly", "bi-yearly", "yearly"].freeze
 
     belongs_to :user, optional: true
     has_one_attached :asset
 
     validates :table_name, presence: true
     validates :status, inclusion: {in: STATUSES}
+    validates :repeat, inclusion: {in: REPEATS}
 
     scope :for_table, ->(table_name) { where(table_name: table_name.to_s) }
     scope :for_user, ->(user) { where(user_id: user.respond_to?(:id) ? user&.id : user) }
     scope :completed, -> { where(status: "completed") }
     scope :recent, -> { order(created_at: :desc) }
+    scope :repeating, -> { where.not(repeat: [nil, ""]) }
+    scope :with_downloadable_asset, -> { completed.joins(:asset_attachment).distinct }
 
     def completed?
       status == "completed"
@@ -35,15 +39,63 @@ module Mensa
       status == "pending"
     end
 
+    def next_repeat_run_at(from: nil)
+      return if repeat.blank?
+
+      anchor = from || last_repeat_run_at || created_at
+
+      case repeat
+      when "daily"
+        anchor + 1.day
+      when "weekly"
+        anchor + 1.week
+      when "monthly"
+        anchor.advance(months: 1)
+      when "quarterly"
+        anchor.advance(months: 3)
+      when "bi-yearly"
+        anchor.advance(months: 6)
+      when "yearly"
+        anchor.advance(years: 1)
+      end
+    end
+
+    def repeat_due?(reference_time = Time.current)
+      return false if repeat.blank? || pending? || processing?
+
+      next_run_at = next_repeat_run_at
+      next_run_at.present? && next_run_at <= reference_time
+    end
+
+    def repeating?
+      repeat.present?
+    end
+
+    def repeat_label
+      return if repeat.blank?
+
+      I18n.t(
+        "mensa.exports.repeats_with_interval",
+        default: "Repeats %{interval}",
+        interval: repeat_interval_label
+      )
+    end
+
+    def repeat_interval_label
+      return if repeat.blank?
+
+      I18n.t("mensa.exports.repeat_intervals.#{repeat}", default: repeat)
+    end
+
     # True once the asset is ready to be downloaded by the user.
     def downloadable?
       completed? && asset.attached?
     end
 
-    # Number of completed (downloadable) exports for a table/user combination.
+    # Number of currently-downloadable exports for a table/user combination.
     # This is the number rendered in the export button badge.
     def self.completed_count(table_name, user)
-      for_table(table_name).for_user(user).completed.count
+      for_table(table_name).for_user(user).with_downloadable_asset.count
     end
 
     # A stable, page-independent key identifying the exports of a table/user

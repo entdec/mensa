@@ -5,6 +5,13 @@ namespace :mensa do
       Rails::Generators.invoke("mensa:tailwind_config", ["--force"])
     end
   end
+
+  namespace :exports do
+    desc "Run recurring exports that are due"
+    task recurring: :environment do
+      Mensa::RecurringExportsJob.perform_now
+    end
+  end
 end
 
 if Rake::Task.task_defined?("tailwindcss:build")

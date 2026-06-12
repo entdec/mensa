@@ -23,6 +23,7 @@ module Mensa
 
       data, filename, content_type = generate(table, export)
 
+      export.asset.purge if export.asset.attached?
       export.asset.attach(io: StringIO.new(data), filename: filename, content_type: content_type)
       finalize(export, status: "completed", filename: filename)
 
@@ -94,6 +95,9 @@ module Mensa
     def finalize(export, status:, filename: nil)
       attributes = {status: status}
       attributes[:filename] = filename if filename
+
+      attributes[:last_repeat_run_at] = Time.current if status == "completed" && export.repeat.present?
+
       export.update(attributes)
       # Refresh the export button badge (download count) and the downloads list
       # inside the export dialog for everyone viewing this table.

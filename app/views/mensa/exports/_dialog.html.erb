@@ -37,6 +37,29 @@
           </label>
         </fieldset>
 
+        <fieldset class="mensa-table__export-dialog__fieldset">
+          <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.repeat_section", default: "Repeat") %></legend>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="repeat_mode" value="once" checked data-action="change->mensa-table#toggleExportRepeat">
+            <span><%= t("mensa.exports.repeat_once", default: "Only once") %></span>
+          </label>
+          <label class="mensa-table__export-dialog__option">
+            <input type="radio" name="repeat_mode" value="repeating" data-action="change->mensa-table#toggleExportRepeat">
+            <span><%= t("mensa.exports.repeat_repeating", default: "Repeating") %></span>
+          </label>
+
+          <div class="mensa-table__export-dialog__repeat-options" hidden data-mensa-table-repeat-options>
+            <select name="repeat" class="mensa-table__export-dialog__select">
+              <option value="daily"><%= t("mensa.exports.repeat_intervals.daily", default: "daily") %></option>
+              <option value="weekly"><%= t("mensa.exports.repeat_intervals.weekly", default: "weekly") %></option>
+              <option value="monthly"><%= t("mensa.exports.repeat_intervals.monthly", default: "monthly") %></option>
+              <option value="quarterly"><%= t("mensa.exports.repeat_intervals.quarterly", default: "quarterly") %></option>
+              <option value="bi-yearly"><%= t("mensa.exports.repeat_intervals.bi-yearly", default: "bi-yearly") %></option>
+              <option value="yearly"><%= t("mensa.exports.repeat_intervals.yearly", default: "yearly") %></option>
+            </select>
+          </div>
+        </fieldset>
+
         <div class="mensa-table__export-dialog__actions">
           <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--secondary" type="button" data-action="mensa-table#cancelExport">
             <%= t("mensa.exports.cancel", default: "Cancel") %>

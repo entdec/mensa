@@ -7,8 +7,13 @@ class FilterPillListComponentTest < ViewComponent::TestCase
     definition do
       model User
 
-      column(:first_name)
-      column(:last_name)
+      column(:first_name) do
+        filter false
+      end
+
+      column(:last_name) do
+        filter false
+      end
     end
   end
 

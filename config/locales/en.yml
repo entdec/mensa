@@ -36,7 +36,18 @@ en:
       available_downloads: Available downloads
       empty: You have no downloads yet. Create one below.
       item_name: "%{table} export"
+      repeats_with_interval: "Repeats %{interval}"
+      repeat_once: "Only once"
+      repeat_repeating: Repeating
+      repeat_intervals:
+        daily: daily
+        weekly: weekly
+        monthly: monthly
+        quarterly: quarterly
+        bi-yearly: bi-yearly
+        yearly: yearly
       download: Download
+      delete: Delete export
       processing: Preparing…
       failed: Failed
       new_export: New export

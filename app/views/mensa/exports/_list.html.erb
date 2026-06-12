@@ -6,8 +6,19 @@
     <ul class="mensa-table__export-dialog__list">
       <% exports.each do |export| %>
         <li class="mensa-table__export-dialog__item">
+          <%= button_to mensa.table_export_path(export.table_name, export),
+            method: :delete,
+            class: "mensa-table__export-dialog__delete",
+            form_class: "mensa-table__export-dialog__delete-form",
+            aria: {label: t("mensa.exports.delete", default: "Delete export") } do %>
+            <i class="fa-solid fa-trash"></i>
+          <% end %>
+
           <div class="mensa-table__export-dialog__item-info">
             <span class="mensa-table__export-dialog__item-name"><%= export.filename.presence || t("mensa.exports.item_name", default: "%{table} export", table: export.table_name.to_s.humanize) %></span>
+            <% if export.repeating? %>
+              <span class="mensa-table__export-dialog__item-repeat"><%= export.repeat_label %></span>
+            <% end %>
             <span class="mensa-table__export-dialog__item-meta"><%= export.created_at.strftime("%Y-%m-%d %H:%M") %></span>
           </div>
           <div class="mensa-table__export-dialog__item-action">
@@ -18,6 +29,8 @@
               <% end %>
             <% elsif export.failed? %>
               <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--failed"><%= t("mensa.exports.failed", default: "Failed") %></span>
+            <% elsif export.completed? %>
+              <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--pending"><%= t("mensa.exports.waiting", default: "Waiting") %></span>
             <% else %>
               <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--pending">
                 <i class="fa-solid fa-spinner fa-spin"></i>

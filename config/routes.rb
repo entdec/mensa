@@ -4,7 +4,7 @@ Mensa::Engine.routes.draw do
       resources :filters
       resources :views, only: [:create, :update, :destroy]
       resources :batch_actions, only: [:create]
-      resources :exports, only: [:index, :create] do
+      resources :exports, only: [:index, :create, :destroy] do
         member do
           get :download
         end

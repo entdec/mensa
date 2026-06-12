@@ -9,21 +9,19 @@ Due to search, it only works with postgresql at the moment.
 ![export](./docs/export.png)
 
 Features:
-
-- [x] very fast
-- [x] row-links
-- [x] sorting
-- [x] filtering of multiple columns
+- [x] Very fast
+- [x] Row-links
+- [x] Sorting
+- [x] Filtering of multiple columns
 - [X] Hide filter icon in case there are no filters
-- [X] column ordering
-- [X] editing of existing filters
-- [X] view selection and exports per view
-- [X] multiple selection of rows and batch processing
-- [x] tables without headers (and without most of the above)
-
-Todo/Fixme:
-- [ ] exports can be mailed - daily/weekly/monthly/quarterly/bi-yearly/yearly (time configurable)
-- [ ] Search only works on table text columns
+- [X] Column ordering
+- [X] Editing of existing filters
+- [X] View selection and exports per view
+- [X] Multiple selection of rows and batch processing
+- [x] Tables without headers (and without most of the above)
+- [X] Search works on all table columns
+- [X] Exports can be scheduled to run recurring (daily/weekly/monthly/quarterly/bi-yearly/yearly)
+      You will have to bring your own mailer, see configuration for details.
 
 Nice to haves:
 
@@ -190,6 +188,20 @@ $ rails g mensa:table:generate <model_name>
 Exporting is built into the table's control bar. Clicking the export button opens
 a dialog that lists the user's previous downloads and lets them request a new
 export (scope and CSV format). 
+
+#### Repeating exports
+
+The user can choose to export a table on a regular basis (daily, weekly, monthly, quarterly, bi-yearly, yearly).
+
+When the user selects a repeating export, the table will be exported automatically on the specified schedule.
+
+For this to work you need to have a cron job which runs daily.
+When using `sidekiq-cron` or `goodjob` the `RecurringExportsJob` needs to be scheduled to run daily.
+
+If you're just using cron, you can add the following to your crontab:
+```
+0 0 * * * rails runner "Mensa::RecurringExportsJob.perform_later"
+```
 
 ## Contributing
 

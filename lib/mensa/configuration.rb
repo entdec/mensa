@@ -72,6 +72,11 @@ module Mensa
       end,
       # Called with the Mensa::Export once the CSV has been generated and
       # attached (export.asset). Use this to e.g. notify or email the user.
+      #
+      # UserMailer.with(
+      #   user: User.find(export.user_id),
+      #   export: export,
+      # ).export_email.deliver_later
       export_complete: lambda do |export|
       end
     }

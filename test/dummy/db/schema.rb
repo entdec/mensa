@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_10_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_12_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -60,12 +60,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_120000) do
     t.datetime "created_at", null: false
     t.string "filename"
     t.string "format"
+    t.datetime "last_repeat_run_at"
+    t.string "repeat", default: "", null: false
     t.string "scope"
     t.string "status", default: "pending", null: false
     t.string "table_name", null: false
     t.uuid "table_view_id"
     t.datetime "updated_at", null: false
     t.uuid "user_id"
+    t.index ["last_repeat_run_at"], name: "index_mensa_exports_on_last_repeat_run_at"
+    t.index ["repeat"], name: "index_mensa_exports_on_repeat"
     t.index ["status"], name: "index_mensa_exports_on_status"
     t.index ["table_name"], name: "index_mensa_exports_on_table_name"
     t.index ["table_view_id"], name: "index_mensa_exports_on_table_view_id"

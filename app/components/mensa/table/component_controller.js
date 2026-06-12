@@ -43,7 +43,10 @@ export default class TableComponentController extends ApplicationController {
 
         // Close save dropdown when clicking outside
         this._saveDropdownOutsideHandler = (e) => {
-            if (this.hasSaveDropdownTarget && !this.saveDropdownTarget.classList.contains("hidden")) {
+            if (
+                this.hasSaveDropdownTarget &&
+                !this.saveDropdownTarget.classList.contains("hidden")
+            ) {
                 const saveArea = this.saveDropdownTarget.closest(".relative");
                 if (saveArea && !saveArea.contains(e.target)) {
                     this.saveDropdownTarget.classList.add("hidden");
@@ -98,12 +101,15 @@ export default class TableComponentController extends ApplicationController {
             const outlet = this.mensaFilterPillListOutlet;
             const state = {
                 filters: outlet.loadFilters(),
-                query:   outlet.loadQuery(),
-                view:    outlet.loadView(),
-                order:   outlet.loadOrder(),
-                page:    outlet.loadPage(),
+                query: outlet.loadQuery(),
+                view: outlet.loadView(),
+                order: outlet.loadOrder(),
+                page: outlet.loadPage(),
             };
-            this.turboFrameTarget.setAttribute("src", outlet.buildUrl(state).toString());
+            this.turboFrameTarget.setAttribute(
+                "src",
+                outlet.buildUrl(state).toString(),
+            );
         } else if (this.hasTableUrlValue) {
             this.turboFrameTarget.setAttribute("src", this.tableUrlValue);
         }
@@ -135,7 +141,8 @@ export default class TableComponentController extends ApplicationController {
     cancelFiltersAndSearch(event) {
         if (event) event.preventDefault();
         this.hideSaveReset();
-        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+        if (this.hasSaveDropdownTarget)
+            this.saveDropdownTarget.classList.add("hidden");
 
         if (this.hasMensaFilterPillListOutlet) {
             this.mensaFilterPillListOutlet.clearFiltersAndSearch();
@@ -164,14 +171,16 @@ export default class TableComponentController extends ApplicationController {
     // "Save as new view" — always opens the name dialog
     saveAsNewView(event) {
         if (event) event.preventDefault();
-        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+        if (this.hasSaveDropdownTarget)
+            this.saveDropdownTarget.classList.add("hidden");
         this._openSaveDialog();
     }
 
     // "Update view" — updates the currently selected user-owned view in place
     async updateCurrentViewAction(event) {
         if (event) event.preventDefault();
-        if (this.hasSaveDropdownTarget) this.saveDropdownTarget.classList.add("hidden");
+        if (this.hasSaveDropdownTarget)
+            this.saveDropdownTarget.classList.add("hidden");
 
         const viewId = this._selectedUserViewId();
         if (!viewId) {
@@ -204,7 +213,9 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
-                turbo_frame_id: this.hasTurboFrameTarget ? this.turboFrameTarget.id : null,
+                turbo_frame_id: this.hasTurboFrameTarget
+                    ? this.turboFrameTarget.id
+                    : null,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",
@@ -239,9 +250,12 @@ export default class TableComponentController extends ApplicationController {
     async confirmSaveView(event) {
         event.preventDefault();
 
-        const name = this.hasSaveViewNameTarget ? this.saveViewNameTarget.value.trim() : "";
+        const name = this.hasSaveViewNameTarget
+            ? this.saveViewNameTarget.value.trim()
+            : "";
         if (!name) {
-            if (this.hasSaveViewNameTarget) this.saveViewNameTarget.reportValidity();
+            if (this.hasSaveViewNameTarget)
+                this.saveViewNameTarget.reportValidity();
             return;
         }
 
@@ -260,7 +274,9 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
-                turbo_frame_id: this.hasTurboFrameTarget ? this.turboFrameTarget.id : null,
+                turbo_frame_id: this.hasTurboFrameTarget
+                    ? this.turboFrameTarget.id
+                    : null,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",
@@ -307,7 +323,10 @@ export default class TableComponentController extends ApplicationController {
         const hasViewFilters = this._hasViewFilterPills();
         if (hasViewFilters) {
             const visible = this._loadViewFiltersVisible();
-            this.element.classList.toggle("mensa-table--view-filters-hidden", !visible);
+            this.element.classList.toggle(
+                "mensa-table--view-filters-hidden",
+                !visible,
+            );
         } else {
             this.element.classList.remove("mensa-table--view-filters-hidden");
         }
@@ -328,13 +347,18 @@ export default class TableComponentController extends ApplicationController {
 
     toggleViewFilters(event) {
         if (event) event.preventDefault();
-        const nowHidden = this.element.classList.toggle("mensa-table--view-filters-hidden");
+        const nowHidden = this.element.classList.toggle(
+            "mensa-table--view-filters-hidden",
+        );
         this._saveViewFiltersVisible(!nowHidden);
         this._updateEyeButton();
     }
 
     _hasViewFilterPills() {
-        return this.element.querySelectorAll('[data-view-filter="true"]').length > 0;
+        return (
+            this.element.querySelectorAll('[data-view-filter="true"]').length >
+            0
+        );
     }
 
     // Only updates button visibility and icon — never touches the hidden class.
@@ -348,7 +372,9 @@ export default class TableComponentController extends ApplicationController {
         this.eyeButtonTarget.classList.toggle("hidden", !hasViewFilters);
 
         if (hasViewFilters) {
-            const hidden = this.element.classList.contains("mensa-table--view-filters-hidden");
+            const hidden = this.element.classList.contains(
+                "mensa-table--view-filters-hidden",
+            );
             // Replace innerHTML so FontAwesome's MutationObserver re-processes the new <i>
             this.eyeButtonTarget.innerHTML = hidden
                 ? '<i class="fa-solid fa-eye"></i>'
@@ -366,13 +392,18 @@ export default class TableComponentController extends ApplicationController {
         if (this.hasMensaFilterPillListOutlet) {
             return this.mensaFilterPillListOutlet.tableNameValue;
         }
-        const el = this.element.querySelector("[data-mensa-filter-pill-list-table-name-value]");
+        const el = this.element.querySelector(
+            "[data-mensa-filter-pill-list-table-name-value]",
+        );
         return el?.dataset?.mensaFilterPillListTableNameValue || "";
     }
 
     _loadViewFiltersVisible() {
         try {
-            return window.localStorage.getItem(this._viewFiltersStorageKey()) === "true";
+            return (
+                window.localStorage.getItem(this._viewFiltersStorageKey()) ===
+                "true"
+            );
         } catch (e) {
             return false;
         }
@@ -381,7 +412,10 @@ export default class TableComponentController extends ApplicationController {
     _saveViewFiltersVisible(visible) {
         try {
             if (visible) {
-                window.localStorage.setItem(this._viewFiltersStorageKey(), "true");
+                window.localStorage.setItem(
+                    this._viewFiltersStorageKey(),
+                    "true",
+                );
             } else {
                 window.localStorage.removeItem(this._viewFiltersStorageKey());
             }
@@ -432,13 +466,36 @@ export default class TableComponentController extends ApplicationController {
         }
     }
 
+    toggleExportRepeat() {
+        const dialog = this.exportDialogTarget;
+        const options = dialog.querySelector(
+            "[data-mensa-table-repeat-options]",
+        );
+        if (!options) return;
+
+        const mode = dialog.querySelector(
+            'input[name="repeat_mode"]:checked',
+        )?.value;
+        options.hidden = mode !== "repeating";
+    }
+
     confirmExport(event) {
         event.preventDefault();
         if (!this.hasExportsUrlValue) return;
 
         const dialog = this.exportDialogTarget;
-        const scope = dialog.querySelector('input[name="scope"]:checked')?.value || "all";
-        const exportFormat = dialog.querySelector('input[name="export_format"]:checked')?.value || "csv_excel";
+        const scope =
+            dialog.querySelector('input[name="scope"]:checked')?.value || "all";
+        const exportFormat =
+            dialog.querySelector('input[name="export_format"]:checked')
+                ?.value || "csv_excel";
+        const repeatMode = dialog.querySelector(
+            'input[name="repeat_mode"]:checked',
+        )?.value;
+        const repeat =
+            repeatMode === "repeating"
+                ? dialog.querySelector('select[name="repeat"]')?.value || ""
+                : "";
 
         const state = this.currentViewState();
         const nav = this.hasMensaFilterPillListOutlet
@@ -452,6 +509,7 @@ export default class TableComponentController extends ApplicationController {
             body: JSON.stringify({
                 scope,
                 export_format: exportFormat,
+                repeat,
                 table_view_id: view,
                 page: nav.page,
                 query: state.query || nav.query,
@@ -464,7 +522,10 @@ export default class TableComponentController extends ApplicationController {
     }
 
     get ourUrl() {
-        if (this.hasTurboFrameTarget && this.turboFrameTarget.getAttribute("src")) {
+        if (
+            this.hasTurboFrameTarget &&
+            this.turboFrameTarget.getAttribute("src")
+        ) {
             return new URL(this.turboFrameTarget.getAttribute("src"));
         }
         if (this.hasTableUrlValue && this.tableUrlValue) {
@@ -494,8 +555,12 @@ export default class TableComponentController extends ApplicationController {
     _updateSaveButtonMode() {
         if (!this.hasSaveSimpleTarget && !this.hasSaveSplitTarget) return;
         const isUserView = !!this._selectedUserViewId();
-        this.saveSimpleTargets.forEach((t) => t.classList.toggle("hidden", isUserView));
-        this.saveSplitTargets.forEach((t) => t.classList.toggle("hidden", !isUserView));
+        this.saveSimpleTargets.forEach((t) =>
+            t.classList.toggle("hidden", isUserView),
+        );
+        this.saveSplitTargets.forEach((t) =>
+            t.classList.toggle("hidden", !isUserView),
+        );
     }
 
     _selectedUserViewId() {
@@ -517,7 +582,8 @@ export default class TableComponentController extends ApplicationController {
     _openSaveDialog() {
         if (!this.hasSaveViewDialogTarget) return;
         if (this.hasSaveViewNameTarget) this.saveViewNameTarget.value = "";
-        if (this.hasSaveViewDescriptionTarget) this.saveViewDescriptionTarget.value = "";
+        if (this.hasSaveViewDescriptionTarget)
+            this.saveViewDescriptionTarget.value = "";
         if (typeof this.saveViewDialogTarget.showModal === "function") {
             this.saveViewDialogTarget.showModal();
         } else {

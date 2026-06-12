@@ -107,5 +107,14 @@ module Mensa
       assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.badge_dom_id("users", @user)) }
       assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.list_dom_id("users", @user)) }
     end
+
+    test "stores the latest repeat run time for recurring exports" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all", repeat: "daily")
+
+      freeze_time do
+        Mensa::ExportJob.perform_now(export)
+        assert_in_delta Time.current.to_f, export.reload.last_repeat_run_at.to_f, 1
+      end
+    end
   end
 end
