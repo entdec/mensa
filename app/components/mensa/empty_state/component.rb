@@ -11,7 +11,7 @@ module Mensa
 
       # "orders", "users", etc. — used inside the translated heading.
       def model_name_plural
-        table.model.model_name.human.pluralize.downcase
+        table.model.model_name.human(count: 2).downcase
       end
     end
   end

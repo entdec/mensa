@@ -1,5 +1,6 @@
 en:
   mensa:
+    actions: Actions
     operators:
       is: is
       isnt: isn't

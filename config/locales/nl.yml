@@ -1,5 +1,9 @@
 nl:
   mensa:
+    actions: Acties
+    save: Bewaar
+    update_view: Bewaar weergave
+    save_as_new_view: Bewaar als nieuwe weergave
     operators:
       is: is
       isnt: is niet

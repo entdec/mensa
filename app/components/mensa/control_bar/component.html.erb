@@ -11,21 +11,21 @@
       <% if table.current_user && table.supports_custom_views? %>
         <div class="relative">
           <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="saveSimple" data-action="mensa-table#saveAsNewView">
-            <%= t(".save", default: "Save") %>
+            <%= t("mensa.save") %>
           </button>
           <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="saveSplit" data-action="mensa-table#toggleSaveDropdown">
-            <%= t(".save", default: "Save") %>
+            <%= t("mensa.save") %>
             <i class="fa-solid fa-chevron-down text-xs"></i>
           </button>
           <ul class="mensa-table__control_bar__save-dropdown hidden" data-mensa-table-target="saveDropdown">
             <li>
               <button class="mensa-table__control_bar__save-dropdown-item" type="button" data-action="mensa-table#updateCurrentViewAction">
-                <%= t(".update_view", default: "Update view") %>
+                <%= t("mensa.update_view") %>
               </button>
             </li>
             <li>
               <button class="mensa-table__control_bar__save-dropdown-item" type="button" data-action="mensa-table#saveAsNewView">
-                <%= t(".save_as_new_view", default: "Save as new view") %>
+                <%= t("mensa.save_as_new_view") %>
               </button>
             </li>
           </ul>

@@ -1,7 +1,31 @@
 nl:
   activerecord:
     models:
-      user: Gebruiker
+      user:
+        one: Gebruiker
+        other: Gebruikers
+      customer:
+        one: Klant
+        other: Klanten
+    attributes:
+      user:
+        first_name: Voornaam
+        last_name: Achternaam
+        email: E-mail
+        role: Rol
+        customer: Klant
+        created_at: Aangemaakt om
+        updated_at: Gewijzigd om
+      customer:
+        name: Naam
+        industry: Industrie
+        stock_symbol: Tickersymbool
+        country: Land
+        isin: BTW Nummer
+        number_of_employees: Aantal werknemers
+        market_cap: Marktcapitalisatie
+        created_at: Aangemaakt om
+        updated_at: Gewijzigd om
   menu:
     table:
       view_menu:
