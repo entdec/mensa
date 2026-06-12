@@ -3,6 +3,7 @@ nl:
     actions: Acties
     save: Bewaar
     update_view: Bewaar weergave
+    save_view: Bewaar als nieuwe weergave
     save_as_new_view: Bewaar als nieuwe weergave
     operators:
       is: is

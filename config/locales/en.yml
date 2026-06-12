@@ -1,6 +1,10 @@
 en:
   mensa:
     actions: Actions
+    save: Save
+    update_view: Update view
+    save_view: Save as new view
+    save_as_new_view: Save as new view
     operators:
       is: is
       isnt: isn't
@@ -13,6 +17,7 @@ en:
       lteq: less than or equal to
       is_empty: is empty
     add_filter:
+      add: Add filter
       component:
         add_filter: Add filter
     filter_pill_list:
@@ -21,6 +26,7 @@ en:
         search_only: Search
     search:
       component:
+        search: Search and filter
         search_in: Search in %{view}
         cancel: Cancel
         save: Save
@@ -37,6 +43,8 @@ en:
       empty: You have no downloads yet. Create one below.
       item_name: "%{table} export"
       repeats_with_interval: "Repeats %{interval}"
+      repeat_section: Repeat
+      repeat: Repeat
       repeat_once: "Only once"
       repeat_repeating: Repeating
       repeat_intervals:
@@ -49,6 +57,7 @@ en:
       download: Download
       delete: Delete export
       processing: Preparing…
+      waiting: Waiting
       failed: Failed
       new_export: New export
       scope_all: All records (matching current filters)
