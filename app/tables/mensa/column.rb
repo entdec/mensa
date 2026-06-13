@@ -19,6 +19,7 @@ module Mensa
     config_reader :visible?
     config_reader :internal?
     config_reader :method # When a method needs to be called on the model, slow!
+    config_reader :format
 
     def sort_direction
       value = table.config.dig(:order, name)
@@ -86,6 +87,10 @@ module Mensa
       return unless filter?
 
       @filter ||= Mensa::Filter.new(column: self, config: table.config.dig(:columns, name, :filter) || {}, table: table)
+    end
+
+    def format
+      @format ||= Mensa::Format.new(config: config.dig(:format).presence || {format: :db}, column: self)
     end
 
     def human_name

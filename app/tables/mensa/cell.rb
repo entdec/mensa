@@ -38,10 +38,12 @@ module Mensa
         content_tag(:i, "", class: "fa-solid fa-check")
       when FalseClass
         content_tag(:i, "", class: "fa-solid fa-xmark")
+      when Array
+        value.to_fs(:db)
       when Date
-        respond_to?(:dt) ? dt(value) : value.strftime("%d.%m.%Y")
+        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       when Time, DateTime
-        respond_to?(:ln) ? ln(value) : value.strftime("%d-%m-%Y %H:%M:%S")
+        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       else
         column.sanitize? ? sanitize(value.to_s) : value.to_s.html_safe
       end
@@ -54,9 +56,9 @@ module Mensa
       when TrueClass, FalseClass
         value.to_s
       when Date
-        respond_to?(:dt) ? dt(value) : value.strftime("%d.%m.%Y")
+        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       when Time, DateTime
-        respond_to?(:ln) ? ln(value) : value.strftime("%d-%m-%Y %H:%M:%S")
+        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       else
         strip_tags(value.to_s)
       end

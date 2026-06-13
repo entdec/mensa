@@ -17,11 +17,13 @@ module Mensa::Config
     class_methods do
       attr_reader :default_config
 
-      def option(name, default: nil, config_name: nil, dsl: nil, dsl_hash: nil, dsl_array: nil)
+      def option(name, default: nil, config_name: nil, name_attribute: nil, dsl: nil, dsl_hash: nil, dsl_array: nil, dsl_single_hash: nil)
         if dsl
           dsl_option(name, dsl)
         elsif dsl_hash
           dsl_hash(name, dsl_hash, config_name: config_name)
+        elsif dsl_single_hash
+          dsl_single_hash(name, dsl_single_hash, name_attribute:, default: default)
         elsif dsl_array
           dsl_array(name, dsl_array, config_name: config_name)
         else
@@ -77,6 +79,22 @@ module Mensa::Config
         define_method(option_name) do |name = nil, &block|
           config[config_name] ||= {}
           config[config_name][name] = klass.new(nil, &block).config
+        end
+      end
+
+      ###
+      # Define a DSL that builds a single hash
+      # by calling option :action, dsl_single_hash: Mensa::ActionDsl
+      #
+      def dsl_single_hash(option_name, klass, name_attribute: :name, default: nil)
+        config_name ||= option_name.to_s.to_sym
+
+        @default_config ||= {}
+        @default_config[option_name.to_sym] = default.nil? ? {} : {name_attribute => default}
+
+        define_method(option_name) do |name = nil, &block|
+          config[config_name] = {name_attribute => name}
+          config[config_name].merge!(klass.new(nil, &block).config.compact)
         end
       end
 
