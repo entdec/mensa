@@ -14,6 +14,11 @@ class UsersTable < Mensa::Base
     filter do
       collection -> { User.ROLES }
     end
+    render do
+      html do |user|
+        User.ROLES.find { |_, role| role == user.role }&.first
+      end
+    end
   end
   column(:customer_name) do
     attribute "customers.name"
