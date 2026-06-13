@@ -3,9 +3,17 @@
 class SearchOnlyUsersTable < Mensa::Base
   model User
 
-  column(:first_name)
-  column(:last_name)
-  column(:email)
+  column(:first_name) do
+    filter false
+  end
+
+  column(:last_name) do
+    filter false
+  end
+
+  column(:email) do
+    filter false
+  end
 
   link { |user| edit_user_path(user) }
 

@@ -1,6 +1,11 @@
 require "application_system_test_case"
 
 class BasicTablesTest < ApplicationSystemTestCase
+  # Row-action buttons are rendered before the data cells (row_actions_position = :front).
+  # Column layout: td1=checkbox, td2=actions, td3=first_name, td4=last_name,
+  #                td5=email, td6=role, td7=customer_name
+  FIRST_NAME_COL = "td:nth-child(3)"
+
   test "visiting the index" do
     visit users_url
 
@@ -45,7 +50,7 @@ class BasicTablesTest < ApplicationSystemTestCase
     first_row = first("tbody tr")
     expected_path = first_row["href"]
     assert expected_path.present?, "Row should carry an href"
-    first("tbody tr td:nth-child(3)").click
+    first("tbody tr #{FIRST_NAME_COL}").click
 
     assert_current_path expected_path
   end
@@ -60,16 +65,15 @@ class BasicTablesTest < ApplicationSystemTestCase
   end
 
   test "clicking a sortable column header sorts rows ascending" do
-    skip "fails"
     visit users_url
     assert_selector "tbody tr", wait: 15
 
     find("thead a", text: "First name").click
     assert_selector "tbody tr", wait: 15
 
-    first_names = all("tbody tr td:nth-child(3)").map(&:text)
-    assert_equal first_names, first_names.sort_by(&:downcase),
-      "First names should be in ascending order after sort"
+    first_names = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
+    assert_equal first_names, User.order(:first_name).limit(first_names.length).pluck(:first_name),
+      "First names should match the database ascending order after sort"
   end
 
   test "clicking the same sortable column header a second time sorts descending" do
@@ -78,16 +82,16 @@ class BasicTablesTest < ApplicationSystemTestCase
 
     find("thead a", text: "First name").click
     assert_selector "tbody tr", wait: 15
-    first_asc = first("tbody tr td:nth-child(3)").text
+    first_asc = first("tbody tr #{FIRST_NAME_COL}").text
 
     find("thead a", text: "First name").click
     assert_selector "tbody tr", wait: 15
 
-    last_names = all("tbody tr td:nth-child(3)").map(&:text)
-    assert_equal last_names, last_names.sort_by(&:downcase).reverse,
-      "First names should be in descending order after second click"
+    first_names_desc = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
+    assert_equal first_names_desc, User.order(first_name: :desc).limit(first_names_desc.length).pluck(:first_name),
+      "First names should match the database descending order after second click"
 
-    first_desc = last_names.first
+    first_desc = first_names_desc.first
     assert_not_equal first_asc, first_desc,
       "Ascending and descending first rows should differ"
   end
