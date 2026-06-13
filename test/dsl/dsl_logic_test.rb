@@ -3,19 +3,19 @@ require "pry"
 
 class DslLogicTest < ActiveSupport::TestCase
   test "it returns the quoted attribute" do
-    class TestColumnDsl
+    class TestColumnDsl # rubocop:disable Lint/ConstantDefinitionInBlock
       include Mensa::Config::DslLogic
 
       option :attribute
     end
 
-    class TestDsl
+    class TestDsl # rubocop:disable Lint/ConstantDefinitionInBlock
       include Mensa::Config::DslLogic
 
       option :column, dsl_hash: TestColumnDsl
     end
 
-    class SampleBase
+    class SampleBase # rubocop:disable Lint/ConstantDefinitionInBlock
       include Mensa::ConfigReaders
 
       defined_by TestDsl
@@ -28,7 +28,7 @@ class DslLogicTest < ActiveSupport::TestCase
       end
     end
 
-    class TestBase < SampleBase
+    class TestBase < SampleBase # rubocop:disable Lint/ConstantDefinitionInBlock
       definition do
         column :first_name
         column :last_name
@@ -42,13 +42,13 @@ class DslLogicTest < ActiveSupport::TestCase
   end
 
   test "dsl option stores false when explicitly passed" do
-    class NestedDsl
+    class NestedDsl # rubocop:disable Lint/ConstantDefinitionInBlock
       include Mensa::Config::DslLogic
 
       option :enabled, default: true
     end
 
-    class ParentDsl
+    class ParentDsl # rubocop:disable Lint/ConstantDefinitionInBlock
       include Mensa::Config::DslLogic
 
       option :name

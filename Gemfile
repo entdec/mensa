@@ -14,6 +14,7 @@ gem "selenium-webdriver", "~> 4.17"
 gem "debug"
 gem "overmind", require: false
 gem "rack-mini-profiler"
+gem "rails-i18n"
 
 group :development, :test do
   gem "standard", require: false

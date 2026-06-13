@@ -54,5 +54,8 @@
     <% end %>
   </ul>
   <hr class="mensa-table__add_filter__popover_container__separator">
-  <a class="mensa-table__add_filter__popover_container__clear" href="#" data-action="click->mensa-add-filter#reset">Clear</a>
+  <a class="mensa-table__add_filter__popover_container__clear" href="#" data-action="click->mensa-add-filter#reset">
+    <span class="flex-1"><%= t('mensa.tables.filters.show.clear') %></span>
+    <span class="mensa-table__add_filter__enter-hint">⎋ Esc</span>
+  </a>
 <% end %>

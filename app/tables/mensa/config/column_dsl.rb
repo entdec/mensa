@@ -16,7 +16,7 @@ module Mensa::Config
     option :internal, default: false
     option :method
     option :type
-    option :format, default: :db, dsl_single_hash: Mensa::Config::FormatDsl, name_attribute: :format
+    option :format, default: :long, dsl_single_hash: Mensa::Config::FormatDsl, name_attribute: :format
 
     option :visible, default: true
     option :render, dsl: Mensa::Config::RenderDsl

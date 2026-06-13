@@ -64,15 +64,17 @@
             }
 
             &__clear {
-                @apply block mt-3 text-gray-500 dark:text-gray-400 no-underline hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer;
+                @apply flex items-center gap-2 mt-3 text-gray-500 dark:text-gray-400 no-underline hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer;
             }
         }
     }
 }
 
-/* Show enter hint on hover or keyboard highlight — covers column list and value popover */
+/* Show key hint on hover or keyboard highlight — covers column list and value popover */
 .mensa-table__add_filter li:hover .mensa-table__add_filter__enter-hint,
-.mensa-table__add_filter li.highlighted .mensa-table__add_filter__enter-hint {
+.mensa-table__add_filter li.highlighted .mensa-table__add_filter__enter-hint,
+.mensa-table__add_filter__popover_container__clear:hover
+    .mensa-table__add_filter__enter-hint {
     display: inline-flex;
 }
 

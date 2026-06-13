@@ -1,5 +1,9 @@
 nl:
   mensa:
+    tables:
+      filters:
+        show:
+          clear: Annuleren
     actions: Acties
     save: Bewaar
     update_view: Bewaar weergave

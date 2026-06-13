@@ -41,9 +41,11 @@ module Mensa
       when Array
         value.to_fs(:db)
       when Date
-        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
+        I18n.l(value.in_time_zone(column.format.time_zone), format: column.format.format)
+        # value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       when Time, DateTime
-        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
+        I18n.l(value.in_time_zone(column.format.time_zone), format: column.format.format)
+        # value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       else
         column.sanitize? ? sanitize(value.to_s) : value.to_s.html_safe
       end
@@ -56,7 +58,7 @@ module Mensa
       when TrueClass, FalseClass
         value.to_s
       when Date
-        value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
+        I18n.l(value.in_time_zone(column.format.time_zone), format: column.format.format)
       when Time, DateTime
         value.in_time_zone(column.format.time_zone).to_fs(column.format.format)
       else

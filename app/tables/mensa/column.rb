@@ -90,7 +90,7 @@ module Mensa
     end
 
     def format
-      @format ||= Mensa::Format.new(config: config.dig(:format).presence || {format: :db}, column: self)
+      @format ||= Mensa::Format.new(config: config.dig(:format).presence || {}, column: self)
     end
 
     def human_name

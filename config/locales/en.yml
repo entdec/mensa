@@ -1,5 +1,9 @@
 en:
   mensa:
+    tables:
+      filters:
+        show:
+          clear: Cancel
     actions: Actions
     save: Save
     update_view: Update view

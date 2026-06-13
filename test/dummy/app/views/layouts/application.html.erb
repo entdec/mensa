@@ -18,7 +18,7 @@
   <body class="mx-10 my-10 bg-gray-100">
     <%= yield %>
     <div class="pt-2 text-center text-sm text-gray-500">
-      Locale: <%= link_to I18n.locale, url_for(locale: I18n.locale.to_sym == :en ? :nl : :en), class: "text-blue-500 hover:underline" %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
+      Timezone: <%= Time.zone %>, Locale: <%= link_to I18n.locale, url_for(locale: I18n.locale.to_sym == :en ? :nl : :en), class: "text-blue-500 hover:underline" %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
     </div>
     <div class="flex justify-center gap-4 pt-2 text-center text-sm text-gray-500">
       <%= link_to "Users", users_path, class: "text-blue-500 hover:underline" %>
