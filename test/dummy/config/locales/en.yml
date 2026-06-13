@@ -1,5 +1,11 @@
 en:
   activerecord:
+    constants:
+      user:
+        roles:
+          admin: Admin
+          user: User
+          guest: Guest
     attributes:
       user:
         customer_name: Customer

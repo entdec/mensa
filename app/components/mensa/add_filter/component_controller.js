@@ -77,6 +77,7 @@ export default class AddFilterComponentController extends ApplicationController 
 
     // Called by the + button — always shows all columns regardless of current filter
     openAllColumns(event) {
+        this._closePopover();
         this.filterColumns("");
         this.showList(event?.currentTarget);
     }

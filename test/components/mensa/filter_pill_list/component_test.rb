@@ -17,6 +17,19 @@ class FilterPillListComponentTest < ViewComponent::TestCase
     end
   end
 
+  class CollectionFilterTable < Mensa::Base
+    definition do
+      model User
+
+      column(:role) do
+        filter do
+          collection [["Admin", "admin"], ["User", "user"], ["Guest", "guest"]]
+          multiple true
+        end
+      end
+    end
+  end
+
   test "renders search and filter placeholder when filterable columns exist" do
     table = TestTable.new({})
 
@@ -33,5 +46,14 @@ class FilterPillListComponentTest < ViewComponent::TestCase
 
     assert_selector "input.mensa-table__search-bar__input[placeholder='Search']"
     assert_no_selector ".mensa-table__add_filter__trigger"
+  end
+
+  test "renders collection labels in filter pills" do
+    table = CollectionFilterTable.new(filters: {role: {value: ["admin", "user"]}})
+
+    render_inline(Mensa::FilterPillList::Component.new(table: table))
+
+    assert_selector ".mensa-filter-pill__value", text: "Admin, User"
+    assert_no_selector ".mensa-filter-pill__value", text: "admin, user"
   end
 end

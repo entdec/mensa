@@ -60,9 +60,18 @@ module Mensa
 
     def to_s
       parts = [column.human_name, operator_label]
-      formatted_value = value.is_a?(Array) ? value.join(", ") : value
       parts << formatted_value if formatted_value.present? && operator_with_value?
       parts.join(" ")
+    end
+
+    def formatted_value
+      options = collection_options
+
+      if value.is_a?(Array)
+        value.map { |entry| label_for_value(entry, options) }.join(", ")
+      else
+        label_for_value(value, options)
+      end
     end
 
     def filter_scope(record_scope)
@@ -139,6 +148,20 @@ module Mensa
     end
 
     private
+
+    def label_for_value(selected_value, options)
+      option = options.find { |_label, value| value.to_s == selected_value.to_s }
+      option ? option.first : selected_value
+    end
+
+    def collection_options
+      collection = column.filter&.collection
+      return [] if collection.blank?
+
+      collection.map do |item|
+        item.is_a?(Array) ? [item.first.to_s, item.last.to_s] : [item.to_s, item.to_s]
+      end
+    end
 
     # Unused at the moment
     def normalize(query)

@@ -1,5 +1,11 @@
 nl:
   activerecord:
+    constants:
+      user:
+        roles:
+          admin: Beheerder
+          user: Gebruiker
+          guest: Gast
     models:
       user:
         one: Gebruiker

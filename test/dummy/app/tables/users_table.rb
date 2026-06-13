@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class UsersTable < Mensa::Base
-  model User
-
   render do
     html
     csv
