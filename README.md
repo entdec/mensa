@@ -70,7 +70,7 @@ class UserTable < ApplicationTable
   end
 
   link { |user| edit_user_path(user) }
-  supports_views true # This table supports custom views
+
   show_header true
   view_columns_ordering false # Disabled for now
 

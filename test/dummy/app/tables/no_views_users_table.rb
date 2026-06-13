@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UsersTable < Mensa::Base
+class NoViewsUsersTable < Mensa::Base
   model User
 
   render do
@@ -39,15 +39,6 @@ class UsersTable < Mensa::Base
   view :default do
     name "All users"
     description "All users"
-  end
-
-  view :users do
-    name "Users"
-    filter :role do
-      operator :is
-      value "user"
-    end
-    hidden_columns [:role]
   end
 
   action :show do

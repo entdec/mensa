@@ -9,7 +9,6 @@ class HeaderlessUsersTable < Mensa::Base
 
   link { |user| edit_user_path(user) }
 
-  supports_views true
   show_header false
 
   scope do

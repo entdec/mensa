@@ -14,8 +14,6 @@ class NonCustomViewUsersTable < Mensa::Base
 
   link { |user| edit_user_path(user) }
 
-  supports_views true
-
   scope do
     User.all
   end

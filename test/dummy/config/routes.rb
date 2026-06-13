@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   resources :headerless_users, only: :index
   resources :scoped_users, only: :index
   resources :non_custom_view_users, only: :index
+  resources :no_views_users, only: :index
 
   mount Mensa::Engine => "/mensa"
 end

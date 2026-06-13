@@ -1,5 +1,9 @@
 <%= turbo_stream.replace "mensa-views-#{@table.table_id}" do %>
-  <%= render Mensa::Views::Component.new(table: @table) %>
+  <% if @table.views? %>
+    <%= render Mensa::Views::Component.new(table: @table) %>
+  <% else %>
+    <div id="mensa-views-<%= @table.table_id %>"></div>
+  <% end %>
 <% end %>
 
 <%= turbo_stream.update "filters-#{@table.table_id}" do %>

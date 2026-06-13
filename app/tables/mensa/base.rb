@@ -13,7 +13,6 @@ module Mensa
     config_reader :model
     config_reader :scope
     config_reader :link, call: false
-    config_reader :supports_views?
     config_reader :supports_custom_views?
     config_reader :supports_filters?
     config_reader :view_columns_ordering?
@@ -141,6 +140,10 @@ module Mensa
       views = system_views
       views += TableView.where(table_name: name).where(user: [nil, current_user])
       views
+    end
+
+    def views?
+      all_views.reject{_1.id == :default}.present?
     end
 
     # The user that owns custom views. Returns nil when the host application has

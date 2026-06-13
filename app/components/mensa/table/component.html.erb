@@ -1,6 +1,6 @@
 <div class="mensa-table"
      id="table-<%= table.table_id %>"
-     data-mensa-table-supports-views-value="<%= table.supports_views? %>"
+     data-mensa-table-supports-views-value="<%= table.views? %>"
      data-mensa-table-table-url-value="<%= table.path(turbo_frame_id: table.table_id, user_params: params) %>"
      data-mensa-table-save-view-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
      data-mensa-table-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
@@ -11,8 +11,12 @@
      data-mensa-table-mensa-column-customizer-outlet="[data-controller='mensa-column-customizer']">
   <div class="mensa-table__toolbar">
     <div class="mensa-table__search-container">
-      <% if table.supports_views? && table.show_header? %>
-        <%= render Mensa::Views::Component.new(table: table) %>
+      <% if table.show_header? %>
+        <% if table.views? %>
+          <%= render Mensa::Views::Component.new(table: table) %>
+        <% else %>
+          <div id="mensa-views-<%= table.table_id %>"></div>
+        <% end %>
       <% end %>
       <div class="flex min-w-0 flex-1" id="filters-<%= table.table_id %>">
         <%= render Mensa::FilterPillList::Component.new(table: table) %>

@@ -18,7 +18,7 @@
     <ul role="listbox">
       <% table.all_views.each do |view| %>
         <% is_selected = view.id == table.table_view&.id || (view.id == :default && table.table_view.blank?) %>
-        <% is_user_view = view.id.is_a?(String) && view.id.match?(/\A[0-9a-f-]{32,}\z/i) %>
+        <% is_user_view = view.is_a?(Mensa::TableView) %>
         <li class="mensa-table__views__option" role="option" data-view-id="<%= view.id %>" data-view-name="<%= view.name %>" data-mensa-views-target="view">
           <button class="mensa-table__views__option-btn" type="button" data-action="mensa-views#select" data-view-id="<%= view.id %>">
             <i class="mensa-table__views__option-check fa-solid fa-check<%= " invisible" unless is_selected %>"></i>

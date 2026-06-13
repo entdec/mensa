@@ -2,7 +2,7 @@ module Mensa
   class TablesController < ApplicationController
     def show
       config = params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, column_order: [], hidden_columns: [], params: {}).to_h
-      config[:filters] = params[:filters]&.to_unsafe_h || {}
+      config[:filters] = params[:filters].to_unsafe_h if params.key?(:filters)
       config[:params] = params[:params]&.to_unsafe_h || {}
 
       if params[:table_view_id]
