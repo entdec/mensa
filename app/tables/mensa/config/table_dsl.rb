@@ -30,7 +30,6 @@
 #     order last_name: :asc
 #     link { |user| edit_user_path(user) }
 #
-#     supports_filters true
 #
 #     action :activate do
 #       link { |user| edit_user_path(user) }
@@ -75,8 +74,7 @@ module Mensa::Config
 
     option :render, dsl: Mensa::Config::RenderDsl
 
-    option :supports_custom_views, default: false
-    option :supports_filters, default: true
+    option :supports_custom_views, default: true
     option :show_header, default: true
     # Whether the table allows to change column ordering
     option :view_columns_ordering, default: true
