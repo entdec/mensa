@@ -21,10 +21,10 @@
              data-mensa-filter-pill-list-target="searchInput"
              data-action="input->mensa-filter-pill-list#monitorSearch keydown.enter->mensa-filter-pill-list#search keydown.esc->mensa-filter-pill-list#resetSearch focus->mensa-filter-pill-list#searchFocused keydown.down->mensa-filter-pill-list#navigateDown keydown.up->mensa-filter-pill-list#navigateUp"
              value="<%= params[:query] %>">
-      <i class="mensa-table__search-bar__search-icon <%= Mensa.config.icons[:search] %>"></i>
+      <i class="mensa-table__search-bar__search-icon <%= Mensa.config.icons[:filter_pill_list_search] %>"></i>
     </div>
   </div>
   <button class="mensa-table__search-bar__clear hidden" type="button" data-mensa-filter-pill-list-target="resetSearchButton" data-action="mensa-filter-pill-list#resetSearch">
-    <i class="fas fa-xmark"></i>
+    <i class="<%= Mensa.config.icons[:filter_pill_list_clear] %>"></i>
   </button>
 </div>

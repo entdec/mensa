@@ -11,7 +11,7 @@
      data-mensa-views-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>">
   <button class="mensa-table__views__trigger" type="button" data-action="mensa-views#toggleDropdown" data-mensa-views-target="trigger" aria-haspopup="listbox">
     <span class="mensa-table__views__trigger-label" data-mensa-views-target="triggerLabel"><%= current_view_name %></span>
-    <i class="fa-solid fa-sort mensa-table__views__trigger-icon"></i>
+    <i class="<%= Mensa.config.icons[:views_trigger] %> mensa-table__views__trigger-icon"></i>
   </button>
 
   <div class="mensa-table__views__dropdown hidden" data-mensa-views-target="dropdown">
@@ -21,16 +21,16 @@
         <% is_user_view = view.is_a?(Mensa::TableView) %>
         <li class="mensa-table__views__option" role="option" data-view-id="<%= view.id %>" data-view-name="<%= view.name %>" data-mensa-views-target="view">
           <button class="mensa-table__views__option-btn" type="button" data-action="mensa-views#select" data-view-id="<%= view.id %>">
-            <i class="mensa-table__views__option-check fa-solid fa-check<%= " invisible" unless is_selected %>"></i>
+            <i class="mensa-table__views__option-check <%= Mensa.config.icons[:views_option_selected] %><%= " invisible" unless is_selected %>"></i>
             <span><%= view.name %></span>
           </button>
           <% if is_user_view %>
             <button class="mensa-table__views__option-menu" type="button" data-action="mensa-views#toggleSubmenu" data-view-id="<%= view.id %>" title="View options">
-              <i class="fa-solid fa-ellipsis"></i>
+              <i class="<%= Mensa.config.icons[:views_option_menu] %>"></i>
             </button>
           <% else %>
             <div class="mensa-table__views__option-system">
-              <i class="fa-solid fa-ban"></i>
+              <i class="<%= Mensa.config.icons[:views_option_system] %>"></i>
             </div>
           <% end %>
         </li>
@@ -39,15 +39,15 @@
 
     <div class="mensa-table__views__submenu hidden" data-mensa-views-target="submenu">
       <button class="mensa-table__views__submenu-item" type="button" data-action="mensa-views#renameView">
-        <i class="fa-solid fa-pencil"></i>
+        <i class="<%= Mensa.config.icons[:views_rename] %>"></i>
         <%= t(".rename_view", default: "Rename view") %>
       </button>
       <button class="mensa-table__views__submenu-item" type="button" data-action="mensa-views#duplicateView">
-        <i class="fa-solid fa-copy"></i>
+        <i class="<%= Mensa.config.icons[:views_duplicate] %>"></i>
         <%= t(".duplicate_view", default: "Duplicate view") %>
       </button>
       <button class="mensa-table__views__submenu-item mensa-table__views__submenu-item--danger" type="button" data-action="mensa-views#deleteView">
-        <i class="fa-solid fa-trash"></i>
+        <i class="<%= Mensa.config.icons[:views_delete] %>"></i>
         <%= t(".delete_view", default: "Delete view") %>
       </button>
     </div>

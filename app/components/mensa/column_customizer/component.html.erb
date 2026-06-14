@@ -4,7 +4,7 @@
      data-mensa-column-customizer-turbo-frame-id-value="<%= table.table_id %>"
      data-mensa-column-customizer-mensa-table-outlet="#table-<%= table.table_id %>">
   <button class="mensa-table__control_bar__button" type="button" data-action="click->mensa-column-customizer#toggle">
-    <i class="<%= Mensa.config.icons[:control_bar_edit] %>"></i>
+    <i class="<%= Mensa.config.icons[:column_customizer_toggle] %>"></i>
   </button>
   <div class="mensa-table__column_customizer__popover hidden" data-mensa-column-customizer-target="popover">
     <p class="mensa-table__column_customizer__heading">Columns</p>
@@ -16,13 +16,13 @@
             data-visible="<%= column.visible?.to_s %>"
             draggable="true"
             data-action="dragstart->mensa-column-customizer#dragStart dragover->mensa-column-customizer#dragOver drop->mensa-column-customizer#drop dragend->mensa-column-customizer#dragEnd">
-          <i class="mensa-table__column_customizer__handle fa-solid fa-grip-vertical"></i>
+          <i class="mensa-table__column_customizer__handle <%= Mensa.config.icons[:column_customizer_handle] %>"></i>
           <span class="mensa-table__column_customizer__name<%= !column.visible? ? " mensa-table__column_customizer__name--hidden" : "" %>">
             <%= column.human_name %>
           </span>
           <button class="mensa-table__column_customizer__visibility" type="button" data-action="click->mensa-column-customizer#toggleVisibility">
-            <i class="fa-solid fa-eye"></i>
-            <i class="fa-solid fa-eye-slash"></i>
+            <i data-icon-role="visible" class="<%= Mensa.config.icons[:column_customizer_visibility_on] %>"></i>
+            <i data-icon-role="hidden" class="<%= Mensa.config.icons[:column_customizer_visibility_off] %>"></i>
           </button>
         </li>
       <% end %>

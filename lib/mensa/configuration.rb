@@ -41,29 +41,70 @@ module Mensa
     option :logger, default: Rails.logger
     option :base_controller, default: "::ApplicationController"
 
-    # TODO: add all icons below
     option :icons, default: {
-      order_indicator_asc: "fa-solid fa-arrow-up",
-      order_indicator_desc: "fa-solid fa-arrow-down",
-      control_bar_search: "fa-solid fa-magnifying-glass",
-      control_bar_filter: "fa-solid fa-filter",
-      control_bar_edit: "fa-solid fa-table-columns",
-      control_bar_compress: "fa-solid fa-compress",
+      add_filter_trigger: "fa-solid fa-circle-plus",
+      add_filter_selected: "fa-solid fa-check",
+      column_customizer_toggle: "fa-solid fa-table-columns",
+      column_customizer_handle: "fa-solid fa-grip-vertical",
+      column_customizer_visibility_on: "fa-solid fa-eye",
+      column_customizer_visibility_off: "fa-solid fa-eye-slash",
+      control_bar_reset: "fa-solid fa-rotate-left",
+      control_bar_save_dropdown: "fa-solid fa-chevron-down",
+      control_bar_view_filters_show: "fa-solid fa-eye",
+      control_bar_view_filters_hide: "fa-solid fa-eye-slash",
       control_bar_export: "fa-solid fa-file-export",
-      search: "fa-solid fa-magnifying-glass",
-      filters_add_filter: "fa-solid fa-plus"
+      empty_state_icon: "fa-solid fa-magnifying-glass",
+      filter_pill_remove: "fa-solid fa-xmark",
+      filter_pill_list_search: "fa-solid fa-magnifying-glass",
+      filter_pill_list_clear: "fa-solid fa-xmark",
+      header_order_indicator_asc: "fa-solid fa-arrow-up",
+      header_order_indicator_desc: "fa-solid fa-arrow-down",
+      views_trigger: "fa-solid fa-sort",
+      views_option_selected: "fa-solid fa-check",
+      views_option_menu: "fa-solid fa-ellipsis",
+      views_option_system: "fa-solid fa-ban",
+      views_rename: "fa-solid fa-pencil",
+      views_duplicate: "fa-solid fa-copy",
+      views_delete: "fa-solid fa-trash",
+      exports_dialog_close: "fa-solid fa-xmark",
+      exports_dialog_submit: "fa-solid fa-file-export",
+      exports_list_delete: "fa-solid fa-trash",
+      exports_list_download: "fa-solid fa-download",
+      exports_list_processing: "fa-solid fa-spinner fa-spin",
+      tables_standard_error: "fa-solid fa-circle-exclamation"
     }
     # PRO
     # option :icons, default: {
-    #   order_indicator_asc: "fa-regular fa-arrow-up-short-wide",
-    #   order_indicator_desc: "fa-regular fa-arrow-down-wide-short",
-    #   order_indicator: "fa-regular fa-arrow-down-arrow-up",
-    #   control_bar_search: "fa-light fa-magnifying-glass",
-    #   control_bar_filter: "fa-light fa-bars-filter",
-    #   control_bar_edit: "fa-light fa-columns-3",
-    #   control_bar_compress: "fa-light fa-compress",
+    #   add_filter_trigger: "fa-light fa-circle-plus",
+    #   add_filter_selected: "fa-light fa-check",
+    #   column_customizer_toggle: "fa-light fa-columns-3",
+    #   column_customizer_handle: "fa-light fa-grip-vertical",
+    #   column_customizer_visibility_on: "fa-light fa-eye",
+    #   column_customizer_visibility_off: "fa-light fa-eye-slash",
+    #   control_bar_reset: "fa-light fa-rotate-left",
+    #   control_bar_save_dropdown: "fa-light fa-chevron-down",
+    #   control_bar_view_filters_show: "fa-light fa-eye",
+    #   control_bar_view_filters_hide: "fa-light fa-eye-slash",
     #   control_bar_export: "fa-light fa-file-export",
-    #   search: "fa-light fa-magnifying-glass"
+    #   empty_state_icon: "fa-light fa-magnifying-glass",
+    #   filter_pill_remove: "fa-light fa-xmark",
+    #   filter_pill_list_search: "fa-light fa-magnifying-glass",
+    #   filter_pill_list_clear: "fa-light fa-xmark",
+    #   header_order_indicator_asc: "fa-regular fa-arrow-up-short-wide",
+    #   header_order_indicator_desc: "fa-regular fa-arrow-down-wide-short",
+    #   views_trigger: "fa-light fa-sort",
+    #   views_option_selected: "fa-light fa-check",
+    #   views_option_menu: "fa-light fa-ellipsis",
+    #   views_option_system: "fa-light fa-ban",
+    #   views_rename: "fa-light fa-pencil",
+    #   views_duplicate: "fa-light fa-copy",
+    #   views_delete: "fa-light fa-trash",
+    #   exports_dialog_close: "fa-light fa-xmark",
+    #   exports_dialog_submit: "fa-light fa-file-export",
+    #   exports_list_delete: "fa-light fa-trash",
+    #   exports_list_download: "fa-light fa-download",
+    #   exports_list_processing: "fa-light fa-spinner fa-spin",
+    #   tables_standard_error: "fa-light fa-circle-exclamation"
     # }
 
     option :callbacks, default: {
@@ -81,6 +122,7 @@ module Mensa
       end
     }
 
+    # :front or :back (default)
     option :row_actions_position, default: :back
     # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
     option :search, default: :basic

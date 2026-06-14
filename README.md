@@ -23,6 +23,9 @@ Features:
 - [X] Exports can be scheduled to run recurring (daily/weekly/monthly/quarterly/bi-yearly/yearly)
       You will have to bring your own mailer, see configuration for details.
 
+TODO:
+- [ ] ...
+
 Nice to haves:
 
 - [ ] group by

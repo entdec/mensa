@@ -6,7 +6,7 @@
           type="button"
           title="<%= t("mensa.add_filter.add") %>"
           data-action="mensa-add-filter#openAllColumns">
-    <i class="fa-solid fa-circle-plus"></i>
+    <i class="<%= Mensa.config.icons[:add_filter_trigger] %>"></i>
   </button>
 
   <ul class="hidden fixed z-50 max-h-96 overflow-auto rounded-lg bg-white p-2 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 sm:text-sm"
@@ -18,7 +18,7 @@
           data-filter-column-name="<%= column.name %>">
         <div class="label block flex-1 truncate font-normal"><%= column.human_name %></div>
         <div class="check hidden flex items-center text-primary-600">
-          <div class="fal fa-check"></div>
+          <div class="<%= Mensa.config.icons[:add_filter_selected] %>"></div>
         </div>
         <span class="mensa-table__add_filter__enter-hint">↵ Enter</span>
       </li>

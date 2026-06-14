@@ -5,7 +5,7 @@
     <header class="mensa-table__export-dialog__header">
       <h2 class="mensa-table__export-dialog__title"><%= t("mensa.exports.title", default: "Export %{table}", table: table.name.to_s.humanize) %></h2>
       <button class="mensa-table__export-dialog__close" type="button" data-action="mensa-table#cancelExport" aria-label="<%= t("mensa.exports.close", default: "Close") %>">
-        <i class="fa-solid fa-xmark"></i>
+        <i class="<%= Mensa.config.icons[:exports_dialog_close] %>"></i>
       </button>
     </header>
 
@@ -65,7 +65,7 @@
             <%= t("mensa.exports.cancel", default: "Cancel") %>
           </button>
           <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--primary" type="submit">
-            <i class="fa-solid fa-file-export"></i>
+            <i class="<%= Mensa.config.icons[:exports_dialog_submit] %>"></i>
             <%= t("mensa.exports.submit", default: "Export") %>
           </button>
         </div>

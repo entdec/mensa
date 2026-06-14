@@ -2,7 +2,7 @@
   <% if column.sortable? %>
     <%= link_to table.path(order: {column.name => column.next_sort_direction}, turbo_frame_id: table.table_id), "data-turbo-frame": "_self", class: "order cursor-pointer" do %>
       <span><%= column.human_name %></span>
-      <i class="<%= Mensa.config.icons["order_indicator#{column.sort_direction.to_s.present? ? "_#{column.sort_direction}" : ""}".to_sym] %>"></i>
+      <i class="<%= Mensa.config.icons["header_order_indicator#{column.sort_direction.to_s.present? ? "_#{column.sort_direction}" : ""}".to_sym] %>"></i>
     <% end %>
   <% else %>
     <div class="container">

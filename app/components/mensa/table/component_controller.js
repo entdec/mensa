@@ -375,10 +375,15 @@ export default class TableComponentController extends ApplicationController {
             const hidden = this.element.classList.contains(
                 "mensa-table--view-filters-hidden",
             );
+            const visibleIconClass =
+                this.eyeButtonTarget.dataset.iconVisibleClass || "";
+            const hiddenIconClass =
+                this.eyeButtonTarget.dataset.iconHiddenClass || "";
+
             // Replace innerHTML so FontAwesome's MutationObserver re-processes the new <i>
             this.eyeButtonTarget.innerHTML = hidden
-                ? '<i class="fa-solid fa-eye"></i>'
-                : '<i class="fa-solid fa-eye-slash"></i>';
+                ? `<i class="${visibleIconClass}"></i>`
+                : `<i class="${hiddenIconClass}"></i>`;
         }
     }
 

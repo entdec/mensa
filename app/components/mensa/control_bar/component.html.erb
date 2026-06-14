@@ -6,7 +6,7 @@
 
     <div class="mensa-table__save-reset hidden" data-mensa-table-target="saveResetButtons">
       <button class="mensa-table__control_bar__button" type="button" title="<%= t(".reset", default: "Reset") %>" data-action="mensa-table#cancelFiltersAndSearch">
-        <i class="fa-solid fa-rotate-left"></i>
+        <i class="<%= Mensa.config.icons[:control_bar_reset] %>"></i>
       </button>
       <% if table.current_user && table.supports_custom_views? %>
         <div class="relative">
@@ -15,7 +15,7 @@
           </button>
           <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="saveSplit" data-action="mensa-table#toggleSaveDropdown">
             <%= t("mensa.save") %>
-            <i class="fa-solid fa-chevron-down text-xs"></i>
+            <i class="<%= Mensa.config.icons[:control_bar_save_dropdown] %> text-xs"></i>
           </button>
           <ul class="mensa-table__control_bar__save-dropdown hidden" data-mensa-table-target="saveDropdown">
             <li>
@@ -33,8 +33,13 @@
       <% end %>
     </div>
 
-    <button class="mensa-table__control_bar__button hidden" type="button" data-mensa-table-target="eyeButton" data-action="click->mensa-table#toggleViewFilters">
-      <i class="fa-solid fa-eye"></i>
+    <button class="mensa-table__control_bar__button hidden"
+            type="button"
+            data-mensa-table-target="eyeButton"
+            data-action="click->mensa-table#toggleViewFilters"
+            data-icon-visible-class="<%= Mensa.config.icons[:control_bar_view_filters_show] %>"
+            data-icon-hidden-class="<%= Mensa.config.icons[:control_bar_view_filters_hide] %>">
+      <i class="<%= Mensa.config.icons[:control_bar_view_filters_show] %>"></i>
     </button>
 
     <% if table.exportable? %>

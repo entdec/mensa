@@ -28,12 +28,12 @@
             @apply flex-none text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer;
         }
 
-        /* Show the correct eye icon based on the row's data-visible attribute.
-           Works with both FA CSS (i elements) and FA SVG mode (svg elements). */
-        &__row[data-visible="true"] .fa-eye-slash {
+        /* Show the correct visibility icon based on the row's data-visible attribute
+           without depending on specific Font Awesome class names. */
+        &__row[data-visible="true"] [data-icon-role="hidden"] {
             display: none;
         }
-        &__row[data-visible="false"] .fa-eye {
+        &__row[data-visible="false"] [data-icon-role="visible"] {
             display: none;
         }
     }

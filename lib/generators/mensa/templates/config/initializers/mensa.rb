@@ -9,14 +9,35 @@ Mensa.setup do |config|
 
   # Override icons in use
   config.icons = {
-    order_indicator_asc: "fa-solid fa-arrow-up",
-    order_indicator_desc: "fa-solid fa-arrow-down",
-    control_bar_search: "fa-solid fa-magnifying-glass",
-    control_bar_filter: "fa-solid fa-filter",
-    control_bar_edit: "fa-solid fa-table-columns",
-    control_bar_compress: "fa-solid fa-compress",
+    add_filter_trigger: "fa-solid fa-circle-plus",
+    add_filter_selected: "fal fa-check",
+    column_customizer_toggle: "fa-solid fa-table-columns",
+    column_customizer_handle: "fa-solid fa-grip-vertical",
+    column_customizer_visibility_on: "fa-solid fa-eye",
+    column_customizer_visibility_off: "fa-solid fa-eye-slash",
+    control_bar_reset: "fa-solid fa-rotate-left",
+    control_bar_save_dropdown: "fa-solid fa-chevron-down",
+    control_bar_view_filters_show: "fa-solid fa-eye",
+    control_bar_view_filters_hide: "fa-solid fa-eye-slash",
     control_bar_export: "fa-solid fa-file-export",
-    search: "fa-solid fa-magnifying-glass",
-    filters_add_filter: "fa-solid fa-plus"
+    empty_state_icon: "fa-solid fa-magnifying-glass",
+    filter_pill_remove: "fa-solid fa-xmark",
+    filter_pill_list_search: "fa-solid fa-magnifying-glass",
+    filter_pill_list_clear: "fa-solid fa-xmark",
+    header_order_indicator_asc: "fa-solid fa-arrow-up",
+    header_order_indicator_desc: "fa-solid fa-arrow-down",
+    views_trigger: "fa-solid fa-sort",
+    views_option_selected: "fa-solid fa-check",
+    views_option_menu: "fa-solid fa-ellipsis",
+    views_option_system: "fa-solid fa-ban",
+    views_rename: "fa-solid fa-pencil",
+    views_duplicate: "fa-solid fa-copy",
+    views_delete: "fa-solid fa-trash",
+    exports_dialog_close: "fa-solid fa-xmark",
+    exports_dialog_submit: "fa-solid fa-file-export",
+    exports_list_delete: "fa-solid fa-trash",
+    exports_list_download: "fa-solid fa-download",
+    exports_list_processing: "fa-solid fa-spinner fa-spin",
+    tables_standard_error: "fa-solid fa-circle-exclamation"
   }
 end

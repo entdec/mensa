@@ -11,7 +11,7 @@
             class: "mensa-table__export-dialog__delete",
             form_class: "mensa-table__export-dialog__delete-form",
             aria: {label: t("mensa.exports.delete", default: "Delete export") } do %>
-            <i class="fa-solid fa-trash"></i>
+            <i class="<%= Mensa.config.icons[:exports_list_delete] %>"></i>
           <% end %>
 
           <div class="mensa-table__export-dialog__item-info">
@@ -24,7 +24,7 @@
           <div class="mensa-table__export-dialog__item-action">
             <% if export.downloadable? %>
               <%= link_to mensa.download_table_export_path(export.table_name, export), class: "mensa-table__export-dialog__download", data: {turbo: false} do %>
-                <i class="fa-solid fa-download"></i>
+                <i class="<%= Mensa.config.icons[:exports_list_download] %>"></i>
                 <%= t("mensa.exports.download", default: "Download") %>
               <% end %>
             <% elsif export.failed? %>
@@ -33,7 +33,7 @@
               <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--pending"><%= t("mensa.exports.waiting", default: "Waiting") %></span>
             <% else %>
               <span class="mensa-table__export-dialog__status mensa-table__export-dialog__status--pending">
-                <i class="fa-solid fa-spinner fa-spin"></i>
+                <i class="<%= Mensa.config.icons[:exports_list_processing] %>"></i>
                 <%= t("mensa.exports.processing", default: "Preparing…") %>
               </span>
             <% end %>
