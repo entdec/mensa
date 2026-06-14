@@ -36,8 +36,8 @@ class ColumnTest < ActiveSupport::TestCase
     t = FormatColumnTable.new({})
     subject = t.column(:created_at)
 
-    assert_equal({format: :db}, subject.config[:format])
-    assert_equal :db, subject.format.format
+    assert_equal({format: :long}, subject.config[:format])
+    assert_equal :long, subject.format.format
     assert_equal Time.zone, subject.format.time_zone
   end
 

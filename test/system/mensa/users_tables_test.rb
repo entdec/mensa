@@ -5,9 +5,9 @@ class UsersTablesTest < ApplicationSystemTestCase
   # Column layout: td1=checkbox, td2=actions, td3=first_name, td4=last_name,
   #                td5=email, td6=role, td7=customer_name
   FIRST_NAME_COL = "td:nth-child(3)"
-  LAST_NAME_COL  = "td:nth-child(4)"
-  EMAIL_COL      = "td:nth-child(5)"
-  ROLE_COL       = "td:nth-child(6)"
+  LAST_NAME_COL = "td:nth-child(4)"
+  EMAIL_COL = "td:nth-child(5)"
+  ROLE_COL = "td:nth-child(6)"
 
   setup do
     # Visit the page first so we can clear this origin's localStorage,
@@ -57,7 +57,7 @@ class UsersTablesTest < ApplicationSystemTestCase
 
     first_names = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
     assert_equal first_names, User.order(:first_name).limit(first_names.length).pluck(:first_name)
-                 "First names should be in ascending order after sort"
+    "First names should be in ascending order after sort"
   end
 
   test "clicking the same sortable column header a second time sorts descending" do
@@ -73,11 +73,11 @@ class UsersTablesTest < ApplicationSystemTestCase
 
     last_names = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
     assert_equal last_names, User.order(first_name: :desc).limit(last_names.length).pluck(:first_name),
-                 "First names should be in descending order after second click"
+      "First names should be in descending order after second click"
 
     first_desc = last_names.first
     assert_not_equal first_asc, first_desc,
-                     "Ascending and descending first rows should differ"
+      "Ascending and descending first rows should differ"
   end
 
   test "sorting by last name orders rows lexicographically" do
@@ -128,7 +128,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     asc_again_first = first("tbody tr #{LAST_NAME_COL}").text
 
     assert_equal asc_first, asc_again_first,
-                 "After sort-cycle completes, ascending first row should match the first ascending sort"
+      "After sort-cycle completes, ascending first row should match the first ascending sort"
   end
 
   # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     add_filter(column: "role", value: "user")
 
     assert_selector ".mensa-filter-pill__column", text: "Role"
-    assert_selector ".mensa-filter-pill__value", text: "user"
+    assert_selector ".mensa-filter-pill__value", text: "User"
   end
 
   test "clicking the remove button on a filter pill clears the filter" do
@@ -217,7 +217,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     find(".mensa-filter-pill__chip").click
     # The value popover re-opens with "user" pre-selected
     assert_selector "[data-mensa-add-filter-target='valueOption'][data-value='user'][data-selected='true']",
-                    wait: 3
+      wait: 3
   end
 
   test "editing a filter pill and selecting a new value updates the table" do
@@ -225,13 +225,13 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_selector "tbody tr", wait: 3
 
     add_filter(column: "role", value: "user")
-    assert_selector ".mensa-filter-pill__value", text: "user"
+    assert_selector ".mensa-filter-pill__value", text: "User"
 
     # Reopen the pill and change to "guest"
     find(".mensa-filter-pill__chip").click
     find("[data-mensa-add-filter-target='valueOption'][data-value='guest']", wait: 3).click
 
-    assert_selector ".mensa-filter-pill__value", text: "guest", wait: 3
+    assert_selector ".mensa-filter-pill__value", text: "Guest", wait: 3
     # Christian Klein (sap_user) is the sole guest
     assert_selector "tbody tr", count: 1, wait: 3
     assert_selector "tbody", text: "Klein"
@@ -248,7 +248,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     # Reopen the pill and switch to "Is not"
     find(".mensa-filter-pill__chip").click
     find("[data-mensa-add-filter-target='operatorOption'][data-operator='isnt']",
-         wait: 3).click
+      wait: 3).click
 
     # Everyone except the admin should now appear (≥2 rows)
     assert_selector "tbody tr", minimum: 2, wait: 3
@@ -306,18 +306,18 @@ class UsersTablesTest < ApplicationSystemTestCase
     open_column_customizer
 
     # Move "Email" before "First name" using simulated HTML5 drag events
-    email_row      = find("[data-column-name='email']")
+    email_row = find("[data-column-name='email']")
     first_name_row = find("[data-column-name='first_name']")
     drag_html5(email_row, first_name_row, above: true)
 
     assert_selector "thead th:nth-child(3)", text: "Email", wait: 3
 
     headers = table_headers
-    email_idx      = headers.index { |h| h.include?("Email") }
+    email_idx = headers.index { |h| h.include?("Email") }
     first_name_idx = headers.index { |h| h.include?("First name") }
 
     assert email_idx < first_name_idx,
-           "Email (at #{email_idx}) should appear before First name (at #{first_name_idx}) after drag"
+      "Email (at #{email_idx}) should appear before First name (at #{first_name_idx}) after drag"
   end
 
   test "dragged column order persists to localStorage and survives a page reload" do
@@ -325,7 +325,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_selector "tbody tr", wait: 3
 
     open_column_customizer
-    email_row      = find("[data-column-name='email']")
+    email_row = find("[data-column-name='email']")
     first_name_row = find("[data-column-name='first_name']")
     drag_html5(email_row, first_name_row, above: true)
     assert_selector "thead th", wait: 3
@@ -333,12 +333,12 @@ class UsersTablesTest < ApplicationSystemTestCase
     visit users_url
     assert_selector "thead th:nth-child(3)", text: "Email", wait: 3
 
-    headers       = table_headers
-    email_idx     = headers.index { |h| h.include?("Email") }
+    headers = table_headers
+    email_idx = headers.index { |h| h.include?("Email") }
     first_name_idx = headers.index { |h| h.include?("First name") }
 
     assert email_idx < first_name_idx,
-           "Column order should persist after page reload"
+      "Column order should persist after page reload"
   end
 
   # ---------------------------------------------------------------------------
@@ -388,7 +388,7 @@ class UsersTablesTest < ApplicationSystemTestCase
       .find("button[data-action='mensa-views#select']").click
     assert_selector ".mensa-table__views__trigger-label", text: "Admins only", wait: 3
     find("[data-mensa-table-target='eyeButton']").click
-    assert_selector ".mensa-filter-pill__value", text: "admin", wait: 3
+    assert_selector ".mensa-filter-pill__value", text: "Admin", wait: 3
   end
 
   # ---------------------------------------------------------------------------
@@ -532,8 +532,8 @@ class UsersTablesTest < ApplicationSystemTestCase
   end
 
   def remove_filter(column:)
-    find('.mensa-filter-pill__chip span.mensa-filter-pill__column', text: column).send(:parent).hover()
-    find('.mensa-filter-pill__remove').click
+    find(".mensa-filter-pill__chip span.mensa-filter-pill__column", text: column).send(:parent).hover
+    find(".mensa-filter-pill__remove").click
   end
 
   # Types a search query into the search bar and submits it with Enter.
