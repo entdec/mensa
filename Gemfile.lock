@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.5.0)
+    mensa (0.6.0)
       csv
       importmap-rails
       pagy (>= 43)
@@ -11,7 +11,7 @@ PATH
       stimulus-rails
       tailwindcss-rails (~> 3.3)
       turbo-rails
-      view_component (~> 3.11)
+      view_component (>= 3)
 
 GEM
   remote: https://rubygems.org/
