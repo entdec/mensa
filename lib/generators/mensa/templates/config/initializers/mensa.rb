@@ -26,6 +26,7 @@ Mensa.setup do |config|
     filter_pill_list_clear: "fa-solid fa-xmark",
     header_order_indicator_asc: "fa-solid fa-arrow-up",
     header_order_indicator_desc: "fa-solid fa-arrow-down",
+    action_column_header: "fa-solid fa-ellipsis",
     views_trigger: "fa-solid fa-sort",
     views_option_selected: "fa-solid fa-check",
     views_option_menu: "fa-solid fa-ellipsis",

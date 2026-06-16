@@ -27,11 +27,11 @@
             </th>
           <% end %>
           <% if table.actions? && Mensa.config.row_actions_position == :front %>
-            <th><%= t("mensa.actions") %></th>
+            <th class="actions" aria-label="Actions"><i class="<%= Mensa.config.icons[:action_column_header] %>" aria-hidden="true"></i></th>
           <% end %>
           <%= render(Mensa::Header::Component.with_collection(table.display_columns, table: table)) %>
           <% if table.actions? && Mensa.config.row_actions_position == :back %>
-            <th>Actions</th>
+            <th class="actions" aria-label="Actions"><i class="<%= Mensa.config.icons[:action_column_header] %>" aria-hidden="true"></i></th>
           <% end %>
         </tr>
       </thead>

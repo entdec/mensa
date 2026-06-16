@@ -4,7 +4,6 @@ en:
       filters:
         show:
           clear: Cancel
-    actions: Actions
     save: Save
     update_view: Update view
     save_view: Save as new view

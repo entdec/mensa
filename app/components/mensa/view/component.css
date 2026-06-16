@@ -9,12 +9,10 @@
     top: 0;
     left: 0;
     z-index: 10;
-    @apply pt-3 pb-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
+    @apply pt-[7px] pb-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
 
     &__content {
-        /* h-4 matches the .container height used inside header th cells.
-           pl-3 aligns the checkbox with the checkbox column (w-8, pl-4). */
-        @apply h-4 flex items-center gap-2 pl-4;
+        @apply h-5 flex items-center gap-2 pl-2;
     }
 
     &__count {
@@ -30,11 +28,15 @@
     @apply bg-white dark:bg-gray-500 dark:border-gray-700;
 
     .mensa-table__checkbox-col {
-        @apply w-8;
+        @apply w-7 min-w-7 pl-1 pr-0 text-center;
+    }
+
+    .mensa-table__checkbox-col .container {
+        @apply justify-center;
     }
 
     .mensa-table__select-all {
-        @apply h-4 w-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer;
+        @apply inline-block h-4 w-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer;
         appearance: none;
 
         &:hover {
@@ -85,10 +87,6 @@
             @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
 
             /* tr and th moved to header */
-
-            .mensa-table__checkbox-col {
-                @apply pr-2;
-            }
         }
 
         tbody {
@@ -99,7 +97,7 @@
             }
 
             td {
-                @apply px-2 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+                @apply px-2 pt-[5px] pb-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
 
                 &:first-child {
                     @apply pl-4;
@@ -109,6 +107,16 @@
                     @apply pr-4;
                 }
             }
+        }
+
+        thead th.mensa-table__checkbox-col,
+        tbody td.mensa-table__checkbox-col {
+            @apply w-7 min-w-7 pl-1 pr-0 text-center;
+        }
+
+        thead th.actions,
+        tbody td.actions {
+            @apply w-px whitespace-nowrap px-2 text-center;
         }
     }
 }

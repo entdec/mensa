@@ -4,7 +4,6 @@ nl:
       filters:
         show:
           clear: Annuleren
-    actions: Acties
     save: Bewaar
     update_view: Bewaar weergave
     save_view: Bewaar als nieuwe weergave

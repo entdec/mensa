@@ -4,7 +4,7 @@
         }
 
         th {
-            @apply top-0 z-10 py-2 px-2 align-bottom text-left text-sm font-medium text-gray-500 border-b border-gray-200 dark:border-gray-600 whitespace-nowrap;
+            @apply top-0 z-10 py-1 pt-[7px] pb-2 px-2 align-bottom text-left text-sm font-medium text-gray-500 border-b border-gray-200 dark:border-gray-600 whitespace-nowrap;
 
             &:first-child {
                 @apply pl-4;
@@ -15,11 +15,15 @@
             }
 
             .container {
-                @apply h-4 flex items-center;
+                @apply h-5 flex items-center;
             }
 
             .title {
                 @apply w-full;
+            }
+
+            &.actions {
+                @apply text-center;
             }
 
             /* For sortable columns the link takes over the cell's padding so
@@ -28,7 +32,7 @@
                 @apply p-0;
 
                 .order {
-                    @apply flex items-center gap-1 w-full py-2 px-2;
+                    @apply flex items-center gap-1 w-full pt-[7px] pb-2 px-2;
                 }
 
                 &:first-child .order {
@@ -38,14 +42,6 @@
                 &:last-child .order {
                     @apply pr-4;
                 }
-            }
-        }
-    }
-
-    &__column_edit {
-        thead {
-            th {
-                @apply cursor-grab;
             }
         }
     }
