@@ -1,6 +1,6 @@
 require "csv"
 require "securerandom"
-require "stringio"
+require "tempfile"
 
 module Mensa
   # Generates the CSV for a Mensa::Export, attaches it to the export's +asset+
@@ -21,17 +21,19 @@ module Mensa
         return
       end
 
-      data, filename, content_type = generate(table, export)
+      tempfile, filename, content_type = generate(table, export)
 
       export.asset.purge if export.asset.attached?
-      export.asset.attach(io: StringIO.new(data), filename: filename, content_type: content_type)
+      export.asset.attach(io: tempfile, filename: filename, content_type: content_type)
       finalize(export, status: "completed", filename: filename)
 
       Mensa.config.callbacks[:export_complete]&.call(export)
     rescue => e
-      Mensa.config.logger&.error("Mensa::ExportJob failed for export #{export_id}: #{e.class}: #{e.message}")
+      Mensa.config.logger&.error("Mensa::ExportJob failed for export #{export&.id}: #{e.class}: #{e.message}")
       finalize(export, status: "failed") if export
       raise
+    ensure
+      tempfile&.close!
     end
 
     private
@@ -56,35 +58,63 @@ module Mensa
     end
 
     def generate(table, export)
-      io = StringIO.new
+      base_filename = "#{export.table_name}_export_#{export.created_at.strftime("%Y-%m-%d-%H%M%S")}"
+      csv_file = write_csv_file(table, export, base_filename)
+
+      if table.export_with_password?
+        zip_file = write_zip_file(csv_file, export, base_filename)
+        csv_file.close!
+        [zip_file, "#{base_filename}.zip", "application/zip"]
+      else
+        [csv_file, "#{base_filename}.csv", "text/csv"]
+      end
+    end
+
+    def write_csv_file(table, export, base_filename)
+      tempfile = Tempfile.new([base_filename, ".csv"], binmode: true)
+
       # A UTF-8 BOM makes spreadsheet programs such as Excel detect the encoding
       # correctly. The "plain" CSV variant omits it for maximum compatibility
       # with programmatic consumers.
-      io.write("\uFEFF") if export.format == "csv_excel"
+      tempfile.write("\uFEFF") if export.format == "csv_excel"
 
-      csv = CSV.new(io)
+      csv = CSV.new(tempfile)
       csv << table.display_columns.map(&:name)
       export_rows(table, export).each do |row|
         csv << table.display_columns.map { |column| Mensa::Cell.new(row: row, column: column).render(:csv) }
       end
-      io.rewind
-      data = io.read
+      csv.close
+      tempfile.open
+      tempfile.binmode
+      tempfile.rewind
+      tempfile
+    rescue
+      tempfile&.close!
+      raise
+    end
 
-      base_filename = "#{export.table_name}_export_#{export.created_at.strftime("%Y-%m-%d-%H%M%S")}"
+    def write_zip_file(csv_file, export, base_filename)
+      require "zip"
 
-      if table.export_with_password?
-        require "zip"
-        password = SecureRandom.hex(6)
-        encrypter = Zip::TraditionalEncrypter.new(password)
-        zip_io = Zip::OutputStream.write_buffer(encrypter: encrypter) do |zio|
-          zio.put_next_entry("#{base_filename}.csv")
-          zio.write data
-        end
-        zip_io.rewind
-        [zip_io.read, "#{base_filename}.zip", "application/zip"]
-      else
-        [data, "#{base_filename}.csv", "text/csv"]
+      zip_file = Tempfile.new([base_filename, ".zip"], binmode: true)
+      zip_path = zip_file.path
+      zip_file.close
+
+      export.password = SecureRandom.hex(6)
+      encrypter = Zip::TraditionalEncrypter.new(export.password)
+      Zip::OutputStream.open(zip_path, encrypter: encrypter) do |zio|
+        zio.put_next_entry("#{base_filename}.csv")
+        csv_file.rewind
+        IO.copy_stream(csv_file, zio)
       end
+
+      zip_file.open
+      zip_file.binmode
+      zip_file.rewind
+      zip_file
+    rescue
+      zip_file&.close!
+      raise
     end
 
     def export_rows(table, export)

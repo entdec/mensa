@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   resources :scoped_users, only: :index
   resources :non_custom_view_users, only: :index
   resources :no_views_users, only: :index
+  resources :users_export_with_password, only: :index
 
   mount Mensa::Engine => "/mensa"
 end

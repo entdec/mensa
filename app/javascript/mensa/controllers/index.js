@@ -30,6 +30,9 @@ application.register("mensa-selection", SelectionComponentController);
 import ColumnCustomizerController from "mensa/components/column_customizer/component_controller";
 application.register("mensa-column-customizer", ColumnCustomizerController);
 
+import CopyableComponentController from "mensa/components/copyable/component_controller";
+application.register("mensa-copyable", CopyableComponentController);
+
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 // import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 // eagerLoadControllersFrom("controllers", application)

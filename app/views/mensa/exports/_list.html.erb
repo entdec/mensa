@@ -19,6 +19,15 @@
             <% if export.repeating? %>
               <span class="mensa-table__export-dialog__item-repeat"><%= export.repeat_label %></span>
             <% end %>
+            <% if export.password.present? %>
+              <span class="mensa-table__export-dialog__item-password" data-controller="mensa-copyable" data-mensa-copyable-text-value="<%= export.password %>">
+                <span class="mensa-table__export-dialog__item-password-label">Password:</span>
+                <code class="mensa-table__export-dialog__item-password-value"><%= export.password %></code>
+                <button class="mensa-table__export-dialog__item-password-copy" type="button" data-action="mensa-copyable#copy" aria-label="Copy password">
+                  <i class="fas fa-copy" aria-hidden="true"></i>
+                </button>
+              </span>
+            <% end %>
             <span class="mensa-table__export-dialog__item-meta"><%= export.created_at.strftime("%Y-%m-%d %H:%M") %></span>
           </div>
           <div class="mensa-table__export-dialog__item-action">

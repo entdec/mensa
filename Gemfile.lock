@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.6.1)
+    mensa (0.6.2)
       csv
       importmap-rails
       pagy (>= 43)

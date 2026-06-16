@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_16_113603) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -61,6 +61,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_110000) do
     t.string "filename"
     t.string "format"
     t.datetime "last_repeat_run_at"
+    t.string "password"
     t.string "repeat", default: "", null: false
     t.string "scope"
     t.string "status", default: "pending", null: false

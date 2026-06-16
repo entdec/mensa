@@ -89,6 +89,18 @@
             @apply text-xs font-normal text-gray-400 dark:text-gray-500;
         }
 
+        &__item-password {
+            @apply inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400;
+        }
+
+        &__item-password-value {
+            @apply rounded bg-gray-100 dark:bg-gray-700 px-1 py-0.5 font-mono text-[0.6875rem] text-gray-700 dark:text-gray-200;
+        }
+
+        &__item-password-copy {
+            @apply inline-flex h-5 w-5 items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 cursor-pointer;
+        }
+
         &__download {
             @apply inline-flex items-center gap-1.5 rounded-md bg-white dark:bg-gray-700 px-2.5 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600;
         }
