@@ -120,7 +120,7 @@ module Mensa
     end
 
     # Returns the current path with configuration
-    def path(order: {}, turbo_frame_id: current_turbo_frame_id, table_view_id: current_table_view_id, column_order: current_column_order, hidden_columns: current_hidden_columns, user_params: nil)
+    def path(order: {}, turbo_frame_id: current_turbo_frame_id, table_view_id: current_table_view_id, page: current_page, column_order: current_column_order, hidden_columns: current_hidden_columns, user_params: nil)
       # FIXME: if someone doesn't use as: :mensa in the routes, it breaks
       path = original_view_context.mensa.table_path(name)
       query = {
@@ -128,6 +128,7 @@ module Mensa
         order: order_hash(order),
         turbo_frame_id: turbo_frame_id,
         table_view_id: table_view_id,
+        page: page,
         column_order: column_order,
         hidden_columns: hidden_columns
       }.compact.to_query
@@ -177,6 +178,10 @@ module Mensa
 
     def current_table_view_id
       config[:table_view_id]
+    end
+
+    def current_page
+      config[:page]
     end
 
     def current_column_order
