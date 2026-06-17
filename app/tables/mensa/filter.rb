@@ -79,43 +79,9 @@ module Mensa
       if scope
         record_scope.instance_exec(normalize(value), &scope)
       else
-        case operator
-        when :is_empty
-          if column.type == :string
-            record_scope.where("#{column.attribute_for_condition} IS NULL OR #{column.attribute_for_condition} = ''")
-          else
-            record_scope.where("#{column.attribute_for_condition} IS NULL")
-          end
-        when :isnt_empty
-          if column.type == :string
-            record_scope.where("#{column.attribute_for_condition} IS NOT NULL AND #{column.attribute_for_condition} != ''")
-          else
-            record_scope.where("#{column.attribute_for_condition} IS NOT NULL")
-          end
-        when :is_current
-          record_scope.where("#{column.attribute_for_condition} = ?", Current.send(column.name))
-        when :matches
-          record_scope.where("#{column.attribute_for_condition} LIKE ?", "%#{normalize(value)}%")
-        when :does_not_match
-          record_scope.where("#{column.attribute_for_condition} NOT LIKE ?", "%#{normalize(value)}%")
-        when :is
-          val = value.is_a?(Array) ? value : normalize(value)
-          record_scope.where(column.attribute_for_condition => val)
-        when :isnt
-          val = value.is_a?(Array) ? value : normalize(value)
-          record_scope.where.not(column.attribute_for_condition => val)
-        when :gt
-          record_scope.where(":column > :value", column: column.attribute_for_condition, value: normalize(value))
-        when :lt
-          record_scope.where(":column < :value", column: column.attribute_for_condition, value: normalize(value))
-        when :gteq
-          record_scope.where(":column >= :value", column: column.attribute_for_condition, value: normalize(value))
-        when :lteq
-          record_scope.where(":column <= :value", column: column.attribute_for_condition, value: normalize(value))
-        else
-          # Ignore unknown operators
-          record_scope
-        end
+        query, hash = query_and_hash_for_operator
+        record_scope = record_scope.where(query, hash) if query.present?
+        record_scope
       end
     end
 
@@ -131,6 +97,41 @@ module Mensa
         operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string || column.type.blank?
       end
       operators
+    end
+
+    def query_and_hash_for_operator
+      hash = { column: column.attribute_for_condition, value: normalize(value) }
+
+      query = case operator
+      when :is_empty
+        column.type == :string ? ":column IS NULL OR :column = ''" : ":column IS NULL"
+      when :isnt_empty
+        column.type == :string ? ":column IS NOT NULL AND :column != ''" : ":column IS NOT NULL"
+      when :is_current
+        ":column = :value"
+      when :matches
+        ":column LIKE :value"
+      when :does_not_match
+        ":column NOT LIKE :value"
+      when :is
+        hash[:value] = value if hash[:value].is_a?(Array)
+        ":column = :value"
+      when :isnt
+        hash[:value] = value if hash[:value].is_a?(Array)
+        ":column != :value"
+      when :gt
+        ":column > :value"
+      when :lt
+        ":column < :value"
+      when :gteq
+        ":column >= :value"
+      when :lteq
+        ":column <= :value"
+      else
+        # Ignore unknown operators
+        nil
+      end
+      [query, hash]
     end
 
     def operator_label
@@ -172,7 +173,7 @@ module Mensa
 
     # Unused at the moment
     def normalize(query)
-      query # .to_s.gsub(/\s(?![&!|])/, '\\\\ ')
+      query
     end
   end
 end
