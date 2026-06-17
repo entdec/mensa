@@ -72,7 +72,7 @@ module Mensa
       return @attribute_for_condition if @attribute_for_condition
 
       @attribute_for_condition = if config[:attribute].present?
-        raw_attribute
+        Arel.sql(raw_attribute)
       elsif table.model.column_names.include? name.to_s
         Arel.sql("\"#{table.model.table_name}\".\"#{name}\"")
       end
