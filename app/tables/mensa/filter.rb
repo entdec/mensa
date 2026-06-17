@@ -105,13 +105,13 @@ module Mensa
           val = value.is_a?(Array) ? value : normalize(value)
           record_scope.where.not(column.attribute_for_condition => val)
         when :gt
-          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].gt(normalize(value)))
+          record_scope.where(":column > :value", column: column.attribute_for_condition, value: normalize(value))
         when :lt
-          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].lt(normalize(value)))
+          record_scope.where(":column < :value", column: column.attribute_for_condition, value: normalize(value))
         when :gteq
-          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].gteq(normalize(value)))
+          record_scope.where(":column >= :value", column: column.attribute_for_condition, value: normalize(value))
         when :lteq
-          record_scope.where(column.table.model.arel_table[column.attribute_for_condition].lteq(normalize(value)))
+          record_scope.where(":column <= :value", column: column.attribute_for_condition, value: normalize(value))
         else
           # Ignore unknown operators
           record_scope
