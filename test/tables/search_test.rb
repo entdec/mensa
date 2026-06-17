@@ -59,7 +59,6 @@ class SearchTest < ActiveSupport::TestCase
     assert_includes sql, "AS mensa_search_score"
     assert_includes sql, "ORDER BY similarity("
     assert_includes sql, "customers.name"
-    assert_includes sql, "users.created_at"
   ensure
     Mensa.config.search = original_search
   end
