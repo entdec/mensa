@@ -68,11 +68,13 @@ class BasicTablesTest < ApplicationSystemTestCase
     visit users_url
     assert_selector "tbody tr", wait: 15
 
+    expected_first_names = User.order(:first_name).limit(20).pluck(:first_name)
+
     find("thead a", text: "First name").click
-    assert_selector "tbody tr", wait: 15
+    assert_selector "tbody tr:first-child #{FIRST_NAME_COL}", text: expected_first_names.first, wait: 15
 
     first_names = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
-    assert_equal first_names, User.order(:first_name).limit(first_names.length).pluck(:first_name),
+    assert_equal expected_first_names, first_names,
       "First names should match the database ascending order after sort"
   end
 
@@ -80,15 +82,18 @@ class BasicTablesTest < ApplicationSystemTestCase
     visit users_url
     assert_selector "tbody tr", wait: 15
 
+    expected_first_names_asc = User.order(:first_name).limit(20).pluck(:first_name)
+    expected_first_names_desc = User.order(first_name: :desc).limit(20).pluck(:first_name)
+
     find("thead a", text: "First name").click
-    assert_selector "tbody tr", wait: 15
+    assert_selector "tbody tr:first-child #{FIRST_NAME_COL}", text: expected_first_names_asc.first, wait: 15
     first_asc = first("tbody tr #{FIRST_NAME_COL}").text
 
     find("thead a", text: "First name").click
-    assert_selector "tbody tr", wait: 15
+    assert_selector "tbody tr:first-child #{FIRST_NAME_COL}", text: expected_first_names_desc.first, wait: 15
 
     first_names_desc = all("tbody tr #{FIRST_NAME_COL}").map(&:text)
-    assert_equal first_names_desc, User.order(first_name: :desc).limit(first_names_desc.length).pluck(:first_name),
+    assert_equal expected_first_names_desc, first_names_desc,
       "First names should match the database descending order after second click"
 
     first_desc = first_names_desc.first
