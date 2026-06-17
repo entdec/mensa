@@ -58,9 +58,17 @@ export default class ColumnCustomizerController extends ApplicationController {
         const btn = this.element.querySelector("button");
         if (!btn) return;
         const rect = btn.getBoundingClientRect();
-        this.popoverTarget.style.top = `${rect.bottom + 4}px`;
+        const gap = 4;
+        const viewportPadding = 16;
+        const maxHeight = Math.min(
+            384,
+            window.innerHeight - rect.bottom - gap - viewportPadding,
+        );
+
+        this.popoverTarget.style.top = `${rect.bottom + gap}px`;
         this.popoverTarget.style.right = `${window.innerWidth - rect.right}px`;
         this.popoverTarget.style.left = "auto";
+        this.popoverTarget.style.maxHeight = `${Math.max(maxHeight, 160)}px`;
     }
 
     toggleVisibility(event) {
