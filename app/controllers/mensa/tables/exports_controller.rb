@@ -24,7 +24,7 @@ module Mensa
           format: params[:export_format].to_s.presence_in(Mensa::Export::FORMATS) || "csv_excel",
           scope: params[:scope].to_s.presence_in(Mensa::Export::SCOPES) || "all",
           repeat: params[:repeat].to_s.presence_in(Mensa::Export::REPEATS) || "",
-          config: params.permit(:query, :page, order: {}, filters: {}).to_h,
+          config: export_config,
           status: "pending"
         )
 
@@ -106,6 +106,18 @@ module Mensa
 
       def list_locals
         {table_name: params[:table_id], user: current_mensa_user, exports: exports}
+      end
+
+      def export_config
+        params.permit(
+          :query,
+          :page,
+          :table_view_id,
+          order: {},
+          filters: {},
+          column_order: [],
+          hidden_columns: []
+        ).to_h
       end
 
       def current_mensa_user

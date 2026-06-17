@@ -569,6 +569,8 @@ export default class TableComponentController extends ApplicationController {
                 query: state.query || nav.query,
                 filters: state.filters,
                 order: state.order,
+                column_order: state.column_order,
+                hidden_columns: state.hidden_columns,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",

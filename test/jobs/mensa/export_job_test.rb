@@ -129,6 +129,21 @@ module Mensa
       assert exported_customer_names.all?(&:present?)
     end
 
+    test "applies captured column order and hidden columns" do
+      export = Mensa::Export.create!(
+        table_name: "users",
+        user: @user,
+        format: "plain_csv",
+        scope: "all",
+        config: {column_order: ["email", "first_name", "role"], hidden_columns: ["role"]}
+      )
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      assert_equal ["email", "first_name"], rows.first
+    end
+
     test "invokes the export callbacks with the export" do
       started = nil
       completed = nil

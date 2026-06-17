@@ -9,11 +9,28 @@ module Mensa
         @user = User.first
       end
 
-      test "create persists an export and enqueues the job" do
+      test "create persists an export and enqueues the job with the complete table state" do
+        view = Mensa::TableView.create!(
+          table_name: "users",
+          name: "Admins",
+          user: @user,
+          config: {}
+        )
+
         assert_difference -> { Mensa::Export.count }, 1 do
           assert_enqueued_with(job: Mensa::ExportJob) do
             post mensa.table_exports_path("users"),
-              params: {export_format: "plain_csv", scope: "all", query: "", filters: {role: {value: "admin", operator: "is"}}},
+              params: {
+                export_format: "plain_csv",
+                scope: "all",
+                table_view_id: view.id,
+                page: "2",
+                query: "smith",
+                filters: {role: {value: "admin", operator: "is"}},
+                order: {email: "desc"},
+                column_order: ["email", "first_name", "role"],
+                hidden_columns: ["role"]
+              },
               as: :json
           end
         end
@@ -24,8 +41,16 @@ module Mensa
         assert_equal "users", export.table_name
         assert_equal "plain_csv", export.format
         assert_equal "all", export.scope
+        assert_equal view.id, export.table_view_id
         assert_equal @user, export.user
+        assert_equal "2", export.config["page"]
+        assert_equal "smith", export.config["query"]
+        assert_equal view.id, export.config["table_view_id"]
         assert_equal "admin", export.config.dig("filters", "role", "value")
+        assert_equal "is", export.config.dig("filters", "role", "operator")
+        assert_equal "desc", export.config.dig("order", "email")
+        assert_equal ["email", "first_name", "role"], export.config["column_order"]
+        assert_equal ["role"], export.config["hidden_columns"]
         assert_equal "", export.repeat
       end
 
