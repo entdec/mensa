@@ -7,6 +7,7 @@ export default class TableComponentController extends ApplicationController {
         "filterList",
         "views",
         "view",
+        "scrollContainer",
         "turboFrame",
         "saveViewDialog",
         "saveViewName",
@@ -32,28 +33,7 @@ export default class TableComponentController extends ApplicationController {
         super.connect();
 
         this.frameLoadFallback = setTimeout(() => this.loadFrame(), 100);
-
-        if (this.hasTurboFrameTarget) {
-            this.captureNavigationHandler = () => this.captureNavigation();
-            this.turboFrameTarget.addEventListener(
-                "turbo:frame-load",
-                this.captureNavigationHandler,
-            );
-        }
-
-        // Close save dropdown when clicking outside
-        this._saveDropdownOutsideHandler = (e) => {
-            if (
-                this.hasSaveDropdownTarget &&
-                !this.saveDropdownTarget.classList.contains("hidden")
-            ) {
-                const saveArea = this.saveDropdownTarget.closest(".relative");
-                if (saveArea && !saveArea.contains(e.target)) {
-                    this.saveDropdownTarget.classList.add("hidden");
-                }
-            }
-        };
-        document.addEventListener("click", this._saveDropdownOutsideHandler);
+        this.scrollLeft = 0;
     }
 
     disconnect() {
@@ -62,14 +42,20 @@ export default class TableComponentController extends ApplicationController {
             this.frameLoadFallback = null;
         }
 
-        if (this.hasTurboFrameTarget && this.captureNavigationHandler) {
-            this.turboFrameTarget.removeEventListener(
-                "turbo:frame-load",
-                this.captureNavigationHandler,
-            );
+    }
+
+    saveDropdownOutsideHandler(event) {
+        if (
+            !this.hasSaveDropdownTarget ||
+            this.saveDropdownTarget.classList.contains("hidden")
+        ) {
+            return;
         }
 
-        document.removeEventListener("click", this._saveDropdownOutsideHandler);
+        const saveArea = this.saveDropdownTarget.closest(".relative");
+        if (saveArea && !saveArea.contains(event.target)) {
+            this.saveDropdownTarget.classList.add("hidden");
+        }
     }
 
     captureNavigation() {
@@ -78,6 +64,69 @@ export default class TableComponentController extends ApplicationController {
         const src = this.turboFrameTarget.getAttribute("src");
         if (!src) return;
         this.mensaFilterPillListOutlet.captureNavigation(src);
+    }
+
+    beforeFrameRender() {
+        this.captureScrollPosition();
+        this.isReplacingFrame = true;
+    }
+
+    scrollContainerTargetConnected(element) {
+        this.scrollContainer = this.scrollableElementFor(element);
+        this.restoreScrollPosition();
+        this.scrollHandler = () => this.captureScrollPosition();
+        this.scrollContainer.addEventListener("scroll", this.scrollHandler);
+    }
+
+    scrollContainerTargetDisconnected(element) {
+        const scrollContainer =
+            this.scrollContainer || this.scrollableElementFor(element);
+        if (this.scrollHandler && scrollContainer) {
+            scrollContainer.removeEventListener("scroll", this.scrollHandler);
+        }
+        this.scrollContainer = null;
+    }
+
+    captureScrollPosition(source = null) {
+        if (this.isReplacingFrame || this.isRestoringScroll) return;
+        const scrollContainer = this.scrollContainerFrom(source);
+        if (!scrollContainer) return;
+        this.scrollLeft = scrollContainer.scrollLeft;
+    }
+
+    restoreScrollPosition() {
+        const scrollContainer = this.scrollContainerFrom();
+        if (!scrollContainer) return;
+
+        this.isRestoringScroll = true;
+        scrollContainer.scrollLeft = this.scrollLeft || 0;
+        requestAnimationFrame(() => {
+            this.isRestoringScroll = false;
+            this.isReplacingFrame = false;
+        });
+    }
+
+    scrollContainerFrom(source = null) {
+        if (source?.currentTarget) {
+            return this.scrollableElementFor(source.currentTarget);
+        }
+        if (source?.scrollLeft !== undefined) return source;
+        if (this.scrollContainer) return this.scrollContainer;
+        if (this.hasScrollContainerTarget) {
+            return this.scrollableElementFor(this.scrollContainerTarget);
+        }
+        return null;
+    }
+
+    scrollableElementFor(element) {
+        if (!element) return null;
+        if (element.scrollWidth > element.clientWidth) return element;
+
+        return (
+            Array.from(element.querySelectorAll("*")).find(
+                (candidate) => candidate.scrollWidth > candidate.clientWidth,
+            ) || element
+        );
     }
 
     loadFrame() {

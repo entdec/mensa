@@ -6,6 +6,7 @@
      data-mensa-table-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>"
      data-mensa-table-exports-url-value="<%= helpers.mensa.table_exports_path(table.name) %>"
      data-controller="mensa-table"
+     data-action="click@document->mensa-table#saveDropdownOutsideHandler"
      data-mensa-table-mensa-filter-pill-outlet="[data-controller='mensa-filter-pill']"
      data-mensa-table-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
      data-mensa-table-mensa-column-customizer-outlet="[data-controller='mensa-column-customizer']">
@@ -25,5 +26,9 @@
     <%= render Mensa::ControlBar::Component.new(table: table) %>
   </div>
   <%= render Mensa::Search::Component.new(table: table) %>
-  <turbo-frame id="<%= table.table_id %>" target="_top" data-mensa-table-target="turboFrame" data-turbo-permanent=""></turbo-frame>
+  <turbo-frame id="<%= table.table_id %>"
+               target="_top"
+               data-mensa-table-target="turboFrame"
+               data-action="turbo:frame-load->mensa-table#captureNavigation turbo:before-frame-render->mensa-table#beforeFrameRender turbo:before-fetch-request->mensa-table#captureScrollPosition click->mensa-table#captureScrollPosition:capture turbo:frame-load->mensa-table#restoreScrollPosition"
+               data-turbo-permanent></turbo-frame>
 </div>

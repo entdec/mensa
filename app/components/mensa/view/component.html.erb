@@ -1,5 +1,6 @@
 <div data-mensa-table-target="view">
   <div class="overflow-y-auto relative"
+       data-mensa-table-target="scrollContainer"
        data-controller="mensa-selection"
        data-mensa-selection-batch-url-value="<%= table.batch_actions? ? helpers.mensa.table_batch_actions_path(table.name) : "" %>">
     <% if table.batch_actions? %>
