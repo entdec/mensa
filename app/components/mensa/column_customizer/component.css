@@ -1,7 +1,7 @@
 .mensa-table {
     &__column_customizer {
         &__popover {
-            @apply fixed z-50 w-64 rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 py-2;
+            @apply fixed z-50 w-96 max-h-96  rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 py-2;
         }
 
         &__heading {

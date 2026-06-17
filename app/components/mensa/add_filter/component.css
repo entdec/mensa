@@ -25,7 +25,7 @@
         }
 
         &__popover_container {
-            @apply p-4 fixed z-50 w-72 rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+            @apply p-4 fixed z-50 w-96 max-h-96 overflow-y-auto rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
 
             &__heading {
                 @apply font-semibold text-gray-900 dark:text-gray-100 mb-2;
@@ -40,7 +40,7 @@
             }
 
             &__values {
-                @apply mb-2 max-h-[20rem] overflow-y-scroll;
+                @apply mb-2;
             }
 
             &__value {
