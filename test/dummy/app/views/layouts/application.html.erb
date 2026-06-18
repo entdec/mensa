@@ -15,19 +15,19 @@
     <%= javascript_include_tag asset_url("solid.js"), defer: true, nonce: true %>
   </head>
 
-  <body class="mx-10 my-10 bg-gray-100">
+  <body class="min-h-full mx-10 my-10 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     <%= yield %>
-    <div class="pt-2 text-center text-sm text-gray-500">
-      Timezone: <%= Time.zone %>, Locale: <%= link_to I18n.locale, url_for(locale: I18n.locale.to_sym == :en ? :nl : :en), class: "text-blue-500 hover:underline" %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
+    <div class="pt-2 text-center text-sm text-gray-500 dark:text-gray-500">
+      Timezone: <%= Time.zone %>, Locale: <%= link_to I18n.locale, url_for(locale: I18n.locale.to_sym == :en ? :nl : :en), class: "text-blue-500 hover:underline dark:text-blue-400" %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
     </div>
-    <div class="flex justify-center gap-4 pt-2 text-center text-sm text-gray-500">
-      <%= link_to "Users", users_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "Customers", customers_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "Default filtered users", default_filtered_users_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "Headerless users", headerless_users_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "No views users", no_views_users_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "Search only users", search_only_users_path, class: "text-blue-500 hover:underline" %>
-      <%= link_to "Scoped users", scoped_users_path, class: "text-blue-500 hover:underline" %>
+    <div class="flex justify-center gap-4 pt-2 text-center text-sm text-gray-500 dark:text-gray-500">
+      <%= link_to "Users", users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Customers", customers_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Default filtered users", default_filtered_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Headerless users", headerless_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "No views users", no_views_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Search only users", search_only_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Scoped users", scoped_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
     </div>
   </body>
 </html>

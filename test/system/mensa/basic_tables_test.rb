@@ -22,6 +22,33 @@ class BasicTablesTest < ApplicationSystemTestCase
     assert_no_selector ".mensa-table__add_filter__trigger"
   end
 
+  test "dummy layout supports dark mode" do
+    visit users_url
+
+    colors = evaluate_script(<<~JS)
+      ({
+        htmlHasDarkClass: document.documentElement.classList.contains("dark"),
+        bodyBackground: getComputedStyle(document.body).backgroundColor,
+        pageHeaderBackground: getComputedStyle(document.querySelector(".max-w > div")).backgroundColor,
+        pageHeaderColor: getComputedStyle(document.querySelector(".max-w > div")).color
+      })
+    JS
+
+    assert colors["htmlHasDarkClass"], "dark class should be on the html element"
+    assert_equal "rgb(3, 7, 18)", colors["bodyBackground"]
+    assert_equal "rgb(31, 41, 55)", colors["pageHeaderBackground"]
+    assert_equal "rgb(243, 244, 246)", colors["pageHeaderColor"]
+  end
+
+  test "search bar input background is transparent for dark table chrome" do
+    visit users_url
+
+    assert_selector "input.mensa-table__search-bar__input"
+    assert_equal "rgba(0, 0, 0, 0)", evaluate_script(<<~JS)
+      getComputedStyle(document.querySelector("input.mensa-table__search-bar__input")).backgroundColor
+    JS
+  end
+
   test "typing in a search-only table does not open any filter popover" do
     visit search_only_users_url
 
@@ -69,8 +96,6 @@ class BasicTablesTest < ApplicationSystemTestCase
         };
       })()
     JS
-
-    binding.break
 
     assert_operator frame_style["childOpacity"].to_f, :<, 1, "busy frame content should be greyed out"
     assert_match(/grayscale|matrix/, frame_style["childFilter"], "busy frame content should be grayscale")
