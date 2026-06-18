@@ -43,6 +43,43 @@ class BasicTablesTest < ApplicationSystemTestCase
     assert_no_selector "span.mensa-table__views__trigger-label"
   end
 
+  test "busy table frame greys out content and blocks clicks" do
+    visit users_url
+    assert_selector "tbody tr", wait: 15
+
+    execute_script(<<~JS)
+      document.querySelector("turbo-frame").setAttribute("aria-busy", "true")
+    JS
+
+    frame_style = evaluate_script(<<~JS)
+      (() => {
+        const frame = document.querySelector("turbo-frame");
+        const child = frame.firstElementChild;
+        const frameRect = frame.getBoundingClientRect();
+        const rowRect = document.querySelector("tbody tr").getBoundingClientRect();
+        const topElement = document.elementFromPoint(rowRect.left + 10, rowRect.top + 10);
+
+        return {
+          childOpacity: getComputedStyle(child).opacity,
+          childFilter: getComputedStyle(child).filter,
+          overlayContent: getComputedStyle(frame, "::after").content,
+          overlayPosition: getComputedStyle(frame, "::after").position,
+          frameIsTopElement: topElement === frame,
+          frameCoversContent: frameRect.top <= rowRect.top && frameRect.bottom >= rowRect.bottom
+        };
+      })()
+    JS
+
+    binding.break
+
+    assert_operator frame_style["childOpacity"].to_f, :<, 1, "busy frame content should be greyed out"
+    assert_match(/grayscale|matrix/, frame_style["childFilter"], "busy frame content should be grayscale")
+    assert_equal '""', frame_style["overlayContent"], "busy frame should render an overlay"
+    assert_equal "absolute", frame_style["overlayPosition"]
+    assert frame_style["frameIsTopElement"], "busy frame overlay should block clicks to table content"
+    assert frame_style["frameCoversContent"], "busy frame should cover the table content"
+  end
+
   test "clicking a row navigates to the row's linked path" do
     visit users_url
     assert_selector "tbody tr", wait: 15

@@ -8,7 +8,9 @@
    The controller and its column-list ul stay in the DOM so the search-input focus
    handler can still open the column list. */
 .mensa-table--view-filters-hidden
-    .mensa-table__search-bar__pills-area:not(:has(.mensa-filter-pill:not([data-view-filter="true"])))
+    .mensa-table__search-bar__pills-area:not(
+        :has(.mensa-filter-pill:not([data-view-filter="true"]))
+    )
     .mensa-table__add_filter__trigger {
     display: none;
 }
@@ -20,6 +22,24 @@
 
     &__toolbar {
         @apply flex items-center gap-2 px-2 py-1 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800;
+    }
+
+    turbo-frame {
+        @apply relative block;
+    }
+
+    turbo-frame[aria-busy] {
+        @apply cursor-wait;
+    }
+
+    turbo-frame[aria-busy] > * {
+        @apply opacity-50 grayscale pointer-events-none;
+    }
+
+    turbo-frame[aria-busy]::after {
+        content: "";
+        @apply absolute inset-0 z-10 bg-gray-50/30 dark:bg-gray-900/50;
+        pointer-events: all;
     }
 
     &__search-container {
