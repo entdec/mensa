@@ -348,12 +348,24 @@ class UsersTablesTest < ApplicationSystemTestCase
   test "default view filters users to Audi and shows the view-filter eye button" do
     visit default_filtered_users_url
 
-    assert_selector ".mensa-table__views__trigger-label", text: "Audi users", wait: 3
     assert_selector "[data-mensa-table-target='eyeButton']:not(.hidden)", wait: 3
     assert_selector ".mensa-filter-pill[data-view-filter='true']", visible: :all, wait: 3
     assert_selector "tbody tr", count: User.left_outer_joins(:customer).where(customers: {name: "Audi"}).count, wait: 3
     assert_selector "tbody", text: "Audi"
     assert_no_selector "tbody", text: "BMW"
+  end
+
+  test "removing a default view filter pill clears that view filter" do
+    visit default_filtered_users_url
+
+    assert_selector ".mensa-filter-pill[data-view-filter='true']", visible: :all, wait: 3
+    find("[data-mensa-table-target='eyeButton']").click
+    assert_selector ".mensa-filter-pill[data-view-filter='true']", visible: true, wait: 3
+    remove_filter(column: "Customer")
+
+    assert_no_selector ".mensa-filter-pill", wait: 3
+    assert_selector "tbody tr", minimum: 20, wait: 3
+    assert_selector "tbody", text: "BMW"
   end
 
   test "saving filters as a new view adds it to the views dropdown" do

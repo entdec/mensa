@@ -1,7 +1,9 @@
 module Mensa
   class TablesController < ApplicationController
     def show
+      filters_provided = params.key?(:filters)
       config = params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, column_order: [], hidden_columns: [], params: {}, filters: {}).to_h
+      config[:filters] = {} if filters_provided && !config.key?(:filters)
 
       @table = Mensa.for_name(params[:id], config)
 

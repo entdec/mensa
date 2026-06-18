@@ -41,7 +41,6 @@ export default class TableComponentController extends ApplicationController {
             clearTimeout(this.frameLoadFallback);
             this.frameLoadFallback = null;
         }
-
     }
 
     saveDropdownOutsideHandler(event) {
@@ -149,12 +148,13 @@ export default class TableComponentController extends ApplicationController {
         if (this.hasMensaFilterPillListOutlet) {
             const outlet = this.mensaFilterPillListOutlet;
             const state = {
-                filters: outlet.loadFilters(),
                 query: outlet.loadQuery(),
                 view: outlet.loadView(),
                 order: outlet.loadOrder(),
                 page: outlet.loadPage(),
             };
+            if (outlet.hasPersistedFilters())
+                state.filters = outlet.loadFilters();
             this.turboFrameTarget.setAttribute(
                 "src",
                 outlet.buildUrl(state).toString(),

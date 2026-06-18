@@ -160,19 +160,19 @@ export default class FilterPillListComponentController extends ApplicationContro
     // Called by the search controller when the query is submitted or reset.
     setQuery(query) {
         if (query && query.length > 0) this._notifyUnsavedState();
-        this.applyState({
-            filters: this.collectFilters(),
+        const state = {
             query,
             view: this.loadView(),
             order: this.loadOrder(),
             page: "",
-        });
+        };
+        if (this.hasPersistedFilters()) state.filters = this.loadFilters();
+        this.applyState(state);
     }
 
     // Called by the views controller when a view tab is selected.
     viewSelected(view) {
         const state = {
-            filters: {},
             query: "",
             view,
             order: this.loadOrder(),
@@ -267,7 +267,6 @@ export default class FilterPillListComponentController extends ApplicationContro
         // buildUrl reads column_order/hidden_columns from localStorage — now empty,
         // so the server receives a completely clean request for the current view.
         this.requestState({
-            filters: {},
             query: "",
             view,
             order: {},
@@ -278,6 +277,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     restoreState() {
         const table = this.mensaTableOutlet;
         const filters = this.loadFilters();
+        const filtersProvided = this.hasPersistedFilters();
         const query = this.loadQuery();
         const view = this.loadView();
         const page = this.loadPage();
@@ -288,6 +288,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         // Show save/reset if any persistent state exists (order, column layout, filters, search)
         if (
             Object.keys(filters).length > 0 ||
+            filtersProvided ||
             query.length > 0 ||
             Object.keys(order).length > 0 ||
             columnOrder.length > 0 ||
@@ -297,7 +298,9 @@ export default class FilterPillListComponentController extends ApplicationContro
         }
 
         const hasFilterOrSearch =
-            Object.keys(filters).length > 0 || query.length > 0;
+            Object.keys(filters).length > 0 ||
+            filtersProvided ||
+            query.length > 0;
         const hasState =
             hasFilterOrSearch ||
             view.length > 0 ||
@@ -319,7 +322,8 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.setSearchField(query);
         this.setViewHighlight(view);
 
-        const state = { filters, query, view, page, order };
+        const state = { query, view, page, order };
+        if (filtersProvided) state.filters = filters;
 
         // No need to show/hide the filter bar — it's always visible.
         // Just apply state and load the frame.
@@ -377,6 +381,12 @@ export default class FilterPillListComponentController extends ApplicationContro
             url.searchParams.set(`order[${columnName}]`, direction);
         });
 
+        if (
+            Object.prototype.hasOwnProperty.call(state, "filters") &&
+            Object.keys(state.filters || {}).length === 0
+        ) {
+            url.searchParams.set("filters", "");
+        }
         if (state.query) url.searchParams.set("query", state.query);
         if (state.view) url.searchParams.set("table_view_id", state.view);
         if (state.page) url.searchParams.set("page", state.page);
@@ -576,7 +586,9 @@ export default class FilterPillListComponentController extends ApplicationContro
     // --- Persistence ---
 
     persistState(state) {
-        this.persistFilters(state.filters || {});
+        if (Object.prototype.hasOwnProperty.call(state, "filters")) {
+            this.persistFilters(state.filters || {});
+        }
         this.persistQuery(state.query || "");
         this.persistView(state.view || "");
         this.persistPage(state.page || "");
@@ -584,10 +596,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
 
     persistFilters(filters) {
-        this.writeStorage(
-            this.filtersStorageKey,
-            Object.keys(filters).length > 0 ? JSON.stringify(filters) : null,
-        );
+        this.writeStorage(this.filtersStorageKey, JSON.stringify(filters));
     }
 
     loadFilters() {
@@ -598,6 +607,10 @@ export default class FilterPillListComponentController extends ApplicationContro
         } catch (e) {
             return {};
         }
+    }
+
+    hasPersistedFilters() {
+        return this.readStorage(this.filtersStorageKey) !== null;
     }
 
     persistQuery(query) {
