@@ -23,21 +23,23 @@ class BasicTablesTest < ApplicationSystemTestCase
   end
 
   test "dummy layout supports dark mode" do
-    visit users_url
+    Capybara.using_driver(:selenium_dark_mode) do
+      visit users_url
 
-    colors = evaluate_script(<<~JS)
-      ({
-        htmlHasDarkClass: document.documentElement.classList.contains("dark"),
-        bodyBackground: getComputedStyle(document.body).backgroundColor,
-        pageHeaderBackground: getComputedStyle(document.querySelector(".max-w > div")).backgroundColor,
-        pageHeaderColor: getComputedStyle(document.querySelector(".max-w > div")).color
-      })
-    JS
+      colors = evaluate_script(<<~JS)
+        ({
+          prefersDark: window.matchMedia("(prefers-color-scheme: dark)").matches,
+          bodyBackground: getComputedStyle(document.body).backgroundColor,
+          pageHeaderBackground: getComputedStyle(document.querySelector(".max-w > div")).backgroundColor,
+          pageHeaderColor: getComputedStyle(document.querySelector(".max-w > div")).color
+        })
+      JS
 
-    assert colors["htmlHasDarkClass"], "dark class should be on the html element"
-    assert_equal "rgb(3, 7, 18)", colors["bodyBackground"]
-    assert_equal "rgb(31, 41, 55)", colors["pageHeaderBackground"]
-    assert_equal "rgb(243, 244, 246)", colors["pageHeaderColor"]
+      assert colors["prefersDark"], "system test browser should prefer dark color scheme"
+      assert_equal "rgb(17, 24, 39)", colors["bodyBackground"]
+      assert_equal "rgb(31, 41, 55)", colors["pageHeaderBackground"]
+      assert_equal "rgb(243, 244, 246)", colors["pageHeaderColor"]
+    end
   end
 
   test "search bar input background is transparent for dark table chrome" do

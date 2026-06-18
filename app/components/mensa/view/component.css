@@ -25,7 +25,7 @@
 }
 
 .mensa-table {
-    @apply bg-white dark:bg-gray-500 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 dark:border-gray-800;
 
     .mensa-table__checkbox-col {
         @apply w-7 min-w-7 pl-1 pr-0 text-center;
@@ -84,7 +84,7 @@
         @apply min-w-full divide-y divide-gray-50 dark:divide-gray-800 border-0;
 
         thead {
-            @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
+            @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400;
 
             /* tr and th moved to header */
         }

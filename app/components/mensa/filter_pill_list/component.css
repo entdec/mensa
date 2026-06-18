@@ -19,6 +19,7 @@
         &__input {
             @apply w-full bg-transparent text-xs text-gray-700 dark:text-gray-200 placeholder:text-gray-400;
             /* Override @tailwindcss/forms — direct CSS beats attribute selector specificity */
+            background-color: transparent !important;
             border: none !important;
             outline: none !important;
             box-shadow: none !important;

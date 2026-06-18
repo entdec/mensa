@@ -7,7 +7,7 @@
     <i class="<%= Mensa.config.icons[:column_customizer_toggle] %>"></i>
   </button>
   <div class="mensa-table__column_customizer__popover hidden" data-mensa-column-customizer-target="popover">
-    <p class="mensa-table__column_customizer__heading">Columns</p>
+    <p class="mensa-table__column_customizer__heading"><%= t("mensa.column_customizer.heading") %></p>
     <ul>
       <% table.columns.reject(&:internal?).each do |column| %>
         <li class="mensa-table__column_customizer__row"

@@ -1,5 +1,7 @@
 nl:
   mensa:
+    column_customizer:
+      heading: Kolommen
     tables:
       filters:
         show:

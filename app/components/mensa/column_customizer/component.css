@@ -5,7 +5,7 @@
         }
 
         &__heading {
-            @apply px-4 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
+            @apply px-4 pt-2 pb-1 text-sm font-semibold tracking-wider text-gray-900 dark:text-gray-500;
         }
 
         &__row {

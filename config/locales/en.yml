@@ -1,5 +1,7 @@
 en:
   mensa:
+    column_customizer:
+      heading: Columns
     tables:
       filters:
         show:

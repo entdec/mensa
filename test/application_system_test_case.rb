@@ -12,6 +12,15 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
         driver.add_preference("intl.accept_languages", "nl")
       end
 
+      Capybara.register_driver :selenium_dark_mode do |app|
+        browser_options = Selenium::WebDriver::Firefox::Options.new
+        browser_options.add_preference("intl.accept_languages", "nl")
+        browser_options.add_preference("layout.css.prefers-color-scheme.content-override", 0)
+        browser_options.add_argument("-headless") if headless
+
+        Capybara::Selenium::Driver.new(app, browser: :remote, url: ENV["SELENIUM_URL"], options: browser_options)
+      end
+
       Capybara.javascript_driver = :selenium
       Capybara.default_max_wait_time = 10
       Capybara.server = :puma, {Silent: true, Threads: "0:10", queue_requests: false}
