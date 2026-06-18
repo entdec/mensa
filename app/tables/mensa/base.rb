@@ -85,6 +85,10 @@ module Mensa
       views + (config[:views] || {}).keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
     end
 
+    def default_system_view
+      system_views.find { |view| view.id == :default }
+    end
+
     # Returns true if the table has filters
     def filters?
       columns.any?(&:filter?)

@@ -345,6 +345,17 @@ class UsersTablesTest < ApplicationSystemTestCase
   # View creation
   # ---------------------------------------------------------------------------
 
+  test "default view filters users to Audi and shows the view-filter eye button" do
+    visit default_filtered_users_url
+
+    assert_selector ".mensa-table__views__trigger-label", text: "Audi users", wait: 3
+    assert_selector "[data-mensa-table-target='eyeButton']:not(.hidden)", wait: 3
+    assert_selector ".mensa-filter-pill[data-view-filter='true']", visible: :all, wait: 3
+    assert_selector "tbody tr", count: User.left_outer_joins(:customer).where(customers: {name: "Audi"}).count, wait: 3
+    assert_selector "tbody", text: "Audi"
+    assert_no_selector "tbody", text: "BMW"
+  end
+
   test "saving filters as a new view adds it to the views dropdown" do
     visit users_url
     assert_selector "tbody tr", wait: 3
@@ -377,7 +388,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     end
     assert_selector ".mensa-table__views__trigger-label", text: "Admins only", wait: 3
 
-    # Switch away to "All users"
+    # Switch away to the default view
     open_views_dropdown
     show_filters
     assert_selector ".mensa-table__views__trigger-label", text: "All users", wait: 3
@@ -449,7 +460,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_no_selector "li[data-view-id='#{view.id}']", wait: 3
   end
 
-  test "after deleting the active view the dropdown reverts to All users" do
+  test "after deleting the active view the dropdown reverts to the default view" do
     view = Mensa::TableView.create!(
       table_name: "users", name: "To be deleted", config: {}, user: User.first
     )
@@ -490,7 +501,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_no_selector "thead th", text: "Role", wait: 3
   end
 
-  test "switching from the Users view back to All users restores the Role column" do
+  test "switching from the Users view back to the default view restores the Role column" do
     visit users_url
     assert_selector "tbody tr", wait: 3
 

@@ -3,12 +3,17 @@ module Mensa
     def show
       config = params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, column_order: [], hidden_columns: [], params: {}, filters: {}).to_h
 
-      if params[:table_view_id]
-        view_lookup_table = Mensa.for_name(params[:id], config)
-        @view = Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id])
-        @view ||= view_lookup_table.system_views.find { |v| v.id == params[:table_view_id].to_sym }
-        config = (@view&.config&.deep_transform_keys(&:to_sym) || {}).merge(config)
+      @table = Mensa.for_name(params[:id], config)
+
+      view_lookup_table = Mensa.for_name(params[:id], config)
+      @view = if params[:table_view_id]
+        Mensa::TableView.find_by(table_name: params[:id], id: params[:table_view_id]) ||
+          view_lookup_table.system_views.find { |v| v.id == params[:table_view_id].to_sym }
+      else
+        view_lookup_table.default_system_view
       end
+
+      config = (@view&.config&.deep_transform_keys(&:to_sym) || {}).merge(config)
 
       @table = Mensa.for_name(params[:id], config)
       @table.request = request
