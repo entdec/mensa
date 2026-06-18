@@ -10,6 +10,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
         url: ENV["SELENIUM_URL"]
       } do |driver|
         driver.add_preference("intl.accept_languages", "nl")
+        driver.add_preference("layout.css.prefers-color-scheme.content-override", 1)
       end
 
       Capybara.register_driver :selenium_dark_mode do |app|
