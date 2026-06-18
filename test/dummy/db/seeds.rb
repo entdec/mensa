@@ -6,6 +6,25 @@ def set_customer_metrics(customer, number_of_employees:, market_cap:)
   customer.update!(number_of_employees:, market_cap:)
 end
 
+ADDITIONAL_USER_FIRST_NAMES = %w[Alex Jamie Taylor Morgan Casey Riley Jordan Sam Robin Avery].freeze
+ADDITIONAL_USER_LAST_NAMES = %w[Jansen Smith Müller Garcia Rossi Dubois Brown Novak Silva Meier].freeze
+
+# Adds a small, random number of extra users for a customer. The generated email
+# addresses are stable per customer/slot, so re-running seeds remains idempotent.
+def add_random_users_for(customer, max: 4)
+  rand(0..max).times do |index|
+    first_name = ADDITIONAL_USER_FIRST_NAMES.sample
+    last_name = ADDITIONAL_USER_LAST_NAMES.sample
+
+    User.find_or_create_by!(email: "seed.user.#{index + 1}@#{customer.name.parameterize}.example") do |user|
+      user.first_name = first_name
+      user.last_name = last_name
+      user.role = random_role
+      user.customer = customer
+    end
+  end
+end
+
 asml = Customer.find_or_create_by!(name: "ASML") do |c|
   c.stock_symbol = "ASML"
   c.country = "NL"
@@ -480,6 +499,10 @@ User.find_or_create_by!(email: "jacob.aarup-andersen@carlsberg.com") do |user|
   user.last_name = "Aarup-Andersen"
   user.role = random_role
   user.customer = carlsberg
+end
+
+Customer.find_each do |customer|
+  add_random_users_for(customer, max: 4)
 end
 
 Mensa::TableView.find_or_create_by!(table_name: "users", name: "Admins") do |table|

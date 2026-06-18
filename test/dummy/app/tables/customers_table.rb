@@ -19,6 +19,13 @@ class CustomersTable < Mensa::Base
   column(:isin)
   column(:number_of_employees)
   column(:market_cap)
+  column(:users_count) do
+    attribute "COUNT(DISTINCT users.id)"
+    type :integer
+    filter do
+      having true
+    end
+  end
   column(:created_at)
   column(:updated_at)
 
@@ -33,6 +40,6 @@ class CustomersTable < Mensa::Base
   end
 
   scope do
-    Customer.all
+    Customer.joins(:users).group(:id)
   end
 end

@@ -12,6 +12,7 @@ module Mensa
     config_reader :value
     config_reader :scope
     config_reader :multiple
+    config_reader :having?
 
     class << self
       def OPERATORS
@@ -80,7 +81,7 @@ module Mensa
         record_scope.instance_exec(normalize(value), &scope)
       else
         query, hash = query_and_hash_for_operator
-        record_scope = record_scope.where(query, hash) if query.present?
+        record_scope = (column.filter.having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
         record_scope
       end
     end
@@ -99,14 +100,15 @@ module Mensa
       operators
     end
 
+    # Used in the where clause
     def query_and_hash_for_operator
-      hash = { column: column.attribute_for_condition, value: normalize(value) }
+      hash = {column: column.attribute_for_condition, value: normalize(value)}
 
       query = case operator
       when :is_empty
-        column.type == :string ? ":column IS NULL OR :column = ''" : ":column IS NULL"
+        (column.type == :string) ? ":column IS NULL OR :column = ''" : ":column IS NULL"
       when :isnt_empty
-        column.type == :string ? ":column IS NOT NULL AND :column != ''" : ":column IS NOT NULL"
+        (column.type == :string) ? ":column IS NOT NULL AND :column != ''" : ":column IS NOT NULL"
       when :is_current
         ":column = :value"
       when :matches
