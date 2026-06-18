@@ -143,7 +143,7 @@ module Mensa
     end
 
     def views?
-      all_views.reject{_1.id == :default}.present?
+      all_views.reject { it.id == :default }.present?
     end
 
     # The user that owns custom views. Returns nil when the host application has
