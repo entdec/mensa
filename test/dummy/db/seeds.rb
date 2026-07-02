@@ -1,5 +1,5 @@
 def random_role
-  User.ROLES.sample
+  User.ROLES.sample.last
 end
 
 def set_customer_metrics(customer, number_of_employees:, market_cap:)
