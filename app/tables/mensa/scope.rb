@@ -76,7 +76,10 @@ module Mensa
     def effective_order
       result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
       result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
-      result.map { |k,v| "#{k} #{v} NULLS LAST" }.join(", ")
+      result.filter_map { |k, v|
+        attribute = column(k)&.attribute_for_condition || k
+        "#{attribute} #{v} NULLS LAST"
+      }.join(", ")
     end
 
     # Builds an order hash for URL generation. Merges current order with overrides;
