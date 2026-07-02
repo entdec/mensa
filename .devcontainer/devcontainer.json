@@ -1,37 +1,34 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ruby
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
 {
     "name": "mensa",
-    "dockerComposeFile": "compose.yaml",
+    "dockerComposeFile": "docker-compose.yml",
     "service": "app",
-    "workspaceFolder": "/workspaces/mensa",
-    // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
-        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/node:2": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": false,
+            "installOhMyZshConfig": false
+        },
         "ghcr.io/rails/devcontainer/features/activestorage": {},
         "ghcr.io/rails/devcontainer/features/postgres-client": {
-            "version": "17"
+            "version": "18"
         },
-        "ghcr.io/devcontainers/features/node:1": {},
-        "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": false
+        }
     },
     "mounts": [
-        "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind",
+        "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
     ],
-    "postCreateCommand": ".devcontainer/postCreate.sh",
     "postStartCommand": ".devcontainer/postStart.sh",
     "containerEnv": {
-        "CAPYBARA_SERVER_PORT": "45678",
-        "SELENIUM_URL": "http://host.docker.internal:4444/",
         "VISUAL": "vi",
-        "DB_HOST": "postgres",
         "SSH_AUTH_SOCK": "/ssh-agent"
     },
-    "build": {
-        "args": {
-            "RUBY_VERSION": "3.4.7"
-        },
-        "dockerfile": "./devcontainer/Dockerfile"
-    }
+    "customizations": {},
+    "workspaceFolder": "/workspaces/mensa"
 }
