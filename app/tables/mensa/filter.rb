@@ -36,6 +36,7 @@ module Mensa
       @column = column
       @config = self.class.definition.merge(config || {})
       @table = table
+      validate_operators!
     end
 
     def multiple?
@@ -130,8 +131,7 @@ module Mensa
       when :lteq
         ":column <= :value"
       else
-        # Ignore unknown operators
-        nil
+        raise ArgumentError, "Unknown filter operator #{operator.inspect} for column :#{column.name}"
       end
       [query, hash]
     end
@@ -158,6 +158,23 @@ module Mensa
     end
 
     private
+
+    def validate_operators!
+      valid_keys = Mensa::Filter.OPERATORS.map(&:first)
+
+      op = @config[:operator]
+      if op.present? && valid_keys.exclude?(op.to_sym)
+        raise ArgumentError, "Unknown filter operator #{op.inspect} configured for column :#{column.name}. " \
+          "Valid operators are: #{valid_keys.join(", ")}"
+      end
+
+      allowed_ops = Array(@config[:operators])
+      invalid = allowed_ops.map(&:to_sym) - valid_keys
+      if invalid.any?
+        raise ArgumentError, "Unknown filter operator(s) #{invalid.map(&:inspect).join(", ")} configured for column :#{column.name}. " \
+          "Valid operators are: #{valid_keys.join(", ")}"
+      end
+    end
 
     def label_for_value(selected_value, options)
       option = options.find { |_label, value| value.to_s == selected_value.to_s }

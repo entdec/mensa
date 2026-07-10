@@ -7,7 +7,7 @@ class NoValueFilterTable < Mensa::Base
 
     column(:role) do
       filter do
-        operator :current
+        operator :is_current
       end
     end
   end
@@ -47,5 +47,19 @@ class FilterTest < ActiveSupport::TestCase
 
     refute f.operator_with_value?
     assert_equal "Role is current", f.to_s
+  end
+
+  test "raises ArgumentError when an unknown operator is configured via DSL" do
+    t = CustomerTable.new({filters: {country: {value: "NL", operator: :nonexistent}}})
+    error = assert_raises(ArgumentError) { t.active_filters }
+    assert_match(/Unknown filter operator/, error.message)
+    assert_match(/:nonexistent/, error.message)
+  end
+
+  test "raises ArgumentError when an unknown operator is listed in the operators DSL option" do
+    t = CustomerTable.new({filters: {country: {value: "NL", operators: [:is, :fake_operator]}}})
+    error = assert_raises(ArgumentError) { t.active_filters }
+    assert_match(/Unknown filter operator/, error.message)
+    assert_match(/:fake_operator/, error.message)
   end
 end
