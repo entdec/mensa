@@ -44,6 +44,25 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_equal hrefs.length, hrefs.uniq.length, "Each row should link to a different path"
   end
 
+  test "row links include current table context" do
+    visit users_url
+    assert_selector "tbody tr", wait: 3
+
+    find("thead a", text: "First name").click
+    assert_selector "tbody tr", wait: 3
+
+    add_filter(column: "role", value: "user")
+    assert_selector "tbody tr", wait: 3
+
+    href = first("tbody tr")["href"]
+    assert href.present?, "Row should carry an href"
+
+    query = Rack::Utils.parse_nested_query(URI.parse(href).query)
+
+    assert_equal "asc", query.dig("order", "first_name")
+    assert_equal "user", query.dig("filters", "role", "value")
+  end
+
   # ---------------------------------------------------------------------------
   # Sorting
   # ---------------------------------------------------------------------------

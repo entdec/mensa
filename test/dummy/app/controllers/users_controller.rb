@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
   before_action :set_user, only: %i[show edit update destroy]
+  before_action :set_navigation, only: %i[show edit]
 
   # GET /users
   def index
@@ -49,6 +50,13 @@ class UsersController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_user
     @user = User.find(params.expect(:id))
+  end
+
+  def set_navigation
+    @mensa_table = traversed_mensa_table(:users)
+    @mensa_navigation_params = mensa_navigation_params
+    @previous_user = @mensa_table.previous_record(@user)
+    @next_user = @mensa_table.next_record(@user)
   end
 
   # Only allow a list of trusted parameters through.

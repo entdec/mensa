@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include Mensa::TableNavigation
+
   before_action :set_locale_and_timezone
 
   def set_locale_and_timezone

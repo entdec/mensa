@@ -200,6 +200,22 @@ module Mensa
       config[:turbo_frame_id]
     end
 
+    # Minimal state needed to reconstruct this table on another page (for
+    # next_record/previous_record navigation).
+    def navigation_context
+      context = {}
+
+      context[:params] = params if params.present?
+      context[:query] = current_query if config.key?(:query) && !current_query.nil?
+      context[:order] = current_order if current_order.present?
+      context[:filters] = config[:filters] if config[:filters].present?
+      context[:table_view_id] = current_table_view_id if config.key?(:table_view_id) && !current_table_view_id.nil?
+      context[:column_order] = current_column_order if config.key?(:column_order) && !current_column_order.nil?
+      context[:hidden_columns] = current_hidden_columns if config.key?(:hidden_columns) && !current_hidden_columns.nil?
+
+      context
+    end
+
     private
 
     def ensure_internal_columns_for_joined_associations

@@ -82,4 +82,45 @@ class TableTest < ActiveSupport::TestCase
     assert_equal false, column.filter?
     assert_nil column.filter
   end
+
+  test "next_record and previous_record follow table ordering" do
+    t = TestTable.new({order: {email: :asc}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    middle_record = User.find(ordered_ids[1])
+
+    assert_equal ordered_ids[2], t.next_record(middle_record)&.id
+    assert_equal ordered_ids[0], t.previous_record(middle_record)&.id
+  end
+
+  test "next_record and previous_record respect active filters" do
+    t = CustomerTable.new({order: {name: :asc}, filters: {country: {value: "NL"}}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    middle_record = Customer.find(ordered_ids[1])
+
+    assert_equal ordered_ids[2], t.next_record(middle_record)&.id
+    assert_equal ordered_ids[0], t.previous_record(middle_record)&.id
+
+    outside_filtered_scope = customers(:sap)
+    assert_nil t.next_record(outside_filtered_scope)
+    assert_nil t.previous_record(outside_filtered_scope)
+  end
+
+  test "next_record and previous_record ignore pagination" do
+    unpaged_table = TestTable.new({order: {email: :asc}})
+    paged_table = TestTable.new({order: {email: :asc}, page: 2})
+    target_record = User.find(unpaged_table.ordered_scope.pluck(:id)[5])
+
+    assert_equal unpaged_table.next_record(target_record)&.id, paged_table.next_record(target_record)&.id
+    assert_equal unpaged_table.previous_record(target_record)&.id, paged_table.previous_record(target_record)&.id
+  end
+
+  test "next_record and previous_record return nil at boundaries" do
+    t = TestTable.new({order: {email: :asc}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    first_record = User.find(ordered_ids.first)
+    last_record = User.find(ordered_ids.last)
+
+    assert_nil t.previous_record(first_record)
+    assert_nil t.next_record(last_record)
+  end
 end

@@ -62,7 +62,40 @@ module Mensa
       @pagy_details
     end
 
+    # Returns the next record in the fully filtered/ordered result set.
+    # Pagination is intentionally ignored.
+    def next_record(record)
+      adjacent_record(record, step: 1)
+    end
+
+    # Returns the previous record in the fully filtered/ordered result set.
+    # Pagination is intentionally ignored.
+    def previous_record(record)
+      adjacent_record(record, step: -1)
+    end
+
     private
+
+    def adjacent_record(record, step:)
+      records = ordered_scope.to_a
+      index = records.find_index { |candidate| same_record?(candidate, record) }
+      return if index.nil?
+
+      adjacent_index = index + step
+      return if adjacent_index.negative? || adjacent_index >= records.length
+
+      records[adjacent_index]
+    end
+
+    def same_record?(left, right)
+      return false if left.nil? || right.nil?
+
+      if left.respond_to?(:id) && right.respond_to?(:id)
+        left.id == right.id
+      else
+        left == right
+      end
+    end
 
     def pagy_object
       return if @pagy_details && @records

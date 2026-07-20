@@ -30,7 +30,24 @@ module Mensa
     end
 
     def link
-      table.original_view_context.instance_exec(record, &table.link) if table.link
+      return unless table.link
+
+      append_navigation_context(table.original_view_context.instance_exec(record, &table.link))
+    end
+
+    private
+
+    def append_navigation_context(url)
+      return url if url.blank?
+
+      uri = URI.parse(url)
+      existing_query = Rack::Utils.parse_nested_query(uri.query)
+      merged_query = table.navigation_context.deep_stringify_keys.deep_merge(existing_query)
+      query_string = merged_query.to_query
+      uri.query = query_string.presence
+      uri.to_s
+    rescue URI::InvalidURIError
+      url
     end
   end
 end
