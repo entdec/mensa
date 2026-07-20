@@ -17,3 +17,63 @@
     --color-primary-800: rgb(30, 64, 175);
     --color-primary-900: rgb(30, 58, 138);
 }
+
+@media (prefers-color-scheme: dark) {
+
+    /* Scaffold screens in the dummy app use plain Tailwind utility classes that
+       are not dark-variant aware. These overrides keep those pages readable. */
+    body {
+        background-color: rgb(17, 24, 39);
+        color: rgb(243, 244, 246);
+    }
+
+    .md\:w-2\/3,
+    .w-full.max-w-lg {
+        color: rgb(243, 244, 246);
+    }
+
+    h1 {
+        color: rgb(243, 244, 246);
+    }
+
+    #notice {
+        background-color: rgb(20, 83, 45);
+        color: rgb(220, 252, 231);
+    }
+
+    #error_explanation {
+        background-color: rgb(127, 29, 29);
+        color: rgb(254, 226, 226);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
+        background-color: rgb(31, 41, 55);
+        border-color: rgb(75, 85, 99);
+        color: rgb(243, 244, 246);
+    }
+
+    a.bg-gray-100 {
+        background-color: rgb(55, 65, 81);
+        color: rgb(243, 244, 246);
+    }
+
+    a.bg-gray-100:hover {
+        background-color: rgb(75, 85, 99);
+    }
+
+    .bg-white {
+        background-color: rgb(31, 41, 55);
+    }
+
+    .text-gray-900 {
+        color: rgb(243, 244, 246);
+    }
+
+    .border-neutral-100 {
+        border-color: rgb(55, 65, 81);
+    }
+}
