@@ -45,8 +45,39 @@ class FilterTest < ActiveSupport::TestCase
     t = NoValueFilterTable.new({filters: {role: {operator: :is_current}}})
     f = t.active_filters.first
 
-    refute f.operator_with_value?
+    assert_not f.operator_with_value?
     assert_equal "Role is current", f.to_s
+  end
+
+  test "is_duplicate filters rows with duplicate values" do
+    customer = customers(:asml)
+
+    User.create!(email: "duplicate@mensa.test", first_name: "A", last_name: "A", role: "user", customer: customer)
+    User.create!(email: "duplicate@mensa.test", first_name: "B", last_name: "B", role: "user", customer: customer)
+    User.create!(email: "unique@mensa.test", first_name: "C", last_name: "C", role: "user", customer: customer)
+
+    t = UsersTable.new({filters: {email: {operator: :is_duplicate}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    duplicate_emails = t.ordered_scope.pluck(:email).sort
+    assert_equal ["duplicate@mensa.test", "duplicate@mensa.test"], duplicate_emails
+
+    f = t.active_filters.first
+    assert_not f.operator_with_value?
+    assert_equal "Email is duplicate", f.to_s
+  end
+
+  test "is_duplicate is evaluated within current scope" do
+    asml = customers(:asml)
+    sap = customers(:sap)
+
+    User.create!(email: "scoped-duplicate@mensa.test", first_name: "A", last_name: "A", role: "user", customer: asml)
+    User.create!(email: "scoped-duplicate@mensa.test", first_name: "B", last_name: "B", role: "user", customer: sap)
+
+    t = UsersTable.new({params: {customer_name: "ASML"}, filters: {email: {operator: :is_duplicate}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    assert_empty t.ordered_scope.pluck(:email)
   end
 
   test "raises ArgumentError when an unknown operator is configured via DSL" do

@@ -25,6 +25,7 @@ module Mensa
           [:gteq, I18n.t("mensa.operators.gteq"), true],
           [:lt, I18n.t("mensa.operators.lt"), true],
           [:lteq, I18n.t("mensa.operators.lteq"), true],
+          [:is_duplicate, I18n.t("mensa.operators.is_duplicate"), false],
           [:is_current, I18n.t("mensa.operators.is_current"), false],
           [:is_empty, I18n.t("mensa.operators.is_empty"), false],
           [:isnt_empty, I18n.t("mensa.operators.isnt_empty"), false]
@@ -81,6 +82,8 @@ module Mensa
       if scope
         record_scope.instance_exec(normalize(value), &scope)
       else
+        return apply_duplicate_filter(record_scope) if operator == :is_duplicate
+
         query, hash = query_and_hash_for_operator
         record_scope = (column.filter.having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
         record_scope
@@ -188,6 +191,21 @@ module Mensa
       collection.map do |item|
         item.is_a?(Array) ? [item.first.to_s, item.last.to_s] : [item.to_s, item.to_s]
       end
+    end
+
+    def apply_duplicate_filter(record_scope)
+      column_sql = column.attribute_for_condition.to_s
+      base_scope = record_scope.except(:select, :order, :limit, :offset)
+
+      duplicate_values_scope = base_scope
+        .where("#{column_sql} IS NOT NULL")
+        .group(column_sql)
+        .having("COUNT(*) > 1")
+        .select(Arel.sql(column_sql))
+
+      record_scope
+        .where("#{column_sql} IS NOT NULL")
+        .where("#{column_sql} IN (#{duplicate_values_scope.to_sql})")
     end
 
     # Unused at the moment

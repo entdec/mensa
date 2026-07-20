@@ -20,6 +20,7 @@ en:
       lt: less than
       gteq: greater than or equal to
       lteq: less than or equal to
+      is_duplicate: is duplicate
       is_empty: is empty
       isnt_empty: is not empty
     add_filter:

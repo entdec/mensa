@@ -20,6 +20,7 @@ nl:
       lt: kleiner dan
       gteq: groter dan of gelijk aan
       lteq: kleiner dan of gelijk aan
+      is_duplicate: is dubbel
       is_empty: is leeg
       isnt_empty: is niet leeg
     add_filter:
