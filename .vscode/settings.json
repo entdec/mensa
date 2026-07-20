@@ -1,0 +1,8 @@
+{
+  "i18n-ally-next.localesPaths": [
+    "config/locales/**"
+  ],
+  "i18n-ally-next.displayLanguage": "nl",
+  "i18n-ally-next.annotationMaxLength": 60,
+  "i18n-ally-next.keystyle": "nested",
+}
