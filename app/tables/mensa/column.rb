@@ -100,5 +100,27 @@ module Mensa
         name.to_s.humanize
       end
     end
+
+    # Determines the sort indicator icon key based on column type
+    def sort_indicator_icon_key
+      numeric_types = [:integer, :decimal, :float, :bigint]
+      date_types = [:date, :datetime, :time, :timestamp]
+      text_types = [:string, :text]
+
+      column_type = type
+      direction = sort_direction.to_s.presence || ""
+      direction_suffix = direction.present? ? "_#{direction}" : ""
+
+      case column_type
+      when *numeric_types
+        "header_order_indicator_numeric#{direction_suffix}"
+      when *date_types
+        "header_order_indicator_date#{direction_suffix}"
+      when *text_types
+        "header_order_indicator_text#{direction_suffix}"
+      else
+        "header_order_indicator#{direction_suffix}"
+      end
+    end
   end
 end
