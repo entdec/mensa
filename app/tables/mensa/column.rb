@@ -74,7 +74,7 @@ module Mensa
       @attribute_for_condition = if config[:attribute].present?
         Arel.sql(raw_attribute)
       elsif table.model.column_names.include? name.to_s
-        Arel.sql("\"#{table.model.table_name}\".\"#{name}\"")
+        "#{table.model.connection.quote_table_name(table.model.table_name)}.#{table.model.connection.quote_column_name(name)}"
       end
     end
 
