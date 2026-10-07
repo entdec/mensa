@@ -13,7 +13,7 @@ module Mensa
       return unless export
 
       export.update(status: "processing")
-      Mensa.config.callbacks[:export_started]&.call(export)
+      Mensa.config.run_callback(:export_started, export)
 
       table = build_table(export)
       unless table.exportable?
@@ -27,7 +27,7 @@ module Mensa
       export.asset.attach(io: tempfile, filename: filename, content_type: content_type)
       finalize(export, status: "completed", filename: filename)
 
-      Mensa.config.callbacks[:export_complete]&.call(export)
+      Mensa.config.run_callback(:export_completed, export)
     rescue => e
       Mensa.config.logger&.error("Mensa::ExportJob failed for export #{export&.id}: #{e.class}: #{e.message}")
       finalize(export, status: "failed") if export
@@ -40,8 +40,8 @@ module Mensa
 
     # Rebuilds the table the export was requested for, layering the view
     # configuration (if any) underneath the captured request configuration
-    # (filters, query, ordering, page) so the generated data matches what the
-    # user saw when they requested the export.
+    # (params, filters, query, ordering, page) so the generated data matches
+    # what the user saw when they requested the export.
     def build_table(export)
       config = {}
 
@@ -131,7 +131,7 @@ module Mensa
       export.update(attributes)
       # Refresh the export button badge (download count) and the downloads list
       # inside the export dialog for everyone viewing this table.
-      Mensa::Export.broadcast_refresh(export.table_name, export.user)
+      Mensa::Export.broadcast_refresh(export.table_name, export.user, params: export.table_params)
     end
   end
 end

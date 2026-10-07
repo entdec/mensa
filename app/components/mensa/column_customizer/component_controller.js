@@ -3,7 +3,7 @@ import ApplicationController from "mensa/controllers/application_controller";
 export default class ColumnCustomizerController extends ApplicationController {
     static outlets = ["mensa-table"];
     static targets = ["popover", "columnRow"];
-    static values = { turboFrameId: String, tableName: String };
+    static values = { turboFrameId: String, tableName: String, storageKey: String };
 
     connect() {
         super.connect();
@@ -340,12 +340,17 @@ export default class ColumnCustomizerController extends ApplicationController {
         if (view) url.searchParams.set("table_view_id", view);
     }
 
+    // Tables built with different params keep separate browser state.
+    get storageName() {
+        return this.storageKeyValue || this.tableNameValue;
+    }
+
     get _columnOrderKey() {
-        return `mensa:column_order:${this.tableNameValue}`;
+        return `mensa:column_order:${this.storageName}`;
     }
 
     get _hiddenColumnsKey() {
-        return `mensa:hidden_columns:${this.tableNameValue}`;
+        return `mensa:hidden_columns:${this.storageName}`;
     }
 
     _writeStorage(key, value) {

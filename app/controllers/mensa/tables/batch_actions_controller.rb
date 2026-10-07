@@ -8,7 +8,7 @@ module Mensa
         batch_action_name = params[:batch_action_name]&.to_sym
         record_ids = Array(params[:record_ids])
 
-        table = Mensa.for_name(table_name)
+        table = Mensa.for_name(table_name, params: Mensa::TableParams.from_request(params))
         table.original_view_context = helpers
 
         batch_action = table.batch_actions.find { |a| a.name == batch_action_name }

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.6.10)
+    mensa (0.6.11)
       csv
       importmap-rails
       pagy (>= 43)
@@ -366,6 +366,11 @@ GEM
     yaml (0.4.0)
     zeitwerk (2.8.2)
 
+GEM
+  remote: https://rubygems.pkg.github.com/entdec/
+  specs:
+    shipkit (0.1.2)
+
 PLATFORMS
   aarch64-linux-gnu
   aarch64-linux-musl
@@ -391,8 +396,9 @@ DEPENDENCIES
   ruby-lsp
   ruby-lsp-rails
   selenium-webdriver (~> 4.17)
+  shipkit!
   sprockets-rails
   standard
 
 BUNDLED WITH
-   2.6.2
+   2.6.9

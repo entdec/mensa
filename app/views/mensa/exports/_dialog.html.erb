@@ -1,5 +1,5 @@
 <% user = table.current_user %>
-<% exports = Mensa::Export.for_table(table.name).for_user(user).recent %>
+<% exports = Mensa::Export.for_table(table.name, params: table.params).for_user(user).recent %>
 <dialog class="mensa-table__export-dialog" data-mensa-table-target="exportDialog" data-action="click->mensa-table#exportDialogBackdrop">
   <div class="mensa-table__export-dialog__panel">
     <header class="mensa-table__export-dialog__header">
@@ -10,7 +10,7 @@
     </header>
 
     <div class="mensa-table__export-dialog__body">
-      <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, exports: exports} %>
+      <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, table_params: table.params, exports: exports} %>
 
       <form class="mensa-table__export-dialog__form" data-action="submit->mensa-table#confirmExport">
         <fieldset class="mensa-table__export-dialog__fieldset">

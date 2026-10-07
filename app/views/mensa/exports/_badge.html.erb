@@ -1,5 +1,6 @@
-<% count = Mensa::Export.completed_count(table_name, user) %>
-<span id="<%= Mensa::Export.badge_dom_id(table_name, user) %>"
+<% table_params = local_assigns[:table_params] %>
+<% count = Mensa::Export.completed_count(table_name, user, params: table_params) %>
+<span id="<%= Mensa::Export.badge_dom_id(table_name, user, params: table_params) %>"
       class="mensa-table__control_bar__badge <%= 'hidden' unless count.positive? %>"
       aria-hidden="<%= count.positive? ? 'false' : 'true' %>">
   <%= count %>

@@ -28,6 +28,9 @@
       <%= link_to "No views users", no_views_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
       <%= link_to "Search only users", search_only_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
       <%= link_to "Scoped users", scoped_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <% if (customer = Customer.order(:name).first) %>
+        <%= link_to "Customer users", customer_users_path(customer_id: customer.id), class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <% end %>
     </div>
   </body>
 </html>

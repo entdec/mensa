@@ -11,6 +11,32 @@ class InitializeExplodingScopeTable < Mensa::Base
   end
 end
 
+# A read-only model backed by a subquery, without an id column.
+class RoleCount < ApplicationRecord
+  self.table_name = "role_counts"
+
+  def self.load_schema!
+    @columns_hash = {}
+  end
+
+  def self.column_names
+    %w[role total]
+  end
+
+  def self.subquery
+    from(User.group(:role).select("role, COUNT(*) AS total"), :role_counts)
+  end
+end
+
+class RoleCountsTable < Mensa::Base
+  model RoleCount
+
+  column(:role)
+  column(:total)
+
+  scope { RoleCount.subquery }
+end
+
 class TableTest < ActiveSupport::TestCase
   test "it returns the right column" do
     t = TestTable.new({})
@@ -122,5 +148,48 @@ class TableTest < ActiveSupport::TestCase
 
     assert_nil t.previous_record(first_record)
     assert_nil t.next_record(last_record)
+  end
+
+  test "unknown column names in browser state are ignored" do
+    t = TestTable.new({
+      column_order: %w[gone last_name first_name],
+      hidden_columns: %w[gone role],
+      order: {gone: :asc, last_name: :desc},
+      filters: {gone: {value: "x"}}
+    })
+
+    assert_equal %i[last_name first_name], t.display_columns.map(&:name)
+    assert_empty t.active_filters
+    assert_nothing_raised { t.ordered_scope.to_a }
+    assert_no_match(/gone/, t.ordered_scope.to_sql)
+  end
+
+  test "a column_order with only unknown names falls back to all columns" do
+    t = TestTable.new({column_order: %w[gone]})
+
+    assert_equal %i[first_name last_name name role], t.display_columns.map(&:name)
+  end
+
+  test "order on a model attribute that isn't a column is kept" do
+    t = TestTable.new({order: {email: :asc}})
+
+    assert_match(/email asc/i, t.ordered_scope.to_sql)
+  end
+
+  test "selected_scope only selects id when the relation has that column" do
+    assert_match(/"id"|\bid\b/, TestTable.new({}).selected_scope.to_sql)
+
+    t = RoleCountsTable.new({})
+    assert_no_match(/\bid\b/, t.selected_scope.to_sql)
+    assert_equal User.distinct.count(:role), t.selected_scope.to_a.size
+  end
+
+  test "path_with_params and storage_key include the table's params" do
+    customer = customers(:asml)
+    t = Mensa.for_name("customer_users", params: {customer_id: customer.id})
+
+    assert_equal "/x?params%5Bcustomer_id%5D=#{customer.id}", t.path_with_params("/x")
+    assert_match(/\Acustomer_users:[0-9a-f]{12}\z/, t.storage_key)
+    assert_equal "/x", TestTable.new({}).path_with_params("/x")
   end
 end

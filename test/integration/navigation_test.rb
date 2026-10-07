@@ -54,4 +54,37 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_includes response.body, users(:asml_user).first_name
     assert_not_includes response.body, users(:sap_user).first_name
   end
+  test "a table that needs params gets them in every endpoint URL" do
+    customer = customers(:asml)
+    table_params = {customer_id: customer.id}
+
+    get customer_users_path(customer_id: customer.id)
+
+    assert_response :success
+    doc = Nokogiri::HTML(response.body)
+    table_el = doc.at_css(".mensa-table")
+
+    %w[table-url save-view-url views-url exports-url].each do |value|
+      url = table_el["data-mensa-table-#{value}-value"]
+      query = Rack::Utils.parse_nested_query(URI.parse(url).query)
+      assert_equal customer.id, query.dig("params", "customer_id"), "expected #{value} to carry the table's params"
+    end
+
+    storage_key = Mensa.for_name("customer_users", params: table_params).storage_key
+    assert_select "[data-mensa-filter-pill-list-storage-key-value='#{storage_key}']"
+    assert_select "##{Mensa::Export.badge_dom_id("customer_users", User.first, params: table_params)}"
+    assert_select "##{Mensa::Export.list_dom_id("customer_users", User.first, params: table_params)}"
+
+    # The table frame, and a filter requested the way the add-filter popover
+    # does (table URL + /filters/:column), both rebuild the table.
+    table_uri = URI.parse(table_el["data-mensa-table-table-url-value"])
+    get "#{table_uri.path}?#{table_uri.query}"
+    assert_response :success
+    assert_includes response.body, users(:asml_user).first_name
+    assert_not_includes response.body, users(:sap_user).first_name
+
+    get "#{table_uri.path}/filters/role?#{table_uri.query}&target=popover",
+      headers: {"Accept" => "text/vnd.turbo-stream.html"}
+    assert_response :success
+  end
 end

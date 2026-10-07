@@ -2,7 +2,7 @@
   <div class="overflow-y-auto relative"
        data-mensa-table-target="scrollContainer"
        data-controller="mensa-selection"
-       data-mensa-selection-batch-url-value="<%= table.batch_actions? ? helpers.mensa.table_batch_actions_path(table.name) : "" %>">
+       data-mensa-selection-batch-url-value="<%= table.batch_actions? ? table.path_with_params(helpers.mensa.table_batch_actions_path(table.name)) : "" %>">
     <% if table.batch_actions? %>
       <div class="mensa-batch-bar hidden" data-mensa-selection-target="batchBar">
         <div class="mensa-batch-bar__content">

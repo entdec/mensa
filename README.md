@@ -186,11 +186,43 @@ Next you can run the generator to generate a table:
 $ rails g mensa:table:generate <model_name>
 ```
 
+### Table params
+
+A table can be built with extra params, for example when its scope or columns
+depend on a record:
+
+```erb
+<%= table :query_results, params: {query_id: @query.id} %>
+```
+
+They are available as `params` inside the table (e.g. `params[:query_id]`) and
+are sent along whenever Mensa rebuilds the table: paging, filters, views, batch
+actions and exports (including recurring exports, which store them on the
+`Mensa::Export`). Exports and the state the browser remembers (filters, order,
+columns) are kept per table *and* params.
+
 ### Exports
 
 Exporting is built into the table's control bar. Clicking the export button opens
 a dialog that lists the user's previous downloads and lets them request a new
 export (scope and CSV format). 
+
+#### Export callbacks
+
+Configure callbacks in your Mensa initializer to act on exports, for example to
+email the user once their download is ready:
+
+```ruby
+Mensa.setup do |config|
+  config.callbacks = {
+    export_started: ->(export) {},
+    export_completed: ->(export) { ExportMailer.with(export: export).ready.deliver_later }
+  }
+end
+```
+
+`export_completed` was called `export_complete` before 0.6.12; that name still
+works. Unknown callback names are logged as a warning.
 
 #### Repeating exports
 

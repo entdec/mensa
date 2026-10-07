@@ -4,6 +4,10 @@ module Mensa
     # requests. Generating the CSV happens asynchronously in Mensa::ExportJob;
     # both the export button badge and the downloads list are refreshed via
     # Turbo streams once the job completes.
+    #
+    # Tables built with extra params send them along as params[...] in the
+    # exports URL. They are stored on the export so Mensa::ExportJob can
+    # rebuild the table, and they scope the downloads list and badge.
     class ExportsController < ::ApplicationController
       # Returns the current downloads list for the table, used to refresh the
       # contents of the export dialog when it is opened.
@@ -46,9 +50,10 @@ module Mensa
       # Deletes an export from the current user's download list. The attached
       # asset is purged automatically when the record is destroyed.
       def destroy
-        export = exports.find(params[:id])
+        export = user_exports.find(params[:id])
+        @table_params = export.table_params
         export.destroy
-        Mensa::Export.broadcast_refresh(export.table_name, export.user)
+        Mensa::Export.broadcast_refresh(export.table_name, export.user, params: export.table_params)
 
         respond_to do |format|
           format.turbo_stream { render turbo_stream: [list_stream, badge_stream] }
@@ -62,7 +67,7 @@ module Mensa
       # controller (instead of a direct Active Storage link) gives us a hook to
       # delete the Mensa::Export record and free the stored file afterwards.
       def download
-        export = exports.find(params[:id])
+        export = user_exports.find(params[:id])
         return head :not_found unless export.downloadable?
 
         data = export.asset.download
@@ -77,11 +82,10 @@ module Mensa
         begin
           if export.repeating?
             export.asset.purge_later
-            Mensa::Export.broadcast_refresh(export.table_name, export.user)
           else
             export.destroy
-            Mensa::Export.broadcast_refresh(export.table_name, export.user)
           end
+          Mensa::Export.broadcast_refresh(export.table_name, export.user, params: export.table_params)
         rescue => e
           Mensa.config.logger&.warn("Mensa::Export cleanup failed for #{export.id}: #{e.class}: #{e.message}")
         end
@@ -89,35 +93,50 @@ module Mensa
 
       private
 
+      # All of the current user's exports of this table, regardless of
+      # params. Download and delete links don't carry the params.
+      def user_exports
+        Mensa::Export.where(table_name: params[:table_id]).for_user(current_mensa_user)
+      end
+
+      # The exports listed for the table as built with the current params.
       def exports
-        @exports ||= Mensa::Export.for_table(params[:table_id]).for_user(current_mensa_user).recent
+        @exports ||= Mensa::Export.for_table(params[:table_id], params: table_params).for_user(current_mensa_user).recent
+      end
+
+      def table_params
+        @table_params ||= Mensa::TableParams.from_request(params)
       end
 
       def list_stream
-        turbo_stream.replace(Mensa::Export.list_dom_id(params[:table_id], current_mensa_user),
+        turbo_stream.replace(Mensa::Export.list_dom_id(params[:table_id], current_mensa_user, params: table_params),
           partial: "mensa/exports/list", locals: list_locals)
       end
 
       def badge_stream
-        turbo_stream.replace(Mensa::Export.badge_dom_id(params[:table_id], current_mensa_user),
+        turbo_stream.replace(Mensa::Export.badge_dom_id(params[:table_id], current_mensa_user, params: table_params),
           partial: "mensa/exports/badge",
-          locals: {table_name: params[:table_id], user: current_mensa_user})
+          locals: {table_name: params[:table_id], user: current_mensa_user, table_params: table_params})
       end
 
       def list_locals
-        {table_name: params[:table_id], user: current_mensa_user, exports: exports}
+        {table_name: params[:table_id], user: current_mensa_user, table_params: table_params, exports: exports}
       end
 
       def export_config
-        params.permit(
+        config = params.permit(
           :query,
           :page,
           :table_view_id,
           order: {},
           filters: {},
           column_order: [],
-          hidden_columns: []
+          hidden_columns: [],
+          params: {}
         ).to_h
+        config.delete(:params)
+        config[:params] = table_params if table_params.present?
+        config
       end
 
       def current_mensa_user

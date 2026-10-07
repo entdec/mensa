@@ -120,14 +120,19 @@ module Mensa
       end,
       # Called with the Mensa::Export once the CSV has been generated and
       # attached (export.asset). Use this to e.g. notify or email the user.
+      # (Before 0.6.12 this was called export_complete; that name still works.)
       #
       # UserMailer.with(
       #   user: User.find(export.user_id),
       #   export: export,
       # ).export_email.deliver_later
-      export_complete: lambda do |export|
+      export_completed: lambda do |export|
       end
     }
+
+    CALLBACKS = %i[export_started export_completed].freeze
+    # Older names that are still called alongside the current one.
+    CALLBACK_ALIASES = {export_completed: %i[export_complete]}.freeze
 
     # :front or :back (default)
     option :row_actions_position, default: :back
@@ -136,6 +141,24 @@ module Mensa
 
     def initialize
       set_defaults!
+    end
+
+    def callbacks=(callbacks)
+      known = CALLBACKS + CALLBACK_ALIASES.values.flatten
+      unknown = callbacks.to_h.keys.map(&:to_sym) - known
+      if unknown.any?
+        logger&.warn("Mensa: ignoring unknown callback(s) #{unknown.join(", ")}; known callbacks are #{CALLBACKS.join(", ")}")
+      end
+
+      @callbacks = callbacks
+    end
+
+    # Calls the callback registered under +name+ (or one of its older names).
+    def run_callback(name, *args)
+      [name, *CALLBACK_ALIASES.fetch(name, [])].each do |key|
+        callback = callbacks && (callbacks[key] || callbacks[key.to_s])
+        callback&.call(*args)
+      end
     end
   end
 

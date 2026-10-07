@@ -186,5 +186,64 @@ module Mensa
     def export_tmp_pattern(export)
       File.join(Dir.tmpdir, "#{export.table_name}_export_#{export.created_at.strftime("%Y-%m-%d-%H%M%S")}*")
     end
+    test "rebuilds a table that needs params from export.config" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: nil, format: "plain_csv", scope: "all",
+        config: {params: {customer_id: customer.id}})
+
+      Mensa::ExportJob.perform_now(export)
+      export.reload
+
+      assert export.completed?
+      rows = CSV.parse(export.asset.download)
+      assert_equal %w[first_name last_name email role], rows.first
+      assert_equal customer.users.pluck(:email).sort, rows.drop(1).map { it[2] }.sort
+      assert_operator customer.users.count, :<, User.count
+    end
+
+    test "exports the current page of a table that needs params" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: nil, format: "plain_csv", scope: "current_page",
+        config: {params: {customer_id: customer.id}, page: "1", filters: {role: {value: "user"}}})
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      assert export.completed?
+      assert_equal customer.users.where(role: "user").pluck(:email).sort, rows.drop(1).map { it[2] }.sort
+    end
+
+    test "broadcasts to the stream of the export's params" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: @user, format: "plain_csv", scope: "all",
+        config: {params: {customer_id: customer.id}})
+
+      assert_turbo_stream_broadcasts Mensa::Export.stream_name("customer_users", @user, params: {customer_id: customer.id}) do
+        Mensa::ExportJob.perform_now(export)
+      end
+    end
+
+    test "fails the export when the table's params are missing" do
+      export = Mensa::Export.create!(table_name: "customer_users", user: @user, format: "plain_csv", scope: "all")
+
+      assert_raises(KeyError) { Mensa::ExportJob.perform_now(export) }
+      assert export.reload.failed?
+    end
+
+    test "calls the export_completed callback and the older export_complete name" do
+      called = []
+      original = Mensa.config.callbacks
+      Mensa.config.callbacks = {
+        export_started: ->(export) { called << :export_started },
+        export_completed: ->(export) { called << :export_completed },
+        export_complete: ->(export) { called << :export_complete }
+      }
+
+      Mensa::ExportJob.perform_now(Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all"))
+
+      assert_equal %i[export_started export_completed export_complete], called
+    ensure
+      Mensa.config.callbacks = original
+    end
   end
 end

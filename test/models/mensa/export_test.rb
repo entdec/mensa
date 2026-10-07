@@ -100,5 +100,26 @@ module Mensa
     test "token falls back to anonymous without a user" do
       assert_equal "users-anonymous", Mensa::Export.token("users", nil)
     end
+    test "tokens include a digest of the table's params" do
+      plain = Mensa::Export.token("users", @user)
+      first = Mensa::Export.token("users", @user, params: {customer_id: "1"})
+
+      assert_equal plain, Mensa::Export.token("users", @user, params: {})
+      assert_match(/\A#{plain}-[0-9a-f]{12}\z/, first)
+      assert_equal first, Mensa::Export.token("users", @user, params: {"customer_id" => 1})
+      assert_not_equal first, Mensa::Export.token("users", @user, params: {customer_id: "2"})
+    end
+
+    test "for_table keeps exports of different params apart" do
+      none = Mensa::Export.create!(table_name: "users", user: @user)
+      first = Mensa::Export.create!(table_name: "users", user: @user, config: {params: {customer_id: "1"}})
+      second = Mensa::Export.create!(table_name: "users", user: @user, config: {params: {customer_id: "2"}})
+
+      assert_equal [none], Mensa::Export.for_table("users").to_a
+      assert_equal [first], Mensa::Export.for_table("users", params: {customer_id: 1}).to_a
+      assert_equal [second], Mensa::Export.for_table("users", params: {"customer_id" => "2"}).to_a
+      assert_equal({"customer_id" => "1"}, first.table_params)
+      assert_equal({}, none.table_params)
+    end
   end
 end

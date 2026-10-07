@@ -8,7 +8,7 @@
      data-controller="mensa-views"
      data-mensa-views-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
      data-mensa-views-table-id-value="<%= table.table_id %>"
-     data-mensa-views-views-url-value="<%= helpers.mensa.table_views_path(table.name) %>">
+     data-mensa-views-views-url-value="<%= table.path_with_params(helpers.mensa.table_views_path(table.name)) %>">
   <button class="mensa-table__views__trigger" type="button" data-action="mensa-views#toggleDropdown" data-mensa-views-target="trigger" aria-haspopup="listbox">
     <span class="mensa-table__views__trigger-label" data-mensa-views-target="triggerLabel"><%= current_view_name %></span>
     <i class="<%= Mensa.config.icons[:views_trigger] %> mensa-table__views__trigger-icon"></i>

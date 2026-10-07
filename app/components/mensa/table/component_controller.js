@@ -255,7 +255,7 @@ export default class TableComponentController extends ApplicationController {
         const state = this.currentViewState();
         this.hideSaveReset();
 
-        const response = await patch(`${this.saveViewUrlValue}/${viewId}`, {
+        const response = await patch(this.memberUrl(this.saveViewUrlValue, viewId), {
             body: JSON.stringify({
                 query: state.query,
                 filters: state.filters,
@@ -439,17 +439,21 @@ export default class TableComponentController extends ApplicationController {
     // --- View filter visibility persistence ---
 
     _viewFiltersStorageKey() {
-        return `mensa:view-filters-visible:${this._tableName()}`;
+        return `mensa:view-filters-visible:${this._storageName()}`;
     }
 
-    _tableName() {
+    _storageName() {
         if (this.hasMensaFilterPillListOutlet) {
-            return this.mensaFilterPillListOutlet.tableNameValue;
+            return this.mensaFilterPillListOutlet.storageName;
         }
         const el = this.element.querySelector(
             "[data-mensa-filter-pill-list-table-name-value]",
         );
-        return el?.dataset?.mensaFilterPillListTableNameValue || "";
+        return (
+            el?.dataset?.mensaFilterPillListStorageKeyValue ||
+            el?.dataset?.mensaFilterPillListTableNameValue ||
+            ""
+        );
     }
 
     _loadViewFiltersVisible() {

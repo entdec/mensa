@@ -22,3 +22,7 @@ group :development, :test do
   gem "ruby-lsp", require: false
   gem "ruby-lsp-rails", require: false
 end
+
+source "https://rubygems.pkg.github.com/entdec" do
+  gem "shipkit"
+end

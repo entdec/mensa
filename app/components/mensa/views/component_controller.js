@@ -120,7 +120,7 @@ export default class ViewsComponentController extends ApplicationController {
         }
 
         const turboFrameId = this._turboFrameId();
-        const response = await patch(`${this.viewsUrlValue}/${viewId}`, {
+        const response = await patch(this.memberUrl(this.viewsUrlValue, viewId), {
             body: JSON.stringify({ name: newName, turbo_frame_id: turboFrameId }),
             contentType: "application/json",
             responseKind: "turbo-stream",
@@ -177,7 +177,7 @@ export default class ViewsComponentController extends ApplicationController {
         if (!confirm(`Delete "${viewName}"?`)) return;
 
         const turboFrameId = this._turboFrameId();
-        await destroy(`${this.viewsUrlValue}/${viewId}`, {
+        await destroy(this.memberUrl(this.viewsUrlValue, viewId), {
             body: JSON.stringify({ turbo_frame_id: turboFrameId }),
             contentType: "application/json",
             responseKind: "turbo-stream",

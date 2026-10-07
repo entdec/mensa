@@ -47,7 +47,7 @@ module Mensa
       ensure_internal_columns_for_joined_associations
 
       @selected_scope = ordered_scope
-      @selected_scope = @selected_scope.select([:id] + columns.filter_map(&:attribute))
+      @selected_scope = @selected_scope.select((id_column? ? [:id] : []) + columns.filter_map(&:attribute))
 
       @selected_scope
     end
@@ -75,6 +75,16 @@ module Mensa
     end
 
     private
+
+    # Relations without an id column (e.g. a read-only model backed by a
+    # subquery) can't select it.
+    def id_column?
+      relation = ordered_scope
+      klass = relation.respond_to?(:klass) ? relation.klass : model
+      klass.column_names.include?("id")
+    rescue ActiveRecord::ActiveRecordError
+      false
+    end
 
     def adjacent_record(record, step:)
       records = ordered_scope.to_a
@@ -110,9 +120,18 @@ module Mensa
       result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
       result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
       result.filter_map { |k, v|
-        attribute = column(k)&.attribute_for_condition || k
+        col = column(k)
+        # Skip orders on unknown names, e.g. from browser state saved for
+        # different params.
+        next unless col || model_attribute?(k)
+
+        attribute = col&.attribute_for_condition || k
         "#{attribute} #{v} NULLS LAST"
       }.join(", ")
+    end
+
+    def model_attribute?(name)
+      model.respond_to?(:column_names) && model.column_names.include?(name.to_s)
     end
 
     # Builds an order hash for URL generation. Merges current order with overrides;

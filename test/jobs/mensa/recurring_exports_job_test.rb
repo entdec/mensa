@@ -1,4 +1,5 @@
 require "test_helper"
+require "csv"
 
 module Mensa
   class RecurringExportsJobTest < ActiveJob::TestCase
@@ -36,6 +37,28 @@ module Mensa
       assert_no_enqueued_jobs only: Mensa::ExportJob do
         Mensa::RecurringExportsJob.perform_now(Time.current)
       end
+    end
+    test "reruns recurring exports of a table that needs params" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(
+        table_name: "customer_users",
+        user: nil,
+        format: "plain_csv",
+        scope: "all",
+        status: "completed",
+        repeat: "daily",
+        last_repeat_run_at: 2.days.ago,
+        config: {params: {customer_id: customer.id}}
+      )
+
+      perform_enqueued_jobs(only: Mensa::ExportJob) do
+        Mensa::RecurringExportsJob.perform_now(Time.current)
+      end
+
+      export.reload
+      assert export.completed?
+      assert export.asset.attached?
+      assert_equal customer.users.count, CSV.parse(export.asset.download).length - 1
     end
   end
 end

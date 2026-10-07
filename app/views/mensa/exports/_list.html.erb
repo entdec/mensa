@@ -1,4 +1,4 @@
-<div id="<%= Mensa::Export.list_dom_id(table_name, user) %>" class="mensa-table__export-dialog__downloads">
+<div id="<%= Mensa::Export.list_dom_id(table_name, user, params: local_assigns[:table_params]) %>" class="mensa-table__export-dialog__downloads">
   <h3 class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.available_downloads", default: "Available downloads") %></h3>
   <% if exports.blank? %>
     <p class="mensa-table__export-dialog__empty"><%= t("mensa.exports.empty", default: "You have no downloads yet. Create one below.") %></p>

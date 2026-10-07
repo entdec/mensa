@@ -24,7 +24,7 @@ module Mensa
               # generated element IDs match what is already in the DOM.
               table_config = view.config
                 .deep_transform_keys(&:to_sym)
-                .merge(turbo_frame_id: params[:turbo_frame_id])
+                .merge(turbo_frame_id: params[:turbo_frame_id], params: table_params)
 
               @table = Mensa.for_name(params[:table_id], table_config)
               @table.request = request
@@ -56,7 +56,7 @@ module Mensa
             format.turbo_stream do
               table_config = view.config
                 .deep_transform_keys(&:to_sym)
-                .merge(turbo_frame_id: params[:turbo_frame_id])
+                .merge(turbo_frame_id: params[:turbo_frame_id], params: table_params)
 
               @table = Mensa.for_name(params[:table_id], table_config)
               @table.request = request
@@ -81,7 +81,7 @@ module Mensa
 
         respond_to do |format|
           format.turbo_stream do
-            @table = Mensa.for_name(params[:table_id], {turbo_frame_id: params[:turbo_frame_id]})
+            @table = Mensa.for_name(params[:table_id], {turbo_frame_id: params[:turbo_frame_id], params: table_params})
             @table.request = request
             @table.original_view_context = helpers
           end
@@ -98,6 +98,11 @@ module Mensa
         config = params.permit(:query, order: {}, column_order: [], hidden_columns: []).to_h
         config[:filters] = params[:filters]&.to_unsafe_h || {}
         config
+      end
+
+      # The params the table was built with, sent along in the views URL.
+      def table_params
+        Mensa::TableParams.from_request(params)
       end
 
       def current_mensa_user

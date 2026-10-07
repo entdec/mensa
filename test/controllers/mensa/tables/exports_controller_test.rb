@@ -177,6 +177,72 @@ module Mensa
         assert_response :not_found
         assert Mensa::Export.exists?(export.id)
       end
+      test "create saves the table's params sent in the exports URL" do
+        customer = customers(:asml)
+
+        assert_enqueued_with(job: Mensa::ExportJob) do
+          post exports_path_with_params("customer_users", customer_id: customer.id),
+            params: {export_format: "plain_csv", scope: "all", filters: {role: {value: "user"}}},
+            as: :json
+        end
+
+        assert_response :created
+        export = Mensa::Export.order(:created_at).last
+        assert_equal "customer_users", export.table_name
+        assert_equal({"customer_id" => customer.id}, export.config["params"])
+        assert_equal({"customer_id" => customer.id}, export.table_params)
+        assert_equal "user", export.config.dig("filters", "role", "value")
+      end
+
+      test "create saves params sent in the request body, normalized to strings" do
+        post mensa.table_exports_path("users"),
+          params: {export_format: "plain_csv", scope: "all", params: {limit: 5, tags: ["a", "b"]}},
+          as: :json
+
+        assert_response :created
+        assert_equal({"limit" => "5", "tags" => ["a", "b"]}, Mensa::Export.order(:created_at).last.config["params"])
+      end
+
+      test "create does not store params when the table has none" do
+        post mensa.table_exports_path("users"), params: {export_format: "plain_csv"}, as: :json
+
+        assert_not Mensa::Export.order(:created_at).last.config.key?("params")
+      end
+
+      test "index only lists the exports of the table built with the same params" do
+        asml = customers(:asml)
+        sap = customers(:sap)
+        Mensa::Export.create!(table_name: "customer_users", user: @user, status: "completed", filename: "asml.csv", config: {params: {customer_id: asml.id}})
+        Mensa::Export.create!(table_name: "customer_users", user: @user, status: "completed", filename: "sap.csv", config: {params: {customer_id: sap.id}})
+
+        get exports_path_with_params("customer_users", customer_id: asml.id),
+          headers: {"Accept" => "text/vnd.turbo-stream.html"}
+
+        assert_response :success
+        assert_match Mensa::Export.list_dom_id("customer_users", @user, params: {customer_id: asml.id}), response.body
+        assert_match "asml.csv", response.body
+        assert_no_match "sap.csv", response.body
+      end
+
+      test "destroy refreshes the list of the export's params" do
+        customer = customers(:asml)
+        export = Mensa::Export.create!(table_name: "customer_users", user: @user, status: "completed", config: {params: {customer_id: customer.id}})
+
+        delete mensa.table_export_path("customer_users", export),
+          headers: {"Accept" => "text/vnd.turbo-stream.html"}
+
+        assert_response :success
+        assert_not Mensa::Export.exists?(export.id)
+        assert_match Mensa::Export.list_dom_id("customer_users", @user, params: {customer_id: customer.id}), response.body
+        assert_match Mensa::Export.badge_dom_id("customer_users", @user, params: {customer_id: customer.id}), response.body
+      end
+
+      private
+
+      # The exports URL as the table component renders it.
+      def exports_path_with_params(table_name, **table_params)
+        Mensa::TableParams.append_to(mensa.table_exports_path(table_name), table_params)
+      end
     end
   end
 end

@@ -8,6 +8,7 @@ export default class FilterPillListComponentController extends ApplicationContro
     static values = {
         supportsViews: Boolean,
         tableName: String,
+        storageKey: String,
     };
 
     connect() {
@@ -567,8 +568,8 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.writeStorage(this.filtersStorageKey, null);
         this.writeStorage(this.searchStorageKey, null);
         this.writeStorage(this.orderStorageKey, null);
-        this.writeStorage(`mensa:column_order:${this.tableNameValue}`, null);
-        this.writeStorage(`mensa:hidden_columns:${this.tableNameValue}`, null);
+        this.writeStorage(`mensa:column_order:${this.storageName}`, null);
+        this.writeStorage(`mensa:hidden_columns:${this.storageName}`, null);
     }
 
     // Keep these for backward-compatibility with other controllers that look up
@@ -698,7 +699,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             return (
                 JSON.parse(
                     this.readStorage(
-                        `mensa:column_order:${this.tableNameValue}`,
+                        `mensa:column_order:${this.storageName}`,
                     ),
                 ) || []
             );
@@ -712,7 +713,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             return (
                 JSON.parse(
                     this.readStorage(
-                        `mensa:hidden_columns:${this.tableNameValue}`,
+                        `mensa:hidden_columns:${this.storageName}`,
                     ),
                 ) || []
             );
@@ -721,20 +722,25 @@ export default class FilterPillListComponentController extends ApplicationContro
         }
     }
 
+    // Tables built with different params keep separate browser state.
+    get storageName() {
+        return this.storageKeyValue || this.tableNameValue;
+    }
+
     get filtersStorageKey() {
-        return `mensa:filters:${this.tableNameValue}`;
+        return `mensa:filters:${this.storageName}`;
     }
     get searchStorageKey() {
-        return `mensa:search:${this.tableNameValue}`;
+        return `mensa:search:${this.storageName}`;
     }
     get viewStorageKey() {
-        return `mensa:view:${this.tableNameValue}`;
+        return `mensa:view:${this.storageName}`;
     }
     get pageStorageKey() {
-        return `mensa:page:${this.tableNameValue}`;
+        return `mensa:page:${this.storageName}`;
     }
     get orderStorageKey() {
-        return `mensa:order:${this.tableNameValue}`;
+        return `mensa:order:${this.storageName}`;
     }
 
     get ourUrl() {

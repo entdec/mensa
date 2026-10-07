@@ -25,9 +25,11 @@ module Mensa
       @params = (@config[:params].presence || {}).deep_symbolize_keys
       @config[:params] = @params
 
+      # Hidden columns can come from browser state saved for different params,
+      # so skip names that aren't columns of this table.
       current_hidden_columns&.each do |column_name|
         c = columns.find { |c| c.name == column_name.to_sym }
-        c.config[:visible] = false
+        c.config[:visible] = false if c
       end
     end
 
@@ -40,6 +42,12 @@ module Mensa
       # are absent from any URL-supplied column_order. Always append them so
       # that columns and selected_scope include their attributes.
       all_keys = (config[:columns]&.keys || []).map(&:to_sym)
+      # A column_order can come from browser state saved for different params
+      # (with different columns), so drop names that aren't columns here.
+      if all_keys.any?
+        order &= all_keys
+        order = all_keys if order.empty?
+      end
       internal_keys = all_keys.select { |key| config.dig(:columns, key, :internal) }
       (order | internal_keys)
     end
@@ -138,6 +146,18 @@ module Mensa
       }.compact.to_query
 
       query.present? ? "#{path}?#{query}" : path
+    end
+
+    # Appends this table's params to a Mensa endpoint path, so the endpoint
+    # can rebuild the table (see Mensa::TableParams).
+    def path_with_params(path)
+      Mensa::TableParams.append_to(path, params)
+    end
+
+    # Key under which the browser persists this table's state (filters, order,
+    # column order, ...). Tables built with different params get separate state.
+    def storage_key
+      [name, Mensa::TableParams.digest(params)].compact.join(":")
     end
 
     def all_views

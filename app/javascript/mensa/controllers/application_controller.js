@@ -6,6 +6,14 @@ export default class ApplicationController extends Controller {
     this.element[this.identifier] = this
   }
 
+  // Appends a member id to a collection URL while keeping its query string
+  // (e.g. the table's params[...]) intact.
+  memberUrl(collectionUrl, id) {
+    const url = new URL(collectionUrl, window.location.origin)
+    url.pathname += `/${encodeURIComponent(id)}`
+    return url.toString()
+  }
+
   getController(element, identifier) {
     return this.application.getControllerForElementAndIdentifier(element, identifier)
   }
