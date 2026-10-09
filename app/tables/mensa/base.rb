@@ -89,8 +89,13 @@ module Mensa
     end
 
     def system_views
-      views = config[:views]&.key?(:default) ? [] : [Mensa::SystemView.new(:default, config: {name: I18n.t("mensa.views.default")}, table: self)]
-      views + (config[:views] || {}).keys.map { |view_name| Mensa::SystemView.new(view_name, config: config.dig(:views, view_name), table: self) }
+      default_config = {name: I18n.t("mensa.views.default")}
+      views = config[:views]&.key?(:default) ? [] : [Mensa::SystemView.new(:default, config: default_config, table: self)]
+      views + (config[:views] || {}).keys.map do |view_name|
+        view_config = config.dig(:views, view_name) || {}
+        view_config = default_config.merge(view_config.compact) if view_name == :default
+        Mensa::SystemView.new(view_name, config: view_config, table: self)
+      end
     end
 
     def default_system_view

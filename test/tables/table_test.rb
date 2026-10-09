@@ -37,6 +37,19 @@ class RoleCountsTable < Mensa::Base
   scope { RoleCount.subquery }
 end
 
+class UnnamedDefaultViewTable < Mensa::Base
+  model User
+
+  column(:first_name)
+  column(:role)
+
+  view :default do
+    filter :role do
+      value "user"
+    end
+  end
+end
+
 class TableTest < ActiveSupport::TestCase
   test "it returns the right column" do
     t = TestTable.new({})
@@ -191,5 +204,16 @@ class TableTest < ActiveSupport::TestCase
     assert_equal "/x?params%5Bcustomer_id%5D=#{customer.id}", t.path_with_params("/x")
     assert_match(/\Acustomer_users:[0-9a-f]{12}\z/, t.storage_key)
     assert_equal "/x", TestTable.new({}).path_with_params("/x")
+  end
+
+  test "a redefined default view without a name keeps the translated name" do
+    view = UnnamedDefaultViewTable.new({}).default_system_view
+
+    assert_equal I18n.t("mensa.views.default"), view.name
+    assert_equal "user", view.config.dig(:filters, :role, :value)
+  end
+
+  test "a redefined default view can set its own name" do
+    assert_equal "All users", Mensa.for_name("users").default_system_view.name
   end
 end
