@@ -16,7 +16,11 @@ class UsersTable < Mensa::Base
     end
     render do
       html do |user|
-        User.ROLES.find { |_, role| role == user.role }&.first
+        label = User.ROLES.find { |_, role| role == user.role }&.first
+
+        content_tag(:td, class: "whitespace-nowrap") do
+          content_tag(:span, label, class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset")
+        end
       end
     end
   end

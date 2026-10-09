@@ -19,7 +19,25 @@ module Mensa
       @value ||= row.value(column)
     end
 
+    # Renders the cell's content in the given format. The :html format
+    # includes the surrounding <td>; when a custom html render block returns
+    # its own td (e.g. content_tag(:td, ..., class: ...)), that one is used.
     def render(format)
+      content = render_content(format)
+      return content unless format.to_sym == :html
+      return content if td?(content)
+
+      content_tag(:td, content)
+    end
+
+    private
+
+    # Only HTML-safe output counts, so plain strings are still escaped.
+    def td?(content)
+      content.html_safe? && content.to_s.lstrip.match?(/\A<td[\s>]/i)
+    end
+
+    def render_content(format)
       proc = column.config.dig(:render, format.to_sym)
       if proc
         row.table.original_view_context.instance_exec(row.record, &proc)
@@ -27,8 +45,6 @@ module Mensa
         send(:"to_#{format}")
       end
     end
-
-    private
 
     def to_html
       case value

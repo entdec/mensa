@@ -61,6 +61,16 @@ class UserTable < ApplicationTable
     attribute "roles_count" # We use a database column here
   end
 
+  # Customize how a cell looks. Each cell is wrapped in a <td>, unless the html
+  # block returns its own td, so you can style the td itself.
+  column(:state) do
+    render do
+      html do |user|
+        content_tag(:td, user.human_state_name, class: "state state--#{user.state}")
+      end
+    end
+  end
+
   # You can add one or more actions to a row
   action :delete do
     title "Delete row"

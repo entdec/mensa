@@ -52,4 +52,50 @@ class ColumnTest < ActiveSupport::TestCase
     assert_equal :iso8601, subject.format.format
     assert_equal Time.zone, subject.format.time_zone
   end
+
+  test "a cell renders html inside its td and csv without one" do
+    t = TestTable.new({})
+    user = users(:asml_user)
+    cell = Mensa::Cell.new(row: Mensa::Row.new(t, user), column: t.column(:first_name))
+
+    assert_equal "<td>#{user.first_name}</td>", cell.render(:html)
+    assert_predicate cell.render(:html), :html_safe?
+    assert_equal user.first_name, cell.render(:csv)
+  end
+
+  test "a cell escapes unsafe output of a custom html render inside its td" do
+    t = TestTable.new({})
+    t.original_view_context = ApplicationController.new.view_context
+    column = Mensa::Column.new(:first_name, config: {render: {html: ->(user) { "<b>#{user.first_name}</b>" }}}, table: t)
+    cell = Mensa::Cell.new(row: Mensa::Row.new(t, users(:asml_user)), column: column)
+
+    assert_equal "<td>&lt;b&gt;#{users(:asml_user).first_name}&lt;/b&gt;</td>", cell.render(:html)
+  end
+
+  test "a cell uses the td a custom html render returns" do
+    t = TestTable.new({})
+    t.original_view_context = ApplicationController.new.view_context
+    column = Mensa::Column.new(:first_name, config: {render: {html: ->(user) { content_tag(:td, user.first_name, class: "highlight") }}}, table: t)
+    cell = Mensa::Cell.new(row: Mensa::Row.new(t, users(:asml_user)), column: column)
+
+    assert_equal %(<td class="highlight">#{users(:asml_user).first_name}</td>), cell.render(:html)
+  end
+
+  test "a cell wraps other html from a custom html render in a td" do
+    t = TestTable.new({})
+    t.original_view_context = ApplicationController.new.view_context
+    column = Mensa::Column.new(:first_name, config: {render: {html: ->(user) { content_tag(:span, user.first_name, class: "badge") }}}, table: t)
+    cell = Mensa::Cell.new(row: Mensa::Row.new(t, users(:asml_user)), column: column)
+
+    assert_equal %(<td><span class="badge">#{users(:asml_user).first_name}</span></td>), cell.render(:html)
+  end
+
+  test "a plain string starting with a td is escaped, not used as the td" do
+    t = TestTable.new({})
+    t.original_view_context = ApplicationController.new.view_context
+    column = Mensa::Column.new(:first_name, config: {render: {html: ->(user) { "<td>x</td>" }}}, table: t)
+    cell = Mensa::Cell.new(row: Mensa::Row.new(t, users(:asml_user)), column: column)
+
+    assert_equal "<td>&lt;td&gt;x&lt;/td&gt;</td>", cell.render(:html)
+  end
 end
