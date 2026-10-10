@@ -106,33 +106,34 @@ module Mensa
 
     # Used in the where clause
     def query_and_hash_for_operator
-      hash = {column: column.attribute_for_condition, value: normalize(value)}
+      col = "(#{column.attribute_for_condition})"
+      hash = {value: normalize(value)}
 
       query = case operator
       when :is_empty
-        (column.type == :string) ? ":column IS NULL OR :column = ''" : ":column IS NULL"
+        (column.type == :string) ? "#{col} IS NULL OR #{col} = ''" : "#{col} IS NULL"
       when :isnt_empty
-        (column.type == :string) ? ":column IS NOT NULL AND :column != ''" : ":column IS NOT NULL"
+        (column.type == :string) ? "#{col} IS NOT NULL AND #{col} != ''" : "#{col} IS NOT NULL"
       when :is_current
-        ":column = :value"
+        "#{col} = :value"
       when :matches
-        ":column LIKE :value"
+        "#{col} LIKE :value"
       when :does_not_match
-        ":column NOT LIKE :value"
+        "#{col} NOT LIKE :value"
       when :is
         hash[:value] = value if hash[:value].is_a?(Array)
-        ":column = :value"
+        "#{col} = :value"
       when :isnt
         hash[:value] = value if hash[:value].is_a?(Array)
-        ":column != :value"
+        "#{col} != :value"
       when :gt
-        ":column > :value"
+        "#{col} > :value"
       when :lt
-        ":column < :value"
+        "#{col} < :value"
       when :gteq
-        ":column >= :value"
+        "#{col} >= :value"
       when :lteq
-        ":column <= :value"
+        "#{col} <= :value"
       else
         raise ArgumentError, "Unknown filter operator #{operator.inspect} for column :#{column.name}"
       end

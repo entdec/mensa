@@ -13,7 +13,34 @@ class NoValueFilterTable < Mensa::Base
   end
 end
 
+class CustomerFilterTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    column(:country) do
+      filter
+    end
+    column(:isin) do
+      filter
+    end
+    column(:number_of_employees) do
+      filter
+    end
+    column(:country_code) do
+      attribute "LOWER(customers.country)"
+      filter
+    end
+  end
+end
+
 class FilterTest < ActiveSupport::TestCase
+  def filtered_scope(filters)
+    t = CustomerFilterTable.new({filters: filters})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    t.ordered_scope
+  end
+
   test "we can initialize a filter" do
     t = CustomerTable.new({filters: {country: {value: "NL"}}})
     f = t.active_filters.first
@@ -92,5 +119,47 @@ class FilterTest < ActiveSupport::TestCase
     error = assert_raises(ArgumentError) { t.active_filters }
     assert_match(/Unknown filter operator/, error.message)
     assert_match(/:fake_operator/, error.message)
+  end
+
+  test "filters compare against the column, not a quoted string literal" do
+    sql = filtered_scope({country: {value: "NL"}}).to_sql
+
+    assert_match(/\("customers"\."country"\) = 'NL'/, sql)
+    assert_no_match(/'"customers"\."country"'/, sql)
+  end
+
+  test "isnt operator excludes matching rows" do
+    assert_equal Customer.where.not(country: "NL").count, filtered_scope({country: {value: "NL", operator: :isnt}}).count
+  end
+
+  test "does_not_match operator excludes matching rows" do
+    assert_equal Customer.where.not(country: "NL").count, filtered_scope({country: {value: "NL", operator: :does_not_match}}).count
+  end
+
+  test "is_empty operator returns rows with a blank value" do
+    Customer.find_by!(name: "SAP").update!(isin: "")
+
+    assert_equal 3, filtered_scope({isin: {operator: :is_empty}}).count
+  end
+
+  test "isnt_empty operator returns rows with a value" do
+    Customer.find_by!(name: "SAP").update!(isin: "")
+
+    assert_equal Customer.count - 3, filtered_scope({isin: {operator: :isnt_empty}}).count
+  end
+
+  test "comparison operators filter on the column value" do
+    Customer.update_all(number_of_employees: 10)
+    Customer.where(country: "NL").update_all(number_of_employees: 1000)
+
+    assert_equal 4, filtered_scope({number_of_employees: {value: 100, operator: :gt}}).count
+    assert_equal 4, filtered_scope({number_of_employees: {value: 1000, operator: :gteq}}).count
+    assert_equal Customer.count - 4, filtered_scope({number_of_employees: {value: 100, operator: :lt}}).count
+    assert_equal Customer.count - 4, filtered_scope({number_of_employees: {value: 10, operator: :lteq}}).count
+  end
+
+  test "filters work on columns with a custom attribute expression" do
+    assert_equal 4, filtered_scope({country_code: {value: "nl"}}).count
+    assert_equal Customer.count - 4, filtered_scope({country_code: {value: "nl", operator: :isnt}}).count
   end
 end

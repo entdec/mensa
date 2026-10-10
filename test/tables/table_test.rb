@@ -216,4 +216,26 @@ class TableTest < ActiveSupport::TestCase
   test "a redefined default view can set its own name" do
     assert_equal "All users", Mensa.for_name("users").default_system_view.name
   end
+
+  test "ordering on a column with a custom attribute expression" do
+    t = TestTable.new({order: {name: :desc}})
+    expected = User.order(Arel.sql("CONCAT(first_name, last_name) DESC")).pluck(:id)
+
+    assert_nothing_raised { t.ordered_scope.to_a }
+    assert_equal expected, t.ordered_scope.pluck(:id)
+  end
+
+  test "order direction is case insensitive" do
+    t = TestTable.new({order: {first_name: "DESC"}})
+
+    assert_match(/"first_name" desc NULLS LAST/, t.ordered_scope.to_sql[/ORDER BY.*/])
+  end
+
+  test "unknown order directions are ignored" do
+    t = TestTable.new({order: {first_name: "asc; DROP TABLE users", last_name: :asc}})
+    sql = t.ordered_scope.to_sql
+
+    assert_no_match(/DROP/, sql)
+    assert_equal 'ORDER BY "users"."last_name" asc NULLS LAST', sql[/ORDER BY.*/]
+  end
 end

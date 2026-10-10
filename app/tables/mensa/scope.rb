@@ -118,16 +118,19 @@ module Mensa
     # Falls back to the view/config default only when no order params were sent.
     def effective_order
       result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
-      result = result.symbolize_keys.compact_blank.transform_values(&:to_sym)
-      result.filter_map { |k, v|
+      result = result.symbolize_keys.compact_blank.transform_values { |v| v.to_s.downcase }
+      clause = result.filter_map { |k, v|
         col = column(k)
         # Skip orders on unknown names, e.g. from browser state saved for
         # different params.
         next unless col || model_attribute?(k)
+        next unless %w[asc desc].include?(v)
 
         attribute = col&.attribute_for_condition || k
         "#{attribute} #{v} NULLS LAST"
       }.join(", ")
+
+      clause.presence && Arel.sql(clause)
     end
 
     def model_attribute?(name)
