@@ -24,10 +24,6 @@ Features:
       You will have to bring your own mailer, see configuration for details.
 - [X] Grouping rows by a column, with collapsible groups and count/sum/min/max per group
 
-Nice to haves:
-
-- [ ] tables backed by arrays (of ActiveModel)
-
 ## Usage
 
 Add tables in your app/tables folder, inheriting from ApplicationTable.
