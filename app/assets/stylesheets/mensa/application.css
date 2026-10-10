@@ -5,6 +5,8 @@
 @import "../../../components/mensa/empty_state/component.css";
 @import "../../../components/mensa/filter_pill/component.css";
 @import "../../../components/mensa/filter_pill_list/component.css";
+@import "../../../components/mensa/group_by/component.css";
+@import "../../../components/mensa/group_header/component.css";
 @import "../../../components/mensa/header/component.css";
 @import "../../../components/mensa/row_action/component.css";
 @import "../../../components/mensa/search/component.css";

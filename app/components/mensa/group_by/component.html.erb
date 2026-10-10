@@ -1,0 +1,41 @@
+<div class="relative"
+     data-controller="mensa-group-by"
+     data-mensa-group-by-storage-key-value="<%= table.storage_key %>"
+     data-mensa-group-by-group-by-value="<%= table.group_column&.name %>"
+     data-mensa-group-by-aggregates-value="<%= table.current_aggregates.to_json %>"
+     data-mensa-group-by-mensa-table-outlet="#table-<%= table.table_id %>">
+  <button class="mensa-table__control_bar__button" type="button" title="<%= t("mensa.group_by.heading") %>" data-mensa-group-by-target="button" data-action="click->mensa-group-by#toggle">
+    <i class="<%= Mensa.config.icons[:group_by_toggle] %>"></i>
+  </button>
+  <div class="mensa-table__group_by__popover hidden" data-mensa-group-by-target="popover">
+    <p class="mensa-table__group_by__heading"><%= t("mensa.group_by.heading") %></p>
+    <ul>
+      <% [nil, *groupable_columns].each do |column| %>
+        <li>
+          <button class="mensa-table__group_by__option" type="button" data-column-name="<%= column&.name %>" data-mensa-group-by-target="groupOption" data-action="click->mensa-group-by#selectGroup">
+            <i class="mensa-table__group_by__check <%= Mensa.config.icons[:group_by_selected] %>"></i>
+            <span><%= column ? column.human_name : t("mensa.group_by.none") %></span>
+          </button>
+        </li>
+      <% end %>
+    </ul>
+    <% if aggregatable_columns.any? %>
+      <div class="mensa-table__group_by__aggregates" data-mensa-group-by-target="aggregates">
+        <p class="mensa-table__group_by__heading"><%= t("mensa.group_by.aggregates") %></p>
+        <ul>
+          <% aggregatable_columns.each do |column| %>
+            <li class="mensa-table__group_by__aggregate">
+              <label for="<%= "mensa-aggregate-#{table.table_id}-#{column.name}" %>"><%= column.human_name %></label>
+              <select id="<%= "mensa-aggregate-#{table.table_id}-#{column.name}" %>" data-column-name="<%= column.name %>" data-mensa-group-by-target="aggregateSelect" data-action="change->mensa-group-by#selectAggregate">
+                <option value=""><%= t("mensa.aggregates.none") %></option>
+                <% column.aggregates.each do |function| %>
+                  <option value="<%= function %>"><%= t("mensa.aggregates.#{function}") %></option>
+                <% end %>
+              </select>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -2,8 +2,10 @@ module Mensa
   class TablesController < ApplicationController
     def show
       filters_provided = params.key?(:filters)
-      config = params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, order: {}, column_order: [], hidden_columns: [], params: {}, filters: {}).to_h
+      config = params.permit(:format, :query, :id, :page, :table_view_id, :turbo_frame_id, :group_by, order: {}, column_order: [], hidden_columns: [], params: {}, filters: {}, aggregates: {}).to_h
       config[:filters] = {} if filters_provided && !config.key?(:filters)
+      # aggregates= (blank) means none, also when the view has some
+      config[:aggregates] = {} if params.key?(:aggregates) && !config.key?(:aggregates)
 
       @table = Mensa.for_name(params[:id], config)
 

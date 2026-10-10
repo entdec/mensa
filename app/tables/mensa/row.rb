@@ -23,6 +23,11 @@ module Mensa
       end
     end
 
+    # The value of the group column, when the table is grouped
+    def group_value
+      record[Mensa::Grouping::GROUP_VALUE_ALIAS] if record.respond_to?(:has_attribute?) && record.has_attribute?(Mensa::Grouping::GROUP_VALUE_ALIAS)
+    end
+
     def link_attributes
       return {} unless link
 

@@ -1,4 +1,4 @@
-<%= content_tag :tr, **row.link_attributes do %>
+<%= content_tag :tr, **row_attributes do %>
   <% if table.batch_actions? %>
     <td class="mensa-table__checkbox-col" data-action="click->mensa-selection#stopPropagation">
       <input class="mensa-table__select-all" type="checkbox" value="<%= row.record.id %>" data-action="change->mensa-selection#toggleRow" data-mensa-selection-target="rowCheckbox">

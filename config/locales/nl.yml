@@ -2,6 +2,18 @@ nl:
   mensa:
     column_customizer:
       heading: Kolommen
+    group_by:
+      heading: Groeperen op
+      none: Niet groeperen
+      aggregates: Berekeningen
+    groups:
+      empty: Geen %{column}
+    aggregates:
+      none: Geen
+      count: Aantal
+      sum: Som
+      min: Min
+      max: Max
     tables:
       filters:
         show:

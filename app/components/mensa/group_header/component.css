@@ -1,0 +1,39 @@
+.mensa-table {
+    table tbody tr.mensa-table__group-header {
+        @apply bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+
+        td {
+            @apply pt-3 pb-2 text-gray-900 dark:text-gray-100;
+        }
+    }
+
+    &__group-header {
+        &__title {
+            @apply flex items-center gap-2;
+        }
+
+        &__toggle {
+            @apply inline-flex w-4 justify-center text-xs text-gray-500 dark:text-gray-400 transition-transform;
+        }
+
+        &[aria-expanded="false"] &__toggle {
+            @apply -rotate-90;
+        }
+
+        &__value {
+            @apply font-semibold;
+        }
+
+        &__count {
+            @apply rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-300;
+        }
+
+        &__aggregate {
+            @apply text-sm font-medium text-gray-700 dark:text-gray-200;
+        }
+
+        &__aggregate-label {
+            @apply mr-1 text-xs font-normal uppercase text-gray-400 dark:text-gray-500;
+        }
+    }
+}

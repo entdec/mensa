@@ -95,7 +95,7 @@ module Mensa
       # show (query, ordering and filters), so a saved view can be replayed by
       # merging this hash back into the request params.
       def view_config
-        config = params.permit(:query, order: {}, column_order: [], hidden_columns: []).to_h
+        config = params.permit(:query, :group_by, order: {}, column_order: [], hidden_columns: [], aggregates: {}).to_h
         config[:filters] = params[:filters]&.to_unsafe_h || {}
         config
       end

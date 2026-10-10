@@ -147,7 +147,9 @@ module Mensa
         table_view_id: table_view_id,
         page: page,
         column_order: column_order,
-        hidden_columns: hidden_columns
+        hidden_columns: hidden_columns,
+        group_by: group_by_param,
+        aggregates: aggregates_param
       }.compact.to_query
 
       query.present? ? "#{path}?#{query}" : path
@@ -237,8 +239,19 @@ module Mensa
       context[:table_view_id] = current_table_view_id if config.key?(:table_view_id) && !current_table_view_id.nil?
       context[:column_order] = current_column_order if config.key?(:column_order) && !current_column_order.nil?
       context[:hidden_columns] = current_hidden_columns if config.key?(:hidden_columns) && !current_hidden_columns.nil?
+      context[:group_by] = current_group_by if grouped?
 
       context
+    end
+
+    # Grouping in a URL, blank means "explicitly not grouped" so it overrides
+    # the view's default
+    def group_by_param
+      current_group_by.to_s unless config[:group_by].nil?
+    end
+
+    def aggregates_param
+      current_aggregates.presence || ("" unless config[:aggregates].nil?)
     end
 
     private

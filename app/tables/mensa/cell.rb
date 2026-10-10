@@ -10,13 +10,24 @@ module Mensa
 
     attr_reader :column, :row
 
-    def initialize(row:, column:)
+    # Pass a value to format one that doesn't come from a row, e.g. a group's
+    def initialize(row:, column:, value: nil)
       @row = row
       @column = column
+      @value = value
+      @value_given = row.nil?
     end
 
     def value
-      @value ||= row.value(column)
+      return @value if @value_given
+
+      @value_given = true
+      @value = row.value(column)
+    end
+
+    # The value in the given format, without custom render blocks or a <td>
+    def formatted(format = :html)
+      send(:"to_#{format}")
     end
 
     # Renders the cell's content in the given format. The :html format

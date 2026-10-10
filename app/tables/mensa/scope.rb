@@ -5,6 +5,7 @@ module Mensa
   module Scope
     extend ActiveSupport::Concern
     include Search
+    include Grouping
 
     included do
     end
@@ -28,16 +29,17 @@ module Mensa
     def ordered_scope
       return @ordered_scope if @ordered_scope
 
-      @ordered_scope = filtered_scope
-      @ordered_scope = if effective_order.present?
-        @ordered_scope.reorder(effective_order)
-      elsif search_order_clause.present?
-        @ordered_scope.reorder(Arel.sql(search_order_clause))
-      else
-        @ordered_scope.reorder(nil)
-      end
+      # Builds the search order clause too, so do this first
+      relation = filtered_scope
 
-      @ordered_scope
+      # Grouped rows are sorted by the group first, so groups stay together
+      clauses = []
+      clauses << group_order_clause if grouped?
+      clauses << effective_order(except: group_column&.name)
+      clauses << search_order_clause if clauses.last.blank?
+      clause = clauses.compact_blank.join(", ")
+
+      @ordered_scope = relation.reorder(clause.presence && Arel.sql(clause))
     end
 
     # Return the ordered_scope, but with only the columns selected
@@ -48,6 +50,7 @@ module Mensa
 
       @selected_scope = ordered_scope
       @selected_scope = @selected_scope.select((id_column? ? [:id] : []) + columns.filter_map(&:attribute))
+      @selected_scope = @selected_scope.select(group_select) if grouped?
 
       @selected_scope
     end
@@ -116,10 +119,12 @@ module Mensa
     # Effective ordering for SQL: when the request includes any order[] params
     # (even with blank values), use only those — blank means "explicitly no sort".
     # Falls back to the view/config default only when no order params were sent.
-    def effective_order
+    def effective_order(except: nil)
       result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
       result = result.symbolize_keys.compact_blank.transform_values { |v| v.to_s.downcase }
       clause = result.filter_map { |k, v|
+        next if k == except
+
         col = column(k)
         # Skip orders on unknown names, e.g. from browser state saved for
         # different params.

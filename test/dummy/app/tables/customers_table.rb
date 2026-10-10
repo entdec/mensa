@@ -5,6 +5,7 @@ class CustomersTable < Mensa::Base
 
   column(:name)
   column(:industry) do
+    groupable true
     filter do
       collection -> { Customer.pluck(:industry).uniq.compact.sort }
     end
@@ -15,13 +16,19 @@ class CustomersTable < Mensa::Base
       collection -> { Customer.pluck(:country).uniq }
       multiple true
     end
+    groupable true
   end
   column(:isin)
-  column(:number_of_employees)
-  column(:market_cap)
+  column(:number_of_employees) do
+    aggregates :sum, :min, :max
+  end
+  column(:market_cap) do
+    aggregates :sum, :min, :max
+  end
   column(:users_count) do
     attribute "COUNT(DISTINCT users.id)"
     type :integer
+    aggregates :sum, :max
     filter do
       having true
     end

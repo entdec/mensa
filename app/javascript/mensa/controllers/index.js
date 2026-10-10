@@ -30,6 +30,12 @@ application.register("mensa-selection", SelectionComponentController);
 import ColumnCustomizerController from "mensa/components/column_customizer/component_controller";
 application.register("mensa-column-customizer", ColumnCustomizerController);
 
+import GroupByComponentController from "mensa/components/group_by/component_controller";
+application.register("mensa-group-by", GroupByComponentController);
+
+import GroupHeaderComponentController from "mensa/components/group_header/component_controller";
+application.register("mensa-groups", GroupHeaderComponentController);
+
 import CopyableComponentController from "mensa/components/copyable/component_controller";
 application.register("mensa-copyable", CopyableComponentController);
 

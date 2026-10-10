@@ -3,6 +3,7 @@
     <% if view_columns_ordering? %>
       <%= render Mensa::ColumnCustomizer::Component.new(table: table) %>
     <% end %>
+    <%= render Mensa::GroupBy::Component.new(table: table) %>
 
     <div class="mensa-table__save-reset hidden" data-mensa-table-target="saveResetButtons">
       <button class="mensa-table__control_bar__button" type="button" title="<%= t(".reset", default: "Reset") %>" data-action="mensa-table#cancelFiltersAndSearch">

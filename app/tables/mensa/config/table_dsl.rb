@@ -67,6 +67,11 @@ module Mensa::Config
     # Order of columns in the table
     option :column_order
 
+    # Group rows by this column, e.g. `group_by :status`
+    option :group_by
+    # Aggregates shown per group, e.g. `aggregates market_cap: :sum`
+    option :aggregates
+
     # Actions
     option :action, dsl_hash: Mensa::Config::ActionDsl
 

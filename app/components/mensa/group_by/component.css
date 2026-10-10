@@ -1,0 +1,49 @@
+.mensa-table {
+    &__control_bar__button[aria-pressed="true"] {
+        @apply text-primary-600 dark:text-primary-400;
+    }
+
+    &__group_by {
+        &__popover {
+            @apply fixed z-50 w-72 max-h-96 overflow-y-auto rounded-xl bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 py-2;
+        }
+
+        &__heading {
+            @apply px-4 pt-2 pb-1 text-sm font-semibold tracking-wider text-gray-900 dark:text-gray-500;
+        }
+
+        &__option {
+            @apply w-full flex items-center gap-3 px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer;
+        }
+
+        &__check {
+            @apply w-3 flex-none text-xs text-gray-700 dark:text-gray-200;
+        }
+
+        &__option:not([aria-checked="true"]) &__check {
+            @apply invisible;
+        }
+
+        &__aggregates {
+            @apply mt-1 border-t border-gray-100 dark:border-gray-700 pt-1;
+
+            &[aria-disabled="true"] {
+                @apply opacity-50 pointer-events-none;
+            }
+        }
+
+        &__aggregate {
+            @apply block px-4 py-1.5;
+
+            label {
+                @apply mb-1 block truncate text-sm font-medium text-gray-900 dark:text-gray-100;
+            }
+        }
+    }
+}
+
+/* More specific than the table's general `.mensa-table select`, which
+   would otherwise win as it is imported later. */
+.mensa-table .mensa-table__group_by__aggregate select {
+    @apply w-full py-1.5 pl-3 pr-8 text-sm;
+}

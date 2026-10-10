@@ -262,6 +262,8 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
+                group_by: state.group_by,
+                aggregates: state.aggregates,
                 turbo_frame_id: this.hasTurboFrameTarget
                     ? this.turboFrameTarget.id
                     : null,
@@ -323,6 +325,8 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
+                group_by: state.group_by,
+                aggregates: state.aggregates,
                 turbo_frame_id: this.hasTurboFrameTarget
                     ? this.turboFrameTarget.id
                     : null,
@@ -357,10 +361,34 @@ export default class TableComponentController extends ApplicationController {
             order: outlet.loadOrder(),
             column_order: outlet.loadColumnOrder(),
             hidden_columns: outlet.loadHiddenColumns(),
+            group_by: this.groupState?.group_by ?? "",
+            aggregates: this.groupState?.aggregates ?? {},
         };
     }
 
-    viewTargetConnected() {}
+    // The rendered view carries the grouping the server applied, keep the
+    // group-by popover in sync with it (e.g. after selecting a view).
+    viewTargetConnected(element) {
+        let aggregates = {};
+        try {
+            aggregates = JSON.parse(element.dataset.aggregates || "{}");
+        } catch (e) {}
+        this.groupState = {
+            group_by: element.dataset.groupBy || "",
+            aggregates,
+        };
+
+        const groupByElement = this.element.querySelector(
+            '[data-controller~="mensa-group-by"]',
+        );
+        const groupBy =
+            groupByElement &&
+            this.application.getControllerForElementAndIdentifier(
+                groupByElement,
+                "mensa-group-by",
+            );
+        if (groupBy) groupBy.sync(this.groupState.group_by, aggregates);
+    }
 
     filterListTargetConnected(element) {
         // The filter bar is always visible in the new design — nothing to toggle.
@@ -575,6 +603,7 @@ export default class TableComponentController extends ApplicationController {
                 order: state.order,
                 column_order: state.column_order,
                 hidden_columns: state.hidden_columns,
+                group_by: state.group_by,
             }),
             contentType: "application/json",
             responseKind: "turbo-stream",

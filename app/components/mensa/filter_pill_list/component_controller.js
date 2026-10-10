@@ -180,6 +180,8 @@ export default class FilterPillListComponentController extends ApplicationContro
             page: "",
         };
         this.persistState(state);
+        // The selected view brings its own grouping
+        this.clearPersistedGrouping();
         this.setSearchField("");
         this.updateSearchPlaceholder();
         if (this.hasMensaTableOutlet) {
@@ -293,7 +295,9 @@ export default class FilterPillListComponentController extends ApplicationContro
             query.length > 0 ||
             Object.keys(order).length > 0 ||
             columnOrder.length > 0 ||
-            hiddenColumns.length > 0
+            hiddenColumns.length > 0 ||
+            this.loadGroupBy() !== null ||
+            this.loadAggregates() !== null
         ) {
             this._notifyUnsavedState();
         }
@@ -352,6 +356,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.removeFilterParams(url);
         this.removeOrderParams(url);
         this.removeColumnParams(url);
+        this.removeGroupingParams(url);
         url.searchParams.delete("query");
         url.searchParams.delete("page");
         url.searchParams.delete("table_view_id");
@@ -399,7 +404,28 @@ export default class FilterPillListComponentController extends ApplicationContro
             url.searchParams.append("hidden_columns[]", col),
         );
 
+        // Only send grouping the user chose, otherwise the view's default
+        // applies. Blank values mean "explicitly none".
+        const groupBy = this.loadGroupBy();
+        if (groupBy !== null) url.searchParams.set("group_by", groupBy);
+        const aggregates = this.loadAggregates();
+        if (aggregates !== null) {
+            const entries = Object.entries(aggregates);
+            if (entries.length === 0) url.searchParams.set("aggregates", "");
+            entries.forEach(([column, fn]) =>
+                url.searchParams.set(`aggregates[${column}]`, fn),
+            );
+        }
+
         return url;
+    }
+
+    removeGroupingParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (key === "group_by" || key.startsWith("aggregates")) keys.push(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
     }
 
     removeFilterParams(url) {
@@ -570,6 +596,28 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.writeStorage(this.orderStorageKey, null);
         this.writeStorage(`mensa:column_order:${this.storageName}`, null);
         this.writeStorage(`mensa:hidden_columns:${this.storageName}`, null);
+        this.clearPersistedGrouping();
+    }
+
+    clearPersistedGrouping() {
+        this.writeStorage(this.groupByStorageKey, null);
+        this.writeStorage(this.aggregatesStorageKey, null);
+    }
+
+    // null when the user didn't choose, "" for "no grouping"
+    loadGroupBy() {
+        return this.readStorage(this.groupByStorageKey);
+    }
+
+    // null when the user didn't choose, {} for "no aggregates"
+    loadAggregates() {
+        const raw = this.readStorage(this.aggregatesStorageKey);
+        if (raw === null) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
     }
 
     // Keep these for backward-compatibility with other controllers that look up
@@ -741,6 +789,12 @@ export default class FilterPillListComponentController extends ApplicationContro
     }
     get orderStorageKey() {
         return `mensa:order:${this.storageName}`;
+    }
+    get groupByStorageKey() {
+        return `mensa:group_by:${this.storageName}`;
+    }
+    get aggregatesStorageKey() {
+        return `mensa:aggregates:${this.storageName}`;
     }
 
     get ourUrl() {

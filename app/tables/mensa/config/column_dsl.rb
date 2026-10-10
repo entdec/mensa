@@ -19,7 +19,17 @@ module Mensa::Config
     option :format, default: :long, dsl_single_hash: Mensa::Config::FormatDsl, name_attribute: :format
 
     option :visible, default: true
+    # Allows the user to group the table by this column (needs an SQL attribute)
+    option :groupable, default: false
+    # Aggregates the user can choose for this column in grouped tables,
+    # any of :count, :sum, :min and :max
+    option :aggregates, default: []
     option :render, dsl: Mensa::Config::RenderDsl
     option :filter, dsl: Mensa::Config::FilterDsl
+
+    #   aggregates :sum, :min, :max
+    def aggregates(*functions)
+      config[:aggregates] = functions.flatten.map(&:to_sym)
+    end
   end
 end

@@ -2,6 +2,18 @@ en:
   mensa:
     column_customizer:
       heading: Columns
+    group_by:
+      heading: Group by
+      none: No grouping
+      aggregates: Calculations
+    groups:
+      empty: No %{column}
+    aggregates:
+      none: None
+      count: Count
+      sum: Sum
+      min: Min
+      max: Max
     tables:
       filters:
         show:

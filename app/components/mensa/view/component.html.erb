@@ -1,4 +1,6 @@
-<div data-mensa-table-target="view">
+<div data-mensa-table-target="view"
+     data-group-by="<%= table.group_column&.name %>"
+     data-aggregates="<%= table.current_aggregates.to_json %>">
   <div class="overflow-y-auto relative"
        data-mensa-table-target="scrollContainer"
        data-controller="mensa-selection"
@@ -16,7 +18,11 @@
         </div>
       </div>
     <% end %>
-    <table class="w-full">
+    <table class="w-full"
+           <% if table.grouped? %>
+             data-controller="mensa-groups"
+             data-mensa-groups-storage-key-value="<%= "mensa:collapsed_groups:#{table.storage_key}:#{table.group_column.name}" %>"
+           <% end %>>
       <% if table.show_header? %>
         <thead>
           <tr>
@@ -38,7 +44,15 @@
         </thead>
       <% end %>
       <tbody>
-        <%= render(Mensa::TableRow::Component.with_collection(table.rows, table: table)) %>
+        <% if table.grouped? %>
+          <% table.rows.chunk_while { |a, b| a.group_value == b.group_value }.each do |rows| %>
+            <% group = table.group_for(rows.first) %>
+            <%= render Mensa::GroupHeader::Component.new(table: table, group: group) %>
+            <%= render(Mensa::TableRow::Component.with_collection(rows, table: table, group: group)) %>
+          <% end %>
+        <% else %>
+          <%= render(Mensa::TableRow::Component.with_collection(table.rows, table: table)) %>
+        <% end %>
       </tbody>
     </table>
     <% if table.pagy_details&.count == 0 %>

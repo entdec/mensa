@@ -22,14 +22,10 @@ Features:
 - [X] Search works on all table columns
 - [X] Exports can be scheduled to run recurring (daily/weekly/monthly/quarterly/bi-yearly/yearly)
       You will have to bring your own mailer, see configuration for details.
-
-TODO:
-- [ ] ...
+- [X] Grouping rows by a column, with collapsible groups and count/sum/min/max per group
 
 Nice to haves:
 
-- [ ] group by
-- [ ] sum/max/min
 - [ ] tables backed by arrays (of ActiveModel)
 
 ## Usage
@@ -125,6 +121,33 @@ You can show your tables on the page using the following:
 
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
 When you enable these, they are stored in the database and can be used across sessions, by the user who created them.
+
+### Grouping
+
+Rows can be shown in groups, each with a header that shows the group's value and
+number of rows, and that collapses the group when clicked. Mark the columns users
+may group by with `groupable`, and the aggregates they may choose per column with
+`aggregates` (any of `:count`, `:sum`, `:min` and `:max`). Users pick both from the
+group button in the control bar; their choice is remembered and saved with custom views.
+
+```ruby
+column(:status) do
+  groupable true
+end
+
+column(:amount) do
+  aggregates :sum, :min, :max
+end
+
+# Optional defaults, also possible per view
+group_by :status
+aggregates amount: :sum
+```
+
+Both need an SQL attribute: a database column, or an `attribute` expression. Rows are
+sorted by the group column first (in the direction it is sorted, ascending otherwise),
+then by the chosen order. Counts and aggregates are calculated with SQL `GROUP BY` over
+all filtered rows, so they cover the whole group, also when it continues on the next page.
 
 ### Fast
 

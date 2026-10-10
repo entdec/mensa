@@ -21,6 +21,8 @@ module Mensa
     config_reader :method # When a method needs to be called on the model, slow!
     config_reader :format
 
+    AGGREGATE_FUNCTIONS = %i[count sum min max].freeze
+
     def sort_direction
       value = table.config.dig(:order, name)
       value.presence&.to_sym
@@ -76,6 +78,22 @@ module Mensa
       elsif table.model.column_names.include? name.to_s
         Arel.sql("#{table.model.connection.quote_table_name(table.model.table_name)}.#{table.model.connection.quote_column_name(name)}")
       end
+    end
+
+    # Grouping and aggregating happen in SQL, so the column needs an attribute
+    def groupable?
+      config[:groupable] == true && attribute_for_condition.present?
+    end
+
+    # The aggregate functions the user can choose for this column
+    def aggregates
+      return [] if attribute_for_condition.blank?
+
+      Array(config[:aggregates]).map(&:to_sym) & AGGREGATE_FUNCTIONS
+    end
+
+    def aggregatable?
+      aggregates.any?
     end
 
     # Returns true if the column supports filtering

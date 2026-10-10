@@ -128,6 +128,7 @@ module Mensa
           :query,
           :page,
           :table_view_id,
+          :group_by,
           order: {},
           filters: {},
           column_order: [],
