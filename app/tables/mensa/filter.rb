@@ -84,6 +84,9 @@ module Mensa
       else
         return apply_duplicate_filter(record_scope) if operator == :is_duplicate
 
+        # Nothing selected in a multi-select means no filter
+        return record_scope if value.is_a?(Array) && value.compact_blank.empty?
+
         query, hash = query_and_hash_for_operator
         record_scope = (column.filter.having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
         record_scope
@@ -108,6 +111,7 @@ module Mensa
     def query_and_hash_for_operator
       col = "(#{column.attribute_for_condition})"
       hash = {value: normalize(value)}
+      hash[:value] = hash[:value].compact_blank if hash[:value].is_a?(Array)
 
       query = case operator
       when :is_empty
@@ -121,11 +125,9 @@ module Mensa
       when :does_not_match
         "#{col} NOT LIKE :value"
       when :is
-        hash[:value] = value if hash[:value].is_a?(Array)
-        "#{col} = :value"
+        hash[:value].is_a?(Array) ? "#{col} IN (:value)" : "#{col} = :value"
       when :isnt
-        hash[:value] = value if hash[:value].is_a?(Array)
-        "#{col} != :value"
+        hash[:value].is_a?(Array) ? "#{col} NOT IN (:value)" : "#{col} != :value"
       when :gt
         "#{col} > :value"
       when :lt

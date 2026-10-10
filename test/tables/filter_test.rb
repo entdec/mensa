@@ -162,4 +162,34 @@ class FilterTest < ActiveSupport::TestCase
     assert_equal 4, filtered_scope({country_code: {value: "nl"}}).count
     assert_equal Customer.count - 4, filtered_scope({country_code: {value: "nl", operator: :isnt}}).count
   end
+
+  test "is operator with multiple values matches any of them" do
+    assert_equal Customer.where(country: %w[NL DE]).count, filtered_scope({country: {value: %w[NL DE]}}).count
+  end
+
+  test "isnt operator with multiple values excludes all of them" do
+    assert_equal Customer.where.not(country: %w[NL DE]).count, filtered_scope({country: {value: %w[NL DE], operator: :isnt}}).count
+  end
+
+  test "blank entries in multiple values are ignored" do
+    assert_equal Customer.where(country: "NL").count, filtered_scope({country: {value: ["", "NL"]}}).count
+  end
+
+  test "multiple values with nothing selected do not filter" do
+    assert_equal Customer.count, filtered_scope({country: {value: [""]}}).count
+    assert_equal Customer.count, filtered_scope({country: {value: [], operator: :isnt}}).count
+  end
+
+  test "having filters filter on the aggregate expression" do
+    asml = customers(:asml)
+    User.create!(email: "extra-1@mensa.test", first_name: "A", last_name: "A", role: "user", customer: asml)
+    User.create!(email: "extra-2@mensa.test", first_name: "B", last_name: "B", role: "user", customer: asml)
+
+    t = CustomersTable.new({filters: {users_count: {value: 1, operator: :gt}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    scope = t.ordered_scope
+
+    assert_match(/HAVING \(+COUNT\(DISTINCT users\.id\)\) > 1/, scope.to_sql)
+    assert_equal [asml.id], scope.pluck(:id)
+  end
 end
