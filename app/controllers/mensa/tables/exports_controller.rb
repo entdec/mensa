@@ -21,6 +21,8 @@ module Mensa
       # Creates a new export for the current user and enqueues the job that
       # generates and attaches the CSV.
       def create
+        return head :forbidden unless table.exportable?
+
         export = Mensa::Export.new(
           table_name: params[:table_id],
           table_view_id: params[:table_view_id].presence,
@@ -106,6 +108,12 @@ module Mensa
 
       def table_params
         @table_params ||= Mensa::TableParams.from_request(params)
+      end
+
+      def table
+        @table ||= Mensa.for_name(params[:table_id], params: table_params).tap do |table|
+          table.original_view_context = helpers
+        end
       end
 
       def list_stream

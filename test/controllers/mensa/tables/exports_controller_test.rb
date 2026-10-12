@@ -54,6 +54,18 @@ module Mensa
         assert_equal "", export.repeat
       end
 
+      test "create refuses to export a table that is not exportable" do
+        assert_no_difference -> { Mensa::Export.count } do
+          assert_no_enqueued_jobs(only: Mensa::ExportJob) do
+            post mensa.table_exports_path("users_not_exportable"),
+              params: {export_format: "plain_csv", scope: "all"},
+              as: :json
+          end
+        end
+
+        assert_response :forbidden
+      end
+
       test "create persists the selected repeat schedule" do
         post mensa.table_exports_path("users"),
           params: {export_format: "plain_csv", scope: "all", repeat: "weekly"},
