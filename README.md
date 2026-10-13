@@ -118,6 +118,59 @@ You can show your tables on the page using the following:
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
 When you enable these, they are stored in the database and can be used across sessions, by the user who created them.
 
+### Filters
+
+Add `filter` to a column to let users filter on it. By default Mensa compares the
+column's attribute with the chosen value, using operators that fit the column type.
+The filter block takes these options:
+
+```ruby
+column(:role) do
+  filter do
+    collection -> { User::ROLES }  # Values to choose from (array or proc)
+    multiple true                  # Allow choosing several values
+    operators [:is, :isnt]         # Limit the operators users can pick
+    operator :isnt                 # Default operator
+    having true                    # Filter with HAVING, for aggregate attributes
+  end
+end
+```
+
+The operators are `is`, `isnt`, `matches`, `does_not_match`, `gt`, `gteq`, `lt`,
+`lteq`, `is_duplicate`, `is_current`, `is_empty` and `isnt_empty`.
+
+#### Custom filter scopes
+
+When comparing the attribute isn't enough, give the filter a `scope`. It runs on the
+table's scope and receives the chosen value, an array when `multiple` is set:
+
+```ruby
+column(:account_names) do
+  attribute %((SELECT STRING_AGG(accounts.name, ', ') FROM accounts WHERE accounts.id = ANY(containers.account_ids)))
+  filter do
+    collection -> { Account.order(:name).pluck(:name) }
+    multiple true
+    operators [:is]
+    scope ->(value) { where("containers.account_ids && ARRAY[:ids]::uuid[]", ids: Account.where(name: Array(value)).pluck(:id)) }
+  end
+end
+```
+
+To support more operators, accept the operator (a symbol) as a second argument:
+
+```ruby
+filter do
+  operators [:is, :isnt, :is_empty]
+  scope ->(value, operator) {
+    case operator
+    when :isnt then where.not(account_id: value)
+    when :is_empty then where(account_id: nil)
+    else where(account_id: value)
+    end
+  }
+end
+```
+
 ### Grouping
 
 Rows can be shown in groups, each with a header that shows the group's value and

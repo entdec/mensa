@@ -49,6 +49,23 @@ class CustomScopeFilterTable < Mensa::Base
         scope ->(value) { where(country: value) }
       end
     end
+    column(:country) do
+      filter do
+        operators [:is, :isnt, :is_empty]
+        scope ->(value, operator) {
+          case operator
+          when :isnt then where.not(country: value)
+          when :is_empty then where(country: nil)
+          else where(country: value)
+          end
+        }
+      end
+    end
+    column(:stock_symbol) do
+      filter do
+        scope proc { |value| where(country: value) }
+      end
+    end
   end
 end
 
@@ -283,5 +300,15 @@ class FilterTest < ActiveSupport::TestCase
     t = CustomerFilterTable.new({filters: {nonexistent: {value: "x"}, country: {value: "NL"}}})
 
     assert_equal [:country], t.active_filters.map { |f| f.column.name }
+  end
+
+  test "a custom filter scope receives the operator when it accepts one" do
+    assert_equal Customer.where(country: "NL").count, custom_scope_table({country: {value: "NL", operator: :is}}).ordered_scope.count
+    assert_equal Customer.where.not(country: "NL").count, custom_scope_table({country: {value: "NL", operator: :isnt}}).ordered_scope.count
+    assert_equal Customer.where(country: nil).count, custom_scope_table({country: {operator: :is_empty}}).ordered_scope.count
+  end
+
+  test "a custom filter scope given as a plain proc with only a value still works" do
+    assert_equal Customer.where(country: "NL").count, custom_scope_table({stock_symbol: {value: "NL"}}).ordered_scope.count
   end
 end

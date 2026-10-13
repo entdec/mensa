@@ -80,7 +80,7 @@ module Mensa
 
     def filter_scope(record_scope)
       if scope
-        record_scope.instance_exec(normalize(value), &scope)
+        record_scope.instance_exec(*scope_arguments, &scope)
       else
         return apply_duplicate_filter(record_scope) if operator == :is_duplicate
 
@@ -180,6 +180,17 @@ module Mensa
         raise ArgumentError, "Unknown filter operator(s) #{invalid.map(&:inspect).join(", ")} configured for column :#{column.name}. " \
           "Valid operators are: #{valid_keys.join(", ")}"
       end
+    end
+
+    # Arguments for a custom filter scope: the value and the operator. Lambdas
+    # only get as many as they declare, so `->(value) { ... }` keeps working
+    # next to `->(value, operator) { ... }`. Plain procs ignore extra arguments.
+    def scope_arguments
+      args = [normalize(value), operator]
+      return args unless scope.lambda?
+      return args if scope.parameters.any? { |type, _| type == :rest }
+
+      args.first(scope.parameters.count { |type, _| type == :req || type == :opt })
     end
 
     def label_for_value(selected_value, options)

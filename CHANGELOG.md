@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.16
+
+- Custom filter `scope` blocks can take the operator as a second argument,
+  e.g. `scope ->(value, operator) { ... }`, so they can handle `isnt`,
+  `is_empty` and the other operators. Existing `->(value) { ... }` scopes keep
+  working unchanged.
+
 ## 0.6.15
 
 - Custom filter `scope` blocks now work. Applied filters are built from the
