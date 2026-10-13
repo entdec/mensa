@@ -123,6 +123,15 @@ class FilterTest < ActiveSupport::TestCase
     assert_equal "Role is current", f.to_s
   end
 
+  test "is_current filters on the Current attribute named after the column" do
+    t = UsersTable.new({filters: {customer_name: {operator: :is_current}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    expected = User.left_outer_joins(:customer).where(customers: {name: Current.customer_name})
+
+    assert Current.customer_name.present?
+    assert_equal expected.pluck(:id).sort, t.ordered_scope.pluck(:id).sort
+  end
+
   test "is_duplicate filters rows with duplicate values" do
     customer = customers(:asml)
 

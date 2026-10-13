@@ -119,6 +119,7 @@ module Mensa
       when :isnt_empty
         (column.type == :string) ? "#{col} IS NOT NULL AND #{col} != ''" : "#{col} IS NOT NULL"
       when :is_current
+        hash[:value] = Current.public_send(column.name)
         "#{col} = :value"
       when :matches
         "#{col} LIKE :value"
