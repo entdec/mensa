@@ -34,6 +34,36 @@ class CustomerFilterTable < Mensa::Base
   end
 end
 
+class CustomScopeFilterTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name) do
+      filter do
+        collection -> { %w[NL DE FR] }
+        operators [:is, :isnt]
+        operator :isnt
+        multiple true
+        # Filters on country even though the column shows the name, so the
+        # default `(customers.name) = value` comparison would match nothing.
+        scope ->(value) { where(country: value) }
+      end
+    end
+  end
+end
+
+class InvalidOperatorsFilterTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:country) do
+      filter do
+        operators [:is, :fake_operator]
+      end
+    end
+  end
+end
+
 class FilterTest < ActiveSupport::TestCase
   def filtered_scope(filters)
     t = CustomerFilterTable.new({filters: filters})
@@ -115,7 +145,7 @@ class FilterTest < ActiveSupport::TestCase
   end
 
   test "raises ArgumentError when an unknown operator is listed in the operators DSL option" do
-    t = CustomerTable.new({filters: {country: {value: "NL", operators: [:is, :fake_operator]}}})
+    t = InvalidOperatorsFilterTable.new({filters: {country: {value: "NL"}}})
     error = assert_raises(ArgumentError) { t.active_filters }
     assert_match(/Unknown filter operator/, error.message)
     assert_match(/:fake_operator/, error.message)
@@ -191,5 +221,67 @@ class FilterTest < ActiveSupport::TestCase
 
     assert_match(/HAVING \(+COUNT\(DISTINCT users\.id\)\) > 1/, scope.to_sql)
     assert_equal [asml.id], scope.pluck(:id)
+  end
+
+  def custom_scope_table(filters)
+    t = CustomScopeFilterTable.new({filters: filters})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    t
+  end
+
+  test "a custom filter scope is applied with a single value" do
+    scope = custom_scope_table({name: {value: "NL"}}).ordered_scope
+
+    assert_equal Customer.where(country: "NL").pluck(:id).sort, scope.pluck(:id).sort
+  end
+
+  test "a custom filter scope is applied with multiple values" do
+    scope = custom_scope_table({name: {value: %w[NL DE]}}).ordered_scope
+
+    assert_equal Customer.where(country: %w[NL DE]).pluck(:id).sort, scope.pluck(:id).sort
+  end
+
+  test "a custom filter scope is left out when the filter is not applied" do
+    scope = custom_scope_table({}).ordered_scope
+
+    assert_equal Customer.count, scope.count
+    assert_no_match(/country/, scope.to_sql)
+  end
+
+  test "Filter#scope returns the proc instead of calling it" do
+    f = custom_scope_table({name: {value: "NL"}}).active_filters.first
+
+    assert_kind_of Proc, f.scope
+  end
+
+  test "the request overrides the definition's value and operator and keeps definition-only keys" do
+    f = custom_scope_table({"name" => {"value" => "NL", "operator" => "is"}}).active_filters.first
+
+    assert_equal "NL", f.value
+    assert_equal :is, f.operator
+    assert_kind_of Proc, f.scope
+    assert_equal [:is, :isnt], f.operators.map(&:first)
+    assert f.multiple?
+    assert_kind_of Proc, f.config[:collection]
+  end
+
+  test "the definition's operator is used when the request has none" do
+    f = custom_scope_table({name: {value: "NL"}}).active_filters.first
+
+    assert_equal :isnt, f.operator
+  end
+
+  test "the request cannot override definition-only keys" do
+    f = custom_scope_table({name: {value: "NL", scope: "bogus", having: true, multiple: false}}).active_filters.first
+
+    assert_kind_of Proc, f.scope
+    assert_not f.having?
+    assert f.multiple?
+  end
+
+  test "filters on unknown columns are skipped" do
+    t = CustomerFilterTable.new({filters: {nonexistent: {value: "x"}, country: {value: "NL"}}})
+
+    assert_equal [:country], t.active_filters.map { |f| f.column.name }
   end
 end

@@ -10,7 +10,7 @@ module Mensa
 
     config_reader :operator, cast: :to_sym
     config_reader :value
-    config_reader :scope
+    config_reader :scope, call: false
     config_reader :multiple
     config_reader :having?
 
@@ -88,7 +88,7 @@ module Mensa
         return record_scope if value.is_a?(Array) && value.compact_blank.empty?
 
         query, hash = query_and_hash_for_operator
-        record_scope = (column.filter.having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
+        record_scope = (having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
         record_scope
       end
     end

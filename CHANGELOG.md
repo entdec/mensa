@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.15
+
+- Custom filter `scope` blocks now work. Applied filters are built from the
+  column's `filter do ... end` definition (`scope`, `operators`, `multiple`,
+  `collection`, `having`, ...) with the requested `value` and `operator`
+  layered on top, and `Mensa::Filter#scope` returns the proc instead of
+  calling it without arguments. Host apps can remove workarounds that patch
+  `Mensa::Base#active_filters` or `Mensa::Filter#scope`.
+- Only `value` and `operator` are taken from the request for applied filters;
+  other filter options come from the column definition.
+- Exports are refused (403) for tables with `exportable false`, instead of
+  being created and failing in `Mensa::ExportJob`.
+
 ## 0.6.12
 
 - Tables built with `params` (`table :name, params: {...}`) now work in filters,

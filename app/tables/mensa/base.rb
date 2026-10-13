@@ -107,12 +107,15 @@ module Mensa
       columns.any?(&:filter?)
     end
 
-    # Returns the active filters, skipping any whose column no longer exists.
     def active_filters
       (config[:filters] || {}).filter_map do |column_name, filter_config|
         col = column(column_name)
         next unless col
-        Mensa::Filter.new(column: col, config: filter_config, table: self)
+
+        definition = config.dig(:columns, col.name, :filter)
+        definition = {} unless definition.is_a?(Hash)
+        requested = (filter_config || {}).to_h.symbolize_keys.slice(:value, :operator)
+        Mensa::Filter.new(column: col, config: definition.merge(requested), table: self)
       end
     end
 
