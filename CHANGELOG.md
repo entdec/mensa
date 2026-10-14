@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.3
+## 0.7.4
 
 - **Behaviour change:** the `matches` and `does_not_match` filters now do a
   case-insensitive "contains" (`ILIKE '%value%'`), the same way search does.
@@ -9,6 +9,8 @@
   views that relied on typing `%` or `_` wildcards now match a literal `%` or
   `_`. `does_not_match` now also returns rows where the column is NULL.
   Attributes without a `type` are cast to text for the comparison.
+- Search leaves out internal columns. They aren't shown, so a row found
+  through one looked like it didn't match.
 
 ## 0.7.2
 

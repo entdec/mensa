@@ -10,8 +10,9 @@ module Mensa
       return record_scope if query.blank?
       return record_scope unless record_scope.is_a?(ActiveRecord::Relation)
 
-      # Aggregates (filter having) can't be in a WHERE
-      searchable_attributes = columns.reject { |column| column.filter&.having? }.filter_map(&:attribute_for_condition).uniq
+      # Aggregates (filter having) can't be in a WHERE, and internal columns
+      # aren't shown, so a match on them can't be seen
+      searchable_attributes = columns.reject { |column| column.internal? || column.filter&.having? }.filter_map(&:attribute_for_condition).uniq
       return record_scope if searchable_attributes.empty?
 
       @search_order_clause = nil

@@ -20,7 +20,24 @@ class SearchCustomerTable < Mensa::Base
   end
 end
 
+class SearchInternalTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    internal :country
+  end
+end
+
 class SearchTest < ActiveSupport::TestCase
+  test "leaves internal columns out of the search" do
+    assert Customer.where(country: "NL").exists?
+    assert_not Customer.where("name ILIKE '%NL%'").exists?
+
+    assert_empty SearchInternalTable.new(query: "NL").filtered_scope
+  end
+
+
   test "searches tables with aggregate columns, leaving the aggregates out" do
     table = CustomersTable.new(query: "SAP")
     table.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
