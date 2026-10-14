@@ -8,19 +8,20 @@ module Mensa
   #   assert_mensa_table_valid UsersTable, user: users(:admin)        # Minitest
   #   expect(UsersTable).to be_a_valid_mensa_table(user: admin)        # RSpec
   #
-  # Both take the verifier's options (user:, account:, context:, params:)
-  # and fail with its report.
+  # Both take the verifier's options (user:, account:, context:, params:,
+  # strict:), verify the table in every context of
+  # Mensa.config.verifier_context and fail with the reports.
   module Testing
     module Assertions
       def assert_mensa_table_valid(table, message = nil, **options, &setup)
-        result = Mensa::Verifier.new(table, **options, &setup).call
-        assert result.success?, -> { [message, result.to_s].compact.join("\n\n") }
-        result
+        results = Mensa::Verifier.verify(table, **options, &setup)
+        assert results.all?(&:success?), -> { [message, *results.reject(&:success?).map(&:to_s)].compact.join("\n\n") }
+        results
       end
     end
 
     class ValidTableMatcher
-      attr_reader :result
+      attr_reader :results
 
       def initialize(**options, &setup)
         @options = options
@@ -28,16 +29,16 @@ module Mensa
       end
 
       def matches?(table)
-        @result = Mensa::Verifier.new(table, **@options, &@setup).call
-        @result.success?
+        @results = Mensa::Verifier.verify(table, **@options, &@setup)
+        @results.all?(&:success?)
       end
 
       def failure_message
-        result.to_s
+        results.reject(&:success?).join("\n\n")
       end
 
       def failure_message_when_negated
-        "expected #{result.table_class} not to be a valid Mensa table, but all its checks passed"
+        "expected #{results.first.table_class} not to be a valid Mensa table, but all its checks passed"
       end
 
       def description

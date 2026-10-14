@@ -331,4 +331,10 @@ class FilterTest < ActiveSupport::TestCase
   test "a custom filter scope given as a plain proc with only a value still works" do
     assert_equal Customer.where(country: "NL").count, custom_scope_table({stock_symbol: {value: "NL"}}).ordered_scope.count
   end
+
+  test "a value the column's type can't hold matches nothing instead of raising" do
+    assert_equal [], filtered_scope({number_of_employees: {value: "not a number", operator: :gt}}).to_a
+    assert_equal [], filtered_scope({number_of_employees: {value: ["1", "abc"], operator: :is}}).to_a
+    assert_operator filtered_scope({number_of_employees: {value: " 1 ", operator: :gteq}}).count, :>=, 0
+  end
 end

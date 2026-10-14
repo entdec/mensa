@@ -4,7 +4,8 @@ module Mensa::Config
   class ColumnDsl
     include DslLogic
 
-    option :sortable, default: true
+    # Defaults to whether the column has SQL, see Mensa::Column#sortable?
+    option :sortable
     option :sanitize, default: true
     # Allows for sql-parts too
     #

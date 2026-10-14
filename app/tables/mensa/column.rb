@@ -14,7 +14,6 @@ module Mensa
       @table = table
     end
 
-    config_reader :sortable?
     config_reader :sanitize?
     config_reader :visible?
     config_reader :internal?
@@ -96,9 +95,25 @@ module Mensa
       aggregates.any?
     end
 
-    # Returns true if the column supports filtering
+    # Whether the column has SQL (an attribute or a database column). Columns
+    # without, e.g. only a render block or a method, can't be sorted or
+    # filtered in SQL.
+    def sql?
+      attribute_for_condition.present?
+    end
+
+    # Columns with SQL are sortable unless `sortable false`, others only with
+    # an explicit `sortable true`
+    def sortable?
+      config[:sortable].nil? ? sql? : !!config[:sortable]
+    end
+
+    # Returns true if the column supports filtering: columns with SQL unless
+    # `filter false`, others only with a filter that has its own scope
     def filter?
-      config[:filter] != false
+      return false if config[:filter] == false
+
+      sql? || (config[:filter].is_a?(Hash) && config[:filter][:scope].present?)
     end
 
     def filter

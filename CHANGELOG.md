@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.19
 
 - `Mensa::Verifier` checks a table against the database: scope, column SQL,
   sorting, rendering, filters, search, CSV export, grouping/aggregates and
@@ -8,6 +8,18 @@
   or from tests after `require "mensa/testing"` with
   `assert_mensa_table_valid` or `be_a_valid_mensa_table`. Set defaults for
   its context with `config.verifier_context`.
+- The verifier samples records from the first and last page and records with
+  empty values, tries filters with invalid input, checks search, filters, sorting
+  and grouping together, and warns about N+1 queries (with a fix) and slow
+  queries. `strict: true` / `STRICT=1` makes warnings fail.
+  `config.verifier_context` can return an array to verify tables in several
+  contexts, `config.verifier_slow_query` sets when a query is slow.
+- Columns without SQL (only a `render` block or a `method`, no `attribute` or
+  database column) are no longer sortable or filterable by default, sorting or
+  filtering on them produced invalid SQL. Use `sortable true` for a column whose
+  name is an alias the scope selects, or a filter `scope` to filter it.
+- Filters with a value their column's type can't hold (e.g. "abc" for a number,
+  or an invalid date or uuid) match nothing instead of raising a database error.
 - `Mensa::ExportJob.write_csv(io, table, rows)` writes a table's CSV export and
   `Mensa::ExportJob#generate_file(export)` generates an export's file without
   saving it.

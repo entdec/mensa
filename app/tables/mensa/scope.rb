@@ -129,6 +129,9 @@ module Mensa
         # Skip orders on unknown names, e.g. from browser state saved for
         # different params.
         next unless col || model_attribute?(k)
+        # Columns without SQL can't be sorted on, unless they're explicitly
+        # sortable, e.g. on an alias the scope selects
+        next if col && !col.sql? && !col.sortable?
         next unless %w[asc desc].include?(v)
 
         attribute = col&.attribute_for_condition || k

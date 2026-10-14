@@ -118,11 +118,49 @@ You can show your tables on the page using the following:
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
 When you enable these, they are stored in the database and can be used across sessions, by the user who created them.
 
+### Sortable and filterable columns
+
+Sorting and filtering happen in SQL, so whether a column can be sorted or filtered
+depends on whether it has SQL: a database column of the model, or an `attribute`.
+
+- **Columns with SQL** are sortable and filterable by default. Turn that off with
+  `sortable false` or `filter false`.
+- **Columns without SQL**, which only show something with a `render` block or a
+  `method`, are *not* sortable or filterable by default. Their headers have no sort
+  link, they aren't offered in the filter menu, and sorting or filtering on them
+  from a URL or saved state is ignored.
+
+```ruby
+column(:email)                      # sortable and filterable
+column(:customer_name) do           # sortable and filterable, it has SQL
+  attribute "customers.name"
+end
+column(:avatar) do                  # render only: not sortable, not filterable
+  render do
+    html { |user| image_tag(user.avatar_url) }
+  end
+end
+```
+
+To make a column without SQL filterable, give its filter a `scope` (see "Custom
+filter scopes" below). Add `sortable true` only when its name can be sorted on in
+SQL, e.g. an alias your table's `scope` selects:
+
+```ruby
+column(:orders_count) do
+  sortable true # ORDER BY orders_count, selected in the scope below
+end
+
+scope { User.left_joins(:orders).group(:id).select("users.*, COUNT(orders.id) AS orders_count") }
+```
+
+Better still, give such a column an `attribute`, so it's sortable and filterable.
+
 ### Filters
 
-Add `filter` to a column to let users filter on it. By default Mensa compares the
-column's attribute with the chosen value, using operators that fit the column type.
-The filter block takes these options:
+Columns with SQL are filterable (see above). Use `filter` to configure how. By
+default Mensa compares the column's attribute with the chosen value, using
+operators that fit the column type. The filter block takes these options:
 
 ```ruby
 column(:role) do
@@ -325,15 +363,18 @@ If you're just using cron, you can add the following to your crontab:
 `Mensa::Verifier` checks that everything a table configures works against your
 real database, using the same code paths as requests do:
 
-- **Loads**: the table builds, its SQL builds and the first two pages load. A default
-  `order` or `column_order` naming an unknown column fails.
+- **Loads**: the table builds, its SQL builds and the first and last pages load. A
+  default `order` or `column_order` naming an unknown column fails. Records are
+  sampled for the checks below: some from the first and the last page, and one with
+  an empty value for each column, which often breaks render blocks.
 - **Columns**: every column (internal ones too) can be selected and, when sortable,
-  sorted both ways. Its html and csv renders run for a few records. Columns hidden
-  by a `visible` lambda are reported as skipped.
+  sorted both ways. Its html and csv renders run for the sampled records, and a
+  failure names the record. Columns hidden by a `visible` lambda are reported as
+  skipped.
 - **Filters**: every filterable column is applied with each of its operators, using
   the first values of its `collection` or a value that fits the column's type, and
-  the filter pill's text is built. `is_current` is skipped when `Current` has no
-  value for the column.
+  with input the column's type can't hold (e.g. "not a number"). The filter pill's
+  text is built. `is_current` is skipped when `Current` has no value for the column.
 - **Search**: basic and fuzzy search (when `pg_trgm` is enabled) for a word taken
   from the records.
 - **Rendering**: the `table` helper as your views call it, the rows and filter pills
@@ -341,11 +382,25 @@ real database, using the same code paths as requests do:
 - **Exports**: `Mensa::ExportJob` generates the first page of the export, also for
   each view and as a password protected zip. It needs the expected headers
   (skipped for `exportable false`).
+- **Combined**: search, a filter on every column, sorting on every column and
+  grouping with aggregates, all at once.
 - **Grouping**: every groupable column and every aggregate, rendered with their
   group headers. A `group_by` or `aggregates` naming a column that doesn't allow
   it fails, because Mensa would silently ignore it.
 - **Views**: system views load, render and only refer to existing columns. With
   custom views enabled, saved views load too.
+
+It also warns, without failing:
+
+- **N+1 queries**: a query that a render block, the row link or a row action runs for
+  each record. The warning shows the query and how to avoid it for the association
+  it loads, e.g. preload it with `includes` (and `internal :customer_id`, since Mensa
+  only selects the table's columns), select the value in SQL with `attribute`, or
+  count in SQL.
+- **Slow queries**: queries that take `config.verifier_slow_query` seconds (1.0 by
+  default) or more.
+
+Pass `strict: true` (or `STRICT=1` to rake) to make warnings fail.
 
 Each check runs on its own, so one failure doesn't hide the others. Everything runs
 in a read-only transaction that is rolled back, with small limits, so it is safe to
@@ -390,20 +445,24 @@ params. Give the verifier that context:
 - `context: {organization: org}` sets any other `Current` attributes.
 - `params: {customer_id: 1}` sets the table's params (see "Table params").
 - A block is called with the verifier before the checks, for any other setup.
+- `label: "admin"` names the context in the report.
 
 Html render blocks run in a view context of your `ApplicationController` (see
 `config.base_controller`), so url helpers and your helpers work.
 
 From rake, set `USER_ID=` (finds a `User`), `ACCOUNT_ID=` (finds an `Account`) and
 `PARAMS='{"customer_id":1}'` (JSON), or configure defaults for every table in
-your initializer. The options you pass yourself override these defaults:
+your initializer. The options you pass yourself override these defaults. Return an array of them to
+verify every table once for each, e.g. as different kinds of users:
 
 ```ruby
 Mensa.setup do |config|
   config.verifier_context = ->(table_class) {
-    options = {user: User.find_by!(email: "admin@example.com")}
-    options[:params] = {customer_id: Customer.first.id} if table_class == CustomerUsersTable
-    options
+    params = {customer_id: Customer.first.id} if table_class == CustomerUsersTable
+    [
+      {label: "admin", user: User.find_by!(email: "admin@example.com"), params: params},
+      {label: "customer", user: User.find_by!(email: "customer@example.com"), params: params}
+    ]
   }
 end
 ```

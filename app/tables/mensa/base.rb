@@ -110,7 +110,9 @@ module Mensa
     def active_filters
       (config[:filters] || {}).filter_map do |column_name, filter_config|
         col = column(column_name)
-        next unless col
+        # Columns without SQL can only be filtered with a custom scope, skip
+        # filters on them, e.g. from browser state saved earlier
+        next if col.nil? || !(col.sql? || col.filter?)
 
         definition = config.dig(:columns, col.name, :filter)
         definition = {} unless definition.is_a?(Hash)

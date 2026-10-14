@@ -8,31 +8,45 @@ require "mensa/verifier/result"
 module Mensa
   # Checks that everything a table configures works against the real database:
   # its scope, every column's SQL, sorting, rendering, filters, search, the CSV
-  # export, grouping/aggregates and its views.
+  # export, grouping/aggregates and its views. It also warns about N+1 queries
+  # and slow queries.
   #
   #   result = Mensa::Verifier.new(UsersTable, user: User.first).call
   #   result.success? # => true
   #   puts result     # per-check report
   #
   # Checks go through the same code paths as requests do (filtered_scope,
-  # ordered_scope, Mensa::Cell, Mensa::ExportJob.write_csv, ...). Everything
-  # runs in a read-only transaction that is rolled back, and every check in its
-  # own savepoint so one failing query doesn't stop the others.
+  # ordered_scope, Mensa::Cell, the components, Mensa::ExportJob, ...).
+  # Everything runs in a read-only transaction that is rolled back, and every
+  # check in its own savepoint so one failing query doesn't stop the others.
   #
   # Tables often depend on request context, give it with user:, account: and
   # context: (all set on Current while verifying), params: (the table's
   # params) or a block, which is called with the verifier before the checks.
-  # Mensa.config.verifier_context supplies defaults for these.
+  # Mensa.config.verifier_context supplies defaults for these, or a list of
+  # them to verify a table in several contexts (see Verifier.verify).
   class Verifier
-    # Records loaded for record-level checks, and per query
+    # Records sampled from the first and the last page
     SAMPLE_SIZE = 5
+    LAST_PAGE_SAMPLE = 2
+
+    # Statements that aren't the table's queries
+    IGNORED_QUERY = /\A\s*(SAVEPOINT|RELEASE|ROLLBACK|BEGIN|COMMIT|SET|SHOW)\b/i
 
     class Skip < StandardError; end
 
     # A problem the verifier found itself, reported without the class name
     class Failure < StandardError; end
 
-    attr_reader :table_class, :user, :account, :context, :params, :result
+    # A record to render, and why it was sampled
+    Sample = Struct.new(:row, :reason) do
+      def description
+        id = row.record.id if row.record.respond_to?(:id)
+        [("record #{id}" if id), "(#{reason})"].compact.join(" ")
+      end
+    end
+
+    attr_reader :table_class, :user, :account, :context, :params, :label, :result
 
     class << self
       # Accepts a table class, its name (e.g. "UsersTable") or Mensa's table
@@ -55,21 +69,44 @@ module Mensa
         }.uniq.sort_by(&:name)
       end
 
+      # Verifies +table+ in every context Mensa.config.verifier_context
+      # returns for it (a hash, or an array of them), with +options+ on top.
+      # Returns one result per context.
+      def verify(table, **options, &setup)
+        table_class = resolve_table_class(table)
+        options = options.compact
+
+        contexts_for(table_class).map do |defaults|
+          new(table_class, **options, defaults: defaults, &setup).call
+        end
+      end
+
+      # The option hashes Mensa.config.verifier_context gives for a table
+      def contexts_for(table_class)
+        return [{}] unless table_class.is_a?(Class) && table_class < Mensa::Base
+
+        contexts = Mensa.config.verifier_context&.call(table_class)
+        contexts = [contexts] unless contexts.is_a?(Array)
+        contexts.map { |context| context.is_a?(Hash) ? context.symbolize_keys : {} }.presence || [{}]
+      end
+
       # Verifies the tables (all under app/tables when none are given), prints
       # their reports to +io+ and returns true when all of them passed.
-      # Context comes from USER_ID, ACCOUNT_ID and PARAMS (JSON) in +env+, used
-      # by the mensa:verify rake tasks.
+      # Context comes from USER_ID, ACCOUNT_ID and PARAMS (JSON) in +env+, and
+      # STRICT=1 makes warnings fail, used by the mensa:verify rake tasks.
       def run(tables = nil, env: ENV, io: $stdout)
         classes = tables.present? ? Array(tables).map { |table| resolve_table_class(table) } : table_classes
         options = options_from_env(env)
 
-        results = classes.map do |klass|
-          new(klass, **options).call.tap { |result| io.puts(result, "") }
+        results = classes.flat_map do |klass|
+          verify(klass, **options).each { |result| io.puts(result, "") }
         end
 
-        tables, others = results.partition(&:mensa_table?)
+        by_table = results.select(&:mensa_table?).group_by(&:table_class)
+        others = results.reject(&:mensa_table?)
         if results.size > 1
-          io.puts ["#{tables.count(&:success?)}/#{tables.size} tables passed", ("#{others.size} skipped, not a Mensa::Base subclass" if others.any?)].compact.join(", ")
+          passed = by_table.count { |_table, table_results| table_results.all?(&:success?) }
+          io.puts ["#{passed}/#{by_table.size} tables passed", ("#{others.size} skipped, not a Mensa::Base subclass" if others.any?)].compact.join(", ")
         end
         results.all?(&:success?)
       end
@@ -79,20 +116,26 @@ module Mensa
         options[:user] = "User".constantize.find(env["USER_ID"]) if env["USER_ID"].present?
         options[:account] = "Account".constantize.find(env["ACCOUNT_ID"]) if env["ACCOUNT_ID"].present?
         options[:params] = JSON.parse(env["PARAMS"]) if env["PARAMS"].present?
+        options[:strict] = true if %w[1 true yes].include?(env["STRICT"].to_s.downcase)
         options
       end
     end
 
-    def initialize(table, user: nil, account: nil, context: {}, params: nil, view_context: nil, &setup)
+    # +strict+ makes warnings fail, +slow_query+ is the duration in seconds
+    # from which a query is reported (Mensa.config.verifier_slow_query).
+    # +defaults+ replaces the first context of Mensa.config.verifier_context.
+    def initialize(table, user: nil, account: nil, context: {}, params: nil, label: nil, strict: false, slow_query: nil, view_context: nil, defaults: nil, &setup)
       @table_class = self.class.resolve_table_class(table)
-      defaults = default_options
+      defaults ||= self.class.contexts_for(@table_class).first
       @user = user || defaults[:user]
       @account = account || defaults[:account]
       @context = (defaults[:context] || {}).merge(context || {})
       @params = params || defaults[:params] || {}
+      @label = label || defaults[:label] || context_label
+      @slow_query = slow_query || defaults[:slow_query] || Mensa.config.verifier_slow_query
       @view_context = view_context
       @setup = setup
-      @result = Result.new(@table_class)
+      @result = Result.new(@table_class, strict: strict || defaults[:strict], label: @label)
     end
 
     def call
@@ -104,10 +147,15 @@ module Mensa
         return result
       end
 
-      read_only_transaction do
-        with_current_attributes do
-          @setup&.call(self)
-          run_checks
+      @queries = []
+      @reported_n_plus_one = Set.new
+      thread = Thread.current
+      ActiveSupport::Notifications.subscribed(->(event) { record_query(event) if Thread.current == thread }, "sql.active_record") do
+        read_only_transaction do
+          with_current_attributes do
+            @setup&.call(self)
+            run_checks
+          end
         end
       end
       result
@@ -139,13 +187,16 @@ module Mensa
 
     private
 
-    def default_options
-      options = Mensa.config.verifier_context&.call(table_class)
-      options.is_a?(Hash) ? options.symbolize_keys : {}
-    end
-
     def default_host
       Rails.application.routes.default_url_options[:host] || "localhost"
+    end
+
+    # Names the context in the report, e.g. "user: User#1, params: {...}"
+    def context_label
+      values = context.symbolize_keys.merge({user: user, account: account}.compact)
+      parts = values.map { |key, value| "#{key}: #{value.is_a?(ActiveRecord::Base) ? "#{value.class.name}##{value.id}" : value.inspect}" }
+      parts << "params: #{params.to_json}" if params.present?
+      parts.join(", ").presence
     end
 
     def run_checks
@@ -158,23 +209,31 @@ module Mensa
       # A table of its own, a relation can't be counted after its to_sql
       check(:loads, nil, "build SQL") { |c| c.sql = build_table.selected_scope.to_sql }
       @rows = check(:loads, nil, "load first page") { @table.rows }
-      verify_second_page
+      verify_last_page
       verify_defaults
+      @samples = check(:loads, nil, "sample records") { |c| load_samples.tap { |samples| c.name = sample_name(samples) } } if @rows
 
       verify_columns
       verify_filters
       verify_search
       verify_rendering
+      verify_combined
       verify_exports
       verify_grouping
       verify_views
     end
 
+    # Checks
+
     # Runs the block as one check in its own savepoint and records the
-    # outcome. Returns the block's value, nil when the check didn't pass.
-    # Quiet checks are only reported when they fail.
+    # outcome, then any warnings found while running it. Returns the block's
+    # value, nil when the check didn't pass. Quiet checks are only reported
+    # when they fail.
     def check(section, subject, name, quiet: false)
       c = Check.new(section: section, subject: subject, name: name)
+      outer_warnings = @warnings
+      @warnings = []
+      start = @queries.size
       value = nil
       savepoint { value = yield(c) }
       c.status = :passed
@@ -183,18 +242,26 @@ module Mensa
       c.status = :skipped
       c.message = e.message
       nil
-    rescue StandardError, NotImplementedError => e
+    rescue StandardError, ScriptError => e
       c.status = :failed
       c.error = e
-      c.message = e.is_a?(Failure) ? e.message : "#{e.class}: #{e.message}"
+      c.message = e.is_a?(Failure) ? e.message : "#{e.class}: #{e.message}#{error_hint(e)}"
       c.sql = e.sql if e.respond_to?(:sql) && e.sql.present?
       nil
     ensure
       result.checks << c unless quiet && c.passed?
+      warn_slow_queries(section, subject, @queries[start..]) if c.passed?
+      result.checks.concat(@warnings)
+      @warnings = outer_warnings
     end
 
     def skip!(reason)
       raise Skip, reason
+    end
+
+    def warn!(section, subject, name, message, sql = nil)
+      warning = Check.new(section: section, subject: subject, name: name, status: :warning, message: message, sql: sql)
+      @warnings ? @warnings << warning : result.checks << warning
     end
 
     def savepoint
@@ -204,22 +271,159 @@ module Mensa
       end
     end
 
-    # Record-level checks need loaded records
-    def sample_rows!
-      skip!("records could not be loaded") if @rows.nil?
-      skip!("no records") if @rows.empty?
-
-      @rows.first(SAMPLE_SIZE)
+    # The block's value, or nil when it raises
+    def attempt
+      value = nil
+      savepoint { value = yield }
+      value
+    rescue
+      nil
     end
 
-    def verify_second_page
-      check(:loads, nil, "load page 2") do
-        skip!("records could not be loaded") if @rows.nil?
-        skip!("only one page") if @table.pagy_details.pages < 2
+    # Fixes for errors that have a common cause
+    def error_hint(error)
+      error = error.cause if error.is_a?(ActionView::Template::Error) && error.cause
+      return unless error.is_a?(ActiveModel::MissingAttributeError)
 
-        table = build_table
-        table.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("http://#{default_host}/?page=2"))
-        table.rows
+      attribute = error.message[/missing attribute '?(\w+)'?/, 1]
+      "\nFix: Mensa only selects the table's columns, add `internal :#{attribute}` to select #{attribute} too." if attribute
+    end
+
+    # Queries
+
+    def record_query(event)
+      payload = event.payload
+      return if payload[:cached] || %w[SCHEMA TRANSACTION].include?(payload[:name]) || payload[:sql].to_s.match?(IGNORED_QUERY)
+
+      @queries << {sql: payload[:sql], duration: event.duration / 1000.0}
+    end
+
+    def warn_slow_queries(section, subject, queries)
+      slow = queries.select { |query| query[:duration] >= @slow_query }
+      return if slow.empty?
+
+      slowest = slow.max_by { |query| query[:duration] }
+      warn!(section, subject, "slow query",
+        "took #{format("%.2f", slowest[:duration])}s (reported from #{@slow_query}s#{", #{slow.size} slow queries" if slow.size > 1}).\n" \
+        "Fix: check its plan with EXPLAIN ANALYZE, e.g. for a missing index.", slowest[:sql])
+    end
+
+    # Records
+
+    # Samples to render: records from the first and the last page, and a
+    # record with an empty value for each column, where null values often
+    # break render blocks.
+    def load_samples
+      samples = @rows.first(SAMPLE_SIZE).map { |row| Sample.new(row, "first page") }
+
+      pages = @table.pagy_details.pages
+      build_table_on_page(pages).rows.last(LAST_PAGE_SAMPLE).each { |row| samples << Sample.new(row, "last page") } if pages > 1
+
+      @table.columns.reject(&:internal?).select(&:filter?).each do |column|
+        next if column.attribute_for_condition.blank?
+        next if samples.any? { |sample| attempt { sample.row.value(column).nil? } }
+
+        sample = attempt do
+          table = build_table(filters: {column.name => {operator: :is_empty}})
+          record = table.selected_scope.limit(1).first
+          Sample.new(Mensa::Row.new(table, record), "#{column.name} empty") if record
+        end
+        samples << sample if sample
+      end
+
+      samples.uniq { |sample| sample.row.record.respond_to?(:id) ? sample.row.record.id : sample.row.record.object_id }
+    end
+
+    def sample_name(samples)
+      "sample #{samples.size} #{"record".pluralize(samples.size)}#{" (#{samples.map(&:reason).uniq.join(", ")})" if samples.any?}"
+    end
+
+    def build_table_on_page(page)
+      table = build_table
+      table.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("http://#{default_host}/?page=#{page}"))
+      table
+    end
+
+    # Record-level checks need sampled records
+    def sample_rows!
+      skip!("records could not be loaded") if @samples.nil?
+      skip!("no records") if @samples.empty?
+
+      @samples
+    end
+
+    # Renders every sample in its own savepoint. Fails naming the records that
+    # failed, and warns about queries that run for each record (N+1).
+    def render_samples(section, subject, what)
+      errors = []
+      queries_per_record = sample_rows!.map do |sample|
+        start = @queries.size
+        begin
+          savepoint { yield sample.row }
+        rescue StandardError, ScriptError => e
+          errors << "#{sample.description}: #{e.class}: #{e.message}#{error_hint(e)}"
+        end
+        @queries[start..].map { |query| query[:sql] }.uniq
+      end
+
+      warn_n_plus_one(section, subject, what, queries_per_record)
+      raise Failure, errors.join("\n") if errors.any?
+    end
+
+    def warn_n_plus_one(section, subject, what, queries_per_record)
+      return if queries_per_record.size < 2
+
+      queries_per_record.flatten.tally.each do |sql, records|
+        next if records < 2
+        next unless @reported_n_plus_one.add?([subject, sql])
+
+        warn!(section, subject, "N+1 query in #{what}",
+          "runs this query for each record (#{records} of #{queries_per_record.size} sampled records).#{n_plus_one_hint(sql)}", sql)
+      end
+    end
+
+    # How to avoid a query per record, from the association it loads
+    def n_plus_one_hint(sql)
+      model = @table.model
+      table = sql[/\bFROM\s+"?(\w+)"?/i, 1]
+      reflection = model.reflect_on_all_associations.find do |association|
+        !association.polymorphic? && association.klass.table_name == table
+      rescue NameError
+        false
+      end
+      return "\nFix: select the value in SQL with `attribute`, or preload what the block uses in `scope`." unless reflection
+
+      preload = "`scope { #{model.name}.includes(:#{reflection.name}) }`"
+      hints = if reflection.belongs_to?
+        foreign_key = reflection.foreign_key.to_s
+        selected = @table.columns.any? { |column| column.name.to_s == foreign_key }
+        [
+          "preload it with #{preload}#{" and add `internal :#{foreign_key}`, Mensa only selects the table's columns and the preload needs the foreign key" unless selected}",
+          "or select the value in SQL with `attribute \"#{table}.<column>\"` and `left_outer_joins(:#{reflection.name})` in `scope`"
+        ]
+      else
+        hints = ["preload it with #{preload}"]
+        if sql.match?(/\bCOUNT\(/i) && reflection.collection?
+          hints << "and use `.size` instead of `.count`, which always queries"
+          unless reflection.through_reflection?
+            hints << "or count in SQL with `attribute \"(SELECT COUNT(*) FROM #{table} WHERE #{table}.#{reflection.foreign_key} = #{model.table_name}.#{model.primary_key})\"` and `type :integer`"
+          end
+        end
+        hints
+      end
+      "\nFix: #{hints.join(",\n     ")}."
+    end
+
+    # Loads
+
+    def verify_last_page
+      check(:loads, nil, "load last page") do
+        skip!("records could not be loaded") if @rows.nil?
+
+        pages = @table.pagy_details.pages
+        skip!("only one page") if pages < 2
+
+        build_table_on_page(pages).rows
       end
     end
 
@@ -248,7 +452,11 @@ module Mensa
       check(:columns, column.name, "select") do |c|
         skip!("no SQL attribute, the value comes from #{column.method ? "method :#{column.method}" : "the record"}") if column.attribute.blank?
 
-        relation = build_table.filtered_scope.select(Arel.sql(column.attribute)).limit(1)
+        # What Mensa selects besides the column: the id and internal columns,
+        # which preloads in the scope need
+        table = build_table
+        selects = (table.send(:id_column?) ? [:id] : []) + table.columns.select(&:internal?).filter_map(&:attribute)
+        relation = table.filtered_scope.select(*selects, Arel.sql(column.attribute)).limit(1)
         c.sql = relation.to_sql
         relation.load
       end
@@ -269,7 +477,7 @@ module Mensa
         check(:columns, column.name, "render #{format}") do
           skip!("not visible") unless visible
 
-          sample_rows!.each { |row| Mensa::Cell.new(row: row, column: column).render(format) }
+          render_samples(:columns, column.name, "render #{format}") { |row| Mensa::Cell.new(row: row, column: column).render(format) }
         end
       end
     end
@@ -292,8 +500,12 @@ module Mensa
           end
         end
 
-        check(:filters, column.name, filter_check_name(column, operators, values)) do |c|
+        invalid = invalid_value(column)
+        check(:filters, column.name, filter_check_name(column, operators, values, invalid)) do |c|
           errors = operators.filter_map { |operator, _label, with_value| filter_error(column, operator, filter_value(column, operator, with_value, values)) }
+          if invalid
+            errors += operators.select { |_operator, _label, with_value| with_value }.filter_map { |operator, *| filter_error(column, operator, invalid) }
+          end
           next if errors.empty?
 
           c.sql = errors.first[:sql]
@@ -302,8 +514,9 @@ module Mensa
       end
     end
 
-    def filter_check_name(column, operators, values)
-      "#{operators.map(&:first).join(", ")} (#{(column.filter.multiple? ? values : values.first).inspect})"
+    def filter_check_name(column, operators, values, invalid)
+      name = "#{operators.map(&:first).join(", ")} (#{(column.filter.multiple? ? values : values.first).inspect})"
+      invalid ? "#{name}, invalid input (#{invalid.inspect})" : name
     end
 
     # Applies the filter with one operator in its own savepoint, returns
@@ -318,7 +531,7 @@ module Mensa
         table.active_filters.each(&:to_s)
       end
       nil
-    rescue StandardError, NotImplementedError => e
+    rescue StandardError, ScriptError => e
       sql = e.sql if e.respond_to?(:sql)
       sql ||= relation.to_sql if relation
       {message: "#{operator}#{" #{value.inspect}" if value}: #{e.class}: #{e.message}", sql: sql}
@@ -361,6 +574,15 @@ module Mensa
       end
     end
 
+    # A value a user could type that the column's type can't hold
+    def invalid_value(column)
+      case column.type
+      when :integer, :bigint, :decimal, :float then "not a number"
+      when :date, :datetime, :timestamp then "not a date"
+      when :uuid then "not a uuid"
+      end
+    end
+
     # Search
 
     # Both search modes, the app may switch between them
@@ -373,7 +595,8 @@ module Mensa
             table = build_table(query: term)
             skip!("needs the pg_trgm extension") if mode == :fuzzy && !table.send(:fuzzy_search?, table.scope)
 
-            relation = table.ordered_scope.limit(SAMPLE_SIZE)
+            # Search uses every column, so load what requests load
+            relation = table.selected_scope.limit(SAMPLE_SIZE)
             c.sql = relation.to_sql
             relation.load
           end
@@ -391,15 +614,14 @@ module Mensa
 
     # A word from the first string value in the records, so it finds something
     def search_term
-      (@rows || []).first(SAMPLE_SIZE).each do |row|
-        @table.display_columns.each do |column|
-          value = row.value(column)
-          return value.split.first.first(20) if value.is_a?(String) && value.split.first.present?
-        end
+      @search_term ||= begin
+        words = (@rows || []).first(SAMPLE_SIZE).lazy.flat_map { |row|
+          @table.display_columns.map { |column| row.value(column) }
+        }.select { |value| value.is_a?(String) && value.split.first.present? }
+        words.first&.split&.first&.first(20) || "a"
+      rescue
+        "a"
       end
-      "a"
-    rescue
-      "a"
     end
 
     # Rendering, like the app's views and Mensa's controllers do
@@ -408,13 +630,15 @@ module Mensa
       check(:render, nil, "table component") { view_context.table(table_name, params: params) }
       check(:render, nil, "rows and filter pills") { render_page(build_table, view: @table.default_system_view) }
 
-      check(:render, nil, "row link") { sample_rows!.each(&:link) } if @table.link
+      check(:render, nil, "row link") { render_samples(:render, nil, "row link", &:link) } if @table.link
 
       return unless @table.actions?
 
       @table.actions.each do |action|
         check(:render, :actions, action.name.to_s) do
-          sample_rows!.each { |row| view_context.render(Mensa::RowAction::Component.new(table: @table, row: row, action: action)) }
+          render_samples(:render, :actions, action.name.to_s) do |row|
+            view_context.render(Mensa::RowAction::Component.new(table: @table, row: row, action: action))
+          end
         end
       end
     end
@@ -424,6 +648,37 @@ module Mensa
       table.table_view = view
       view_context.render(Mensa::FilterPillList::Component.new(table: table))
       view_context.render(Mensa::View::Component.new(table))
+    end
+
+    # Everything a user can combine at once: search, a filter on every
+    # column, sorting on every column and grouping with aggregates
+    def verify_combined
+      check(:combined, nil, "search, filters, sorting and grouping together") do |c|
+        config = {query: search_term, filters: combined_filters}
+        config[:order] = @table.columns.select { |column| column.sortable? && !column.internal? }.to_h { |column| [column.name, :asc] }
+
+        groupable = @table.columns.find(&:groupable?)
+        if groupable && @table.scope.is_a?(ActiveRecord::Relation)
+          config[:group_by] = groupable.name
+          config[:aggregates] = @table.columns.select(&:aggregatable?).reject(&:internal?).to_h { |column| [column.name, column.aggregates.first] }
+        end
+
+        table = build_table(config)
+        c.sql = table.selected_scope.to_sql
+        render_page(build_table(config))
+      end
+    end
+
+    def combined_filters
+      @table.columns.select(&:filter?).each_with_object({}) do |column, filters|
+        operators = attempt { column.filter.operators } || []
+        operator, _label, with_value = operators.find { |_operator, _label, with_value| with_value } ||
+          operators.find { |operator, *| %i[is_empty isnt_empty].include?(operator) }
+        next unless operator
+
+        values = attempt { filter_values(column) } || [synthetic_value(column)]
+        filters[column.name] = {operator: operator, value: filter_value(column, operator, with_value, values)}.compact
+      end
     end
 
     # Exports, generated by Mensa::ExportJob like a user's export request,
@@ -473,7 +728,7 @@ module Mensa
 
       expected = build_table((table_view&.config || {}).deep_symbolize_keys.merge(config.deep_symbolize_keys))
       headers = expected.display_columns.map { |column| column.name.to_s }
-      lines = CSV.parse(csv.force_encoding(Encoding::UTF_8).delete_prefix("\uFEFF"))
+      lines = CSV.parse(csv.force_encoding(Encoding::UTF_8).delete_prefix("﻿"))
       raise Failure, "the export has no columns" if headers.empty?
       raise Failure, "the export has headers #{lines.first.inspect}, expected #{headers.inspect}" unless lines.first == headers
 

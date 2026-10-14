@@ -146,10 +146,13 @@ module Mensa
     option :search, default: :basic
     # Default options for Mensa::Verifier (and so `rails mensa:verify`), called
     # with the table class. Return a hash with any of user:, account:,
-    # context: (Current attributes) and params:, e.g.
+    # context: (Current attributes), params: and label:, or an array of them
+    # to verify the table in each of those contexts, e.g.
     #
     #   config.verifier_context = ->(table_class) { {user: User.find_by!(email: "admin@example.com")} }
     option :verifier_context, default: nil
+    # Mensa::Verifier warns about queries that take this many seconds or more
+    option :verifier_slow_query, default: 1.0
 
     def initialize
       set_defaults!

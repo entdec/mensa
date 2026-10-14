@@ -86,6 +86,9 @@ module Mensa
 
         # Nothing selected in a multi-select means no filter
         return record_scope if value.is_a?(Array) && value.compact_blank.empty?
+        # A value the database can't compare with the column, e.g. "abc" for
+        # a number, matches nothing instead of raising
+        return record_scope.none if operator_with_value? && invalid_value?
 
         query, hash = query_and_hash_for_operator
         record_scope = (having? ? record_scope.having(query, hash) : record_scope.where(query, hash)) if query.present?
@@ -222,6 +225,29 @@ module Mensa
       record_scope
         .where("#{column_sql} IS NOT NULL")
         .where("#{column_sql} IN (#{duplicate_values_scope.to_sql})")
+    end
+
+    UUID_FORMAT = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
+
+    # Whether a value can't be read as the column's type. Values are sent to
+    # the database as they are, this only catches the ones it would reject.
+    def invalid_value?
+      Array(value).compact_blank.any? { |entry| !valid_for_type?(entry) }
+    end
+
+    def valid_for_type?(entry)
+      return true unless entry.is_a?(String)
+
+      case column.type
+      when :integer, :bigint then entry.strip.match?(/\A[+-]?\d+\z/)
+      when :decimal, :float then entry.strip.match?(/\A[+-]?(\d+\.?\d*|\.\d+)\z/)
+      when :date then Date.parse(entry).present?
+      when :datetime, :timestamp then Time.zone.parse(entry).present?
+      when :uuid then entry.strip.match?(UUID_FORMAT)
+      else true
+      end
+    rescue ArgumentError, RangeError
+      false
     end
 
     # Aggregates are only known per group, so the duplicate values come from

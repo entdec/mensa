@@ -142,6 +142,89 @@ class VerifierBadDefaultsTable < Mensa::Base
   end
 end
 
+class VerifierNPlusOneTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:customer) do
+      render do
+        html { |user| user.customer.name }
+      end
+    end
+    internal :customer_id
+  end
+end
+
+class VerifierPreloadedTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:customer) do
+      render do
+        html { |user| user.customer.name }
+      end
+    end
+    internal :customer_id
+
+    scope -> { User.includes(:customer) }
+  end
+end
+
+class VerifierMissingForeignKeyTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:customer) do
+      render do
+        html { |user| user.customer.name }
+      end
+    end
+  end
+end
+
+class VerifierCountingTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    column(:users) do
+      render do
+        html { |customer| customer.users.count }
+      end
+    end
+  end
+end
+
+class VerifierNullValueTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    column(:stock_symbol) do
+      render do
+        html { |customer| customer.stock_symbol.downcase }
+      end
+    end
+
+    order name: :asc
+    # Only ESA has no stock symbol, and it's in neither the first nor the
+    # last page's sample
+    scope -> { Customer.where.not(stock_symbol: nil).or(Customer.where(name: "ESA")) }
+  end
+end
+
+class VerifierNumberFilterTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    column(:number_of_employees)
+  end
+end
+
 class VerifierTest < ActiveSupport::TestCase
   def verify(table, **options, &)
     Mensa::Verifier.new(table, **options, &).call
@@ -157,7 +240,7 @@ class VerifierTest < ActiveSupport::TestCase
 
     assert result.success?, result.to_s
     assert_empty result.failures
-    assert_equal %i[loads columns filters search render exports views], result.checks.map(&:section).uniq
+    assert_equal %i[loads columns filters search render combined exports views], result.checks.map(&:section).uniq
     assert_match(/OK: \d+ passed, 0 failed/, result.to_s)
   end
 
@@ -191,7 +274,8 @@ class VerifierTest < ActiveSupport::TestCase
     assert_match(/^is "admin": ActiveRecord::StatementInvalid/, check.message)
     assert_match(/no_such_column/, check.sql)
     assert find_check(result, :filters, :first_name, "is").passed?
-    assert result.failures.all? { |c| c.subject == :role }, result.to_s
+    # Only the role filter, and the check that combines all filters
+    assert_equal [[:filters, :role], [:combined, nil]], result.failures.map { |c| [c.section, c.subject] }, result.to_s
   end
 
   test "a broken csv render fails the export" do
@@ -308,7 +392,7 @@ class VerifierTest < ActiveSupport::TestCase
     io = StringIO.new
 
     assert Mensa::Verifier.run(["users", "customer_users"], env: {"PARAMS" => {customer_id: customers(:asml).id}.to_json}, io: io)
-    assert_match(/^UsersTable$/, io.string)
+    assert_match(/^UsersTable \(params: /, io.string)
     assert_match(%r{2/2 tables passed}, io.string)
 
     assert_not Mensa::Verifier.run(["customer_users"], env: {}, io: StringIO.new)
@@ -374,9 +458,9 @@ class VerifierTest < ActiveSupport::TestCase
     assert_equal configured, Mensa.config.search
   end
 
-  test "the second page is loaded when there is one" do
-    assert find_check(verify(UsersTable), :loads, nil, "load page 2").passed?
-    assert_equal "only one page", find_check(verify(VerifierEmptyTable), :loads, nil, "load page 2").message
+  test "the last page is loaded when there is more than one" do
+    assert find_check(verify(UsersTable), :loads, nil, "load last page").passed?
+    assert_equal "only one page", find_check(verify(VerifierEmptyTable), :loads, nil, "load last page").message
   end
 
   test "table defaults that refer to unknown columns fail" do
@@ -432,5 +516,105 @@ class VerifierTest < ActiveSupport::TestCase
     Mensa::Verifier.run([UsersTable, TableFormatting], env: {}, io: io)
     assert_match(/^TableFormatting\n  - skipped: TableFormatting does not descend from Mensa::Base/, io.string)
     assert_match(%r{^1/1 tables passed, 1 skipped, not a Mensa::Base subclass$}, io.string)
+  end
+
+  test "N+1 queries in a render block are warned about, with how to preload" do
+    result = verify(VerifierNPlusOneTable)
+
+    assert result.success?, result.to_s
+    warning = find_check(result, :columns, :customer, "N+1 query in render html")
+    assert warning.warning?
+    assert_match(/FROM "customers"/, warning.sql)
+    assert_match(/runs this query for each record/, warning.message)
+    assert_match(/`scope \{ User.includes\(:customer\) \}`/, warning.message)
+    assert_no_match(/internal :customer_id/, warning.message, "the foreign key is selected already")
+    assert_match(/left_outer_joins\(:customer\)/, warning.message)
+  end
+
+  test "the preload the warning suggests removes the N+1" do
+    result = verify(VerifierPreloadedTable)
+
+    assert result.success?, result.to_s
+    assert_empty result.warnings, result.to_s
+  end
+
+  test "a render that needs an unselected foreign key says to add it" do
+    check = find_check(verify(VerifierMissingForeignKeyTable), :columns, :customer, "render html")
+
+    assert check.failed?
+    assert_match(/MissingAttributeError/, check.message)
+    assert_match(/add `internal :customer_id`/, check.message)
+  end
+
+  test "counting an association per record suggests size or counting in SQL" do
+    warning = find_check(verify(VerifierCountingTable), :columns, :users, "N+1 query in render html")
+
+    assert_match(/use `.size` instead of `.count`/, warning.message)
+    assert_match(/SELECT COUNT\(\*\) FROM users WHERE users.customer_id = customers.id/, warning.message)
+  end
+
+  test "strict makes warnings fail" do
+    result = verify(VerifierNPlusOneTable, strict: true)
+
+    assert_not result.success?
+    assert_empty result.failures
+    assert_match(/FAILED: .* \(strict: warnings fail\)/, result.to_s)
+  end
+
+  test "slow queries are warned about" do
+    result = verify(UsersTable, slow_query: 0)
+
+    warning = result.warnings.find { |c| c.name == "slow query" }
+    assert warning, result.to_s
+    assert_match(/EXPLAIN ANALYZE/, warning.message)
+    assert warning.sql.present?
+    assert_empty verify(UsersTable).warnings
+  end
+
+  test "records with empty values are sampled and failures name the record" do
+    result = verify(VerifierNullValueTable)
+
+    assert_match(/stock_symbol empty/, find_check(result, :loads, nil, "sample").name)
+    check = find_check(result, :columns, :stock_symbol, "render html")
+    assert check.failed?
+    assert_match(/record #{customers(:esa).id} \(stock_symbol empty\): NoMethodError/, check.message)
+  end
+
+  test "records from the last page are sampled" do
+    assert_match(/first page, last page/, find_check(verify(UsersTable), :loads, nil, "sample").name)
+  end
+
+  test "filters are tried with input their column's type can't hold" do
+    check = find_check(verify(VerifierNumberFilterTable), :filters, :number_of_employees, "is")
+
+    assert check.passed?, check.message
+    assert_match(/invalid input \("not a number"\)/, check.name)
+  end
+
+  test "search, all filters, sorting and grouping are checked together" do
+    result = verify(CustomersTable)
+
+    check = find_check(result, :combined, nil, "search, filters")
+    assert check.passed?, result.to_s
+  end
+
+  test "a table is verified in every context verifier_context returns" do
+    Mensa.config.verifier_context = ->(_table_class) {
+      [{user: users(:asml_user), label: "ASML"}, {user: users(:sap_user)}]
+    }
+
+    results = Mensa::Verifier.verify(UsersTable)
+
+    assert_equal ["ASML", "user: User##{users(:sap_user).id}"], results.map(&:label)
+    assert results.all?(&:success?)
+    assert_match(/^UsersTable \(ASML\)$/, results.first.to_s)
+    assert_equal 2, assert_mensa_table_valid(UsersTable).size
+  ensure
+    Mensa.config.verifier_context = nil
+  end
+
+  test "STRICT=1 makes the rake run fail on warnings" do
+    assert Mensa::Verifier.run([VerifierNPlusOneTable], env: {}, io: StringIO.new)
+    assert_not Mensa::Verifier.run([VerifierNPlusOneTable], env: {"STRICT" => "1"}, io: StringIO.new)
   end
 end
