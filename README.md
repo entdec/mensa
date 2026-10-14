@@ -4,7 +4,8 @@ Fast and awesome tables, with pagination, sorting, filtering, batch processing, 
 Due to search, it only works with postgresql at the moment.
 
 ![table](./docs/table.png)
-![filters](./docs/filters.png)
+![filters](./docs/filters1.png)
+![filters value](./docs/filters2.png)
 ![columns](./docs/columns.png)
 ![export](./docs/export.png)
 
