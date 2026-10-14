@@ -149,6 +149,7 @@ module Mensa
 
       @queries = []
       @reported_n_plus_one = Set.new
+      @per_record_renders = 0
       thread = Thread.current
       ActiveSupport::Notifications.subscribed(->(event) { record_query(event) if Thread.current == thread }, "sql.active_record") do
         read_only_transaction do
@@ -217,6 +218,8 @@ module Mensa
       verify_filters
       verify_search
       verify_rendering
+      verify_n_plus_one
+      verify_layout
       verify_combined
       verify_exports
       verify_grouping
@@ -373,6 +376,8 @@ module Mensa
     def warn_n_plus_one(section, subject, what, queries_per_record)
       return if queries_per_record.size < 2
 
+      @per_record_renders += 1
+
       queries_per_record.flatten.tally.each do |sql, records|
         next if records < 2
         next unless @reported_n_plus_one.add?([subject, sql])
@@ -458,8 +463,22 @@ module Mensa
         selects = (table.send(:id_column?) ? [:id] : []) + table.columns.select(&:internal?).filter_map(&:attribute)
         relation = table.filtered_scope.select(*selects, Arel.sql(column.attribute)).limit(1)
         c.sql = relation.to_sql
-        relation.load
+        result = table.model.connection.select_all(relation)
+        warn_untyped_attribute(column, result.column_types[column.name.to_s]&.type)
       end
+    end
+
+    # The SQL type of an `attribute` decides which filter operators and values
+    # fit it. Without `type`, Mensa treats it as text: it offers LIKE and
+    # compares with text, which fails for e.g. a boolean expression.
+    def warn_untyped_attribute(column, sql_type)
+      return if column.config[:attribute].blank? || column.config[:type].present?
+      return if sql_type.nil? || Mensa::Filter::TEXT_TYPES.include?(sql_type)
+
+      type = {timestamptz: :datetime, timestamp: :datetime}.fetch(sql_type, sql_type)
+      warn!(:columns, column.name, "untyped attribute",
+        "its SQL is #{sql_type}, but without `type` Mensa treats it as text: filters offer text operators and compare with text.\n" \
+        "Fix: add `type :#{type}` to the column.")
     end
 
     def verify_column_sort(column)
@@ -567,7 +586,8 @@ module Mensa
       case column.type
       when :integer, :bigint, :decimal, :float then "1"
       when :date then Date.current.iso8601
-      when :datetime, :timestamp, :time then Time.current.strftime("%Y-%m-%dT%H:%M")
+      when :datetime, :timestamp, :timestamptz then Time.current.strftime("%Y-%m-%dT%H:%M")
+      when :time then "12:00"
       when :boolean then "true"
       when :uuid then SecureRandom.uuid
       else "a"
@@ -578,7 +598,8 @@ module Mensa
     def invalid_value(column)
       case column.type
       when :integer, :bigint, :decimal, :float then "not a number"
-      when :date, :datetime, :timestamp then "not a date"
+      when :date, :datetime, :timestamp, :timestamptz then "not a date"
+      when :time then "not a time"
       when :uuid then "not a uuid"
       end
     end
@@ -643,11 +664,77 @@ module Mensa
       end
     end
 
+    # Confirms no N+1 query was found, after everything rendered per record
+    # (column renders, the row link, row actions). Found ones are warnings.
+    def verify_n_plus_one
+      return if @reported_n_plus_one.any?
+
+      check(:render, nil, "N+1 queries") do |c|
+        skip!("records could not be loaded") if @samples.nil?
+        skip!("no records") if @samples.empty?
+        skip!("needs at least 2 sampled records, found 1") if @samples.one?
+        skip!("nothing is rendered per record") if @per_record_renders.zero?
+
+        c.name = "N+1 queries: none in #{@per_record_renders} #{"render".pluralize(@per_record_renders)} of #{@samples.size} sampled records"
+      end
+    end
+
     # What Mensa::TablesController#show renders into the table's turbo frame
     def render_page(table, view: nil)
       table.table_view = view
       view_context.render(Mensa::FilterPillList::Component.new(table: table))
       view_context.render(Mensa::View::Component.new(table))
+    end
+
+    # Column order and visibility, as users change them with the column
+    # customizer, or as saved views and browser state replay them
+
+    def verify_layout
+      names = @table.display_columns.map(&:name)
+
+      check(:layout, nil, "reversed column order") do
+        skip!("no columns are shown") if names.empty?
+
+        verify_layout_config({column_order: names.reverse}, names.reverse)
+      end
+
+      check(:layout, nil, "column order listing only :#{names.last} (e.g. saved before the others were added)") do
+        skip!("fewer than 2 columns are shown") if names.size < 2
+
+        verify_layout_config({column_order: [names.last]}, [names.last] + names[0..-2],
+          hint: "columns a column_order doesn't list should follow the listed ones")
+      end
+
+      check(:layout, nil, "hide each column (#{names.size})") do
+        skip!("no columns are shown") if names.empty?
+
+        errors = names.filter_map do |name|
+          savepoint { verify_layout_config({hidden_columns: [name]}, names - [name]) }
+          nil
+        rescue StandardError, ScriptError => e
+          ":#{name}: #{e.is_a?(Failure) ? e.message : "#{e.class}: #{e.message}"}"
+        end
+        raise Failure, errors.join("\n") if errors.any?
+      end
+
+      check(:layout, nil, "hide all columns") do
+        skip!("no columns are shown") if names.empty?
+
+        verify_layout_config({hidden_columns: names}, [])
+      end
+    end
+
+    # Builds the table with +config+, checks the columns it shows, renders it
+    # and exports it
+    def verify_layout_config(config, expected, hint: nil)
+      table = build_table(config)
+      shown = table.display_columns.map(&:name)
+      unless shown == expected
+        raise Failure, "shows columns #{shown.inspect}, expected #{expected.inspect}#{"\n#{hint}" if hint}"
+      end
+
+      render_page(table)
+      verify_export(config, columns_required: expected.any?) if @table.exportable?
     end
 
     # Everything a user can combine at once: search, a filter on every
@@ -711,7 +798,7 @@ module Mensa
       @table.export_with_password? ? "csv (zip with password)" : "csv"
     end
 
-    def verify_export(config, table_view: nil)
+    def verify_export(config, table_view: nil, columns_required: true)
       config = JSON.parse({params: params.presence, page: 1}.compact.merge(config).to_json)
       export = Mensa::Export.new(
         table_name: table_name, table_view_id: table_view&.id, format: "plain_csv", scope: "current_page",
@@ -724,12 +811,14 @@ module Mensa
       data = file.read
       file.close!
       csv = (content_type == "application/zip") ? unzip(data, export.password) : data
-      raise Failure, "#{filename} is empty" if csv.blank?
+      raise Failure, "#{filename} is empty" if csv.blank? && columns_required
 
       expected = build_table((table_view&.config || {}).deep_symbolize_keys.merge(config.deep_symbolize_keys))
       headers = expected.display_columns.map { |column| column.name.to_s }
       lines = CSV.parse(csv.force_encoding(Encoding::UTF_8).delete_prefix("﻿"))
-      raise Failure, "the export has no columns" if headers.empty?
+      raise Failure, "the export has no columns" if headers.empty? && columns_required
+      return if headers.empty?
+
       raise Failure, "the export has headers #{lines.first.inspect}, expected #{headers.inspect}" unless lines.first == headers
 
       records = expected.rows.size
@@ -812,10 +901,68 @@ module Mensa
         end
       end
 
-      return unless @table.supports_custom_views?
+      unless @table.supports_custom_views?
+        check(:views, "custom view", "create") { skip!("supports_custom_views is off") }
+        return
+      end
+
+      verify_custom_view
 
       saved_views.each do |view|
         check(:views, "saved view #{view.id}", view.name.to_s) { render_page(build_table((view.config || {}).deep_symbolize_keys), view: view) }
+      end
+    end
+
+    # Creates a custom view like a user saving the table's state would, but
+    # doesn't save it: it's validated, then replayed and exported like a saved
+    # view.
+    def verify_custom_view
+      check(:views, "custom view", "create and replay (not saved)") do |c|
+        skip!("custom views are owned by Current.user, give the verifier a user:") if @table.current_user.blank?
+
+        view = custom_view
+        raise Failure, "the view is invalid: #{view.errors.full_messages.to_sentence}" unless view.valid?
+
+        c.name = "create and replay #{view.config.keys.join(", ")} (not saved)"
+        # Like Mensa::TablesController#show and the views controller
+        render_page(build_table(view.config.deep_transform_keys(&:to_sym)), view: view)
+      end
+
+      return unless @table.exportable? && @table.current_user.present?
+
+      check(:exports, "custom view", export_format) do
+        verify_export(custom_view.config.deep_symbolize_keys.slice(:filters, :column_order, :hidden_columns, :group_by, :order))
+      end
+    end
+
+    # A view as Mensa::Tables::ViewsController#create builds it from the
+    # table's state in the browser
+    def custom_view
+      Mensa::TableView.new(
+        table_name: table_name,
+        name: "Mensa::Verifier",
+        description: "Created by Mensa::Verifier, not saved",
+        config: JSON.parse(custom_view_config.to_json),
+        user: @table.current_user
+      )
+    end
+
+    def custom_view_config
+      @custom_view_config ||= begin
+        columns = @table.display_columns
+        sortable = columns.find(&:sortable?)
+        groupable = @table.columns.find(&:groupable?)
+
+        config = {query: search_term, filters: combined_filters.first(2).to_h}
+        config[:order] = {sortable.name => :desc} if sortable
+        config[:column_order] = columns.map(&:name).reverse
+        config[:hidden_columns] = [columns.last.name] if columns.size > 1
+        if groupable && @table.scope.is_a?(ActiveRecord::Relation)
+          config[:group_by] = groupable.name
+          aggregatable = @table.columns.reject(&:internal?).find(&:aggregatable?)
+          config[:aggregates] = {aggregatable.name => aggregatable.aggregates.first} if aggregatable
+        end
+        config
       end
     end
 

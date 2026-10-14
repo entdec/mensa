@@ -36,6 +36,7 @@ module Mensa
         filters: "Filters",
         search: "Search",
         render: "Rendering",
+        layout: "Column order and visibility",
         combined: "Combined",
         exports: "Exports",
         grouping: "Grouping",

@@ -38,18 +38,16 @@ module Mensa
       order = order&.map(&:to_sym)
       return order if order.nil?
 
-      # Internal columns are never shown in the column customizer UI, so they
-      # are absent from any URL-supplied column_order. Always append them so
-      # that columns and selected_scope include their attributes.
       all_keys = (config[:columns]&.keys || []).map(&:to_sym)
-      # A column_order can come from browser state saved for different params
-      # (with different columns), so drop names that aren't columns here.
-      if all_keys.any?
-        order &= all_keys
-        order = all_keys if order.empty?
-      end
-      internal_keys = all_keys.select { |key| config.dig(:columns, key, :internal) }
-      (order | internal_keys)
+      return order if all_keys.empty?
+
+      # A column_order can come from browser state or a view saved for
+      # different params, or before columns were added, so drop names that
+      # aren't columns here and append the columns it doesn't list. Internal
+      # columns are never in it, as the column customizer doesn't show them.
+      # Appending keeps every column in columns and selected_scope, so no
+      # column disappears and their filters and attributes keep working.
+      (order & all_keys) | all_keys
     end
 
     # Returns all columns

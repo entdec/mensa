@@ -14,6 +14,15 @@ module Mensa
     config_reader :multiple
     config_reader :having?
 
+    # Types that LIKE works on, nil is an attribute without a type
+    TEXT_TYPES = [:string, :text, :citext, nil].freeze
+    # Types with a meaningful order, for gt, gteq, lt and lteq
+    RANGE_TYPES = %i[integer bigint float decimal money date datetime timestamp timestamptz time interval].freeze
+    # Types where an exact match on a value is of little use
+    POINT_IN_TIME_TYPES = %i[date datetime timestamp timestamptz].freeze
+    # Types that can't be compared with a value the user types
+    STRUCTURED_TYPES = %i[json jsonb].freeze
+
     class << self
       def OPERATORS
         [
@@ -102,10 +111,15 @@ module Mensa
         operators = operators.select { |op| config[:operators].include?(op[0]) }
       else
         operators.delete_if { |op| op[0] == :is_current } unless Current.method_defined?(column.name, false)
+        type = column.type
         operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if collection.present?
-        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if column.type == :integer || column.type == :date || column.type == :datetime
-        operators.delete_if { |op| [:is, :isnt].include?(op[0]) } if column.type == :date || column.type == :datetime
-        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } if column.type == :string || column.type.blank?
+        # Only these operators work for the column's type in SQL, the others
+        # raise, e.g. LIKE on a boolean
+        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } unless TEXT_TYPES.include?(type)
+        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } unless RANGE_TYPES.include?(type)
+        operators.delete_if { |op| [:is, :isnt].include?(op[0]) } if POINT_IN_TIME_TYPES.include?(type) || STRUCTURED_TYPES.include?(type)
+        # json has no equality, so duplicates can't be grouped
+        operators.delete_if { |op| op[0] == :is_duplicate } if type == :json
       end
       operators
     end
@@ -162,6 +176,8 @@ module Mensa
         "date"
       when :datetime
         "datetime-local"
+      when :time
+        "time"
       else
         "text"
       end
@@ -242,7 +258,8 @@ module Mensa
       when :integer, :bigint then entry.strip.match?(/\A[+-]?\d+\z/)
       when :decimal, :float then entry.strip.match?(/\A[+-]?(\d+\.?\d*|\.\d+)\z/)
       when :date then Date.parse(entry).present?
-      when :datetime, :timestamp then Time.zone.parse(entry).present?
+      when :datetime, :timestamp, :timestamptz then Time.zone.parse(entry).present?
+      when :time then entry.strip.match?(/\A\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?\z/)
       when :uuid then entry.strip.match?(UUID_FORMAT)
       else true
       end

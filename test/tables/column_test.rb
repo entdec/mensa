@@ -181,4 +181,15 @@ class ColumnTest < ActiveSupport::TestCase
     assert_match(/ORDER BY users_count desc/, t.ordered_scope.to_sql)
     assert_equal User.count, t.ordered_scope.to_a.size
   end
+
+  test "columns a column_order doesn't list are kept and come after the listed ones" do
+    # e.g. browser state or a view saved before :email and :role were added
+    t = UsersTable.new(column_order: %w[last_name first_name], filters: {role: {value: "admin"}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    assert_equal %i[last_name first_name email role customer_name created_at updated_at], t.display_columns.map(&:name)
+    assert_equal [:role], t.active_filters.map { |filter| filter.column.name }
+    assert_match(/"users"."email"/, UsersTable.new(column_order: %w[last_name first_name]).selected_scope.to_sql)
+    assert t.rows.all? { |row| row.record.role == "admin" }
+  end
 end

@@ -225,6 +225,39 @@ class VerifierNumberFilterTable < Mensa::Base
   end
 end
 
+# How Mensa used to handle a column_order: it dropped the columns it didn't list
+class VerifierDroppingColumnsTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:last_name)
+    column(:email)
+  end
+
+  def column_order
+    config[:column_order].presence&.map(&:to_sym) || super
+  end
+end
+
+class VerifierUntypedAttributeTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    column(:has_users) do
+      attribute "EXISTS (SELECT 1 FROM users WHERE users.customer_id = customers.id)"
+    end
+    column(:typed_has_users) do
+      attribute "EXISTS (SELECT 1 FROM users WHERE users.customer_id = customers.id)"
+      type :boolean
+    end
+    column(:label) do
+      attribute "customers.name || ' ' || customers.country"
+    end
+  end
+end
+
 class VerifierTest < ActiveSupport::TestCase
   def verify(table, **options, &)
     Mensa::Verifier.new(table, **options, &).call
@@ -240,7 +273,7 @@ class VerifierTest < ActiveSupport::TestCase
 
     assert result.success?, result.to_s
     assert_empty result.failures
-    assert_equal %i[loads columns filters search render combined exports views], result.checks.map(&:section).uniq
+    assert_equal %i[loads columns filters search render layout combined exports views], result.checks.map(&:section).uniq
     assert_match(/OK: \d+ passed, 0 failed/, result.to_s)
   end
 
@@ -274,8 +307,9 @@ class VerifierTest < ActiveSupport::TestCase
     assert_match(/^is "admin": ActiveRecord::StatementInvalid/, check.message)
     assert_match(/no_such_column/, check.sql)
     assert find_check(result, :filters, :first_name, "is").passed?
-    # Only the role filter, and the check that combines all filters
-    assert_equal [[:filters, :role], [:combined, nil]], result.failures.map { |c| [c.section, c.subject] }, result.to_s
+    # Only the role filter, and the checks that use it with other filters
+    expected = [[:filters, :role], [:combined, nil], [:exports, "custom view"], [:views, "custom view"]]
+    assert_equal expected.sort_by(&:to_s), result.failures.map { |c| [c.section, c.subject] }.sort_by(&:to_s), result.to_s
   end
 
   test "a broken csv render fails the export" do
@@ -616,5 +650,79 @@ class VerifierTest < ActiveSupport::TestCase
   test "STRICT=1 makes the rake run fail on warnings" do
     assert Mensa::Verifier.run([VerifierNPlusOneTable], env: {}, io: StringIO.new)
     assert_not Mensa::Verifier.run([VerifierNPlusOneTable], env: {"STRICT" => "1"}, io: StringIO.new)
+  end
+
+  test "the report confirms when no N+1 query was found" do
+    check = find_check(verify(UsersTable), :render, nil, "N+1 queries")
+
+    assert check.passed?
+    assert_match(/\AN\+1 queries: none in \d+ renders of \d+ sampled records\z/, check.name)
+  end
+
+  test "there is no confirmation when an N+1 query was found" do
+    result = verify(VerifierNPlusOneTable)
+
+    assert result.warnings.any?
+    assert_nil result.checks.find { |c| c.name.start_with?("N+1 queries") }
+  end
+
+  test "the N+1 check is skipped without enough records" do
+    assert_equal "no records", find_check(verify(VerifierEmptyTable), :render, nil, "N+1 queries").message
+
+    one = verify(CustomerUsersTable, params: {customer_id: customers(:asml).id})
+    assert_equal "needs at least 2 sampled records, found 1", find_check(one, :render, nil, "N+1 queries").message
+  end
+
+  test "a custom view is created, replayed and exported without saving it" do
+    assert_no_difference -> { Mensa::TableView.count } do
+      result = verify(CustomersTable)
+
+      view = find_check(result, :views, "custom view", "create and replay")
+      assert view.passed?, result.to_s
+      assert_match(/query, filters, order, column_order, hidden_columns, group_by, aggregates/, view.name)
+      assert find_check(result, :exports, "custom view", "csv").passed?, result.to_s
+    end
+  end
+
+  test "the custom view is skipped without custom views or a user" do
+    assert_equal "supports_custom_views is off", find_check(verify(NonCustomViewUsersTable), :views, "custom view", "create").message
+
+    Current.instance.define_singleton_method(:user) { nil }
+    check = find_check(verify(UsersTable), :views, "custom view", "create")
+    assert check.skipped?
+    assert_match(/owned by Current.user/, check.message)
+  ensure
+    ActiveSupport::CurrentAttributes.clear_all
+  end
+
+  test "column order and visibility are checked: reversed, stale, each column hidden and all hidden" do
+    result = verify(UsersTable)
+
+    checks = result.checks.select { |c| c.section == :layout }
+    assert_equal ["reversed column order", "column order listing only :updated_at (e.g. saved before the others were added)",
+      "hide each column (7)", "hide all columns"], checks.map(&:name)
+    assert checks.all?(&:passed?), result.to_s
+  end
+
+  test "a column order that drops the columns it doesn't list fails" do
+    check = find_check(verify(VerifierDroppingColumnsTable), :layout, nil, "column order listing only")
+
+    assert check.failed?
+    assert_match(/shows columns \[:email\], expected \[:email, :first_name, :last_name\]/, check.message)
+    assert_match(/columns a column_order doesn't list should follow/, check.message)
+  end
+
+  test "an attribute without a type whose SQL isn't text is warned about" do
+    result = verify(VerifierUntypedAttributeTable)
+
+    warning = find_check(result, :columns, :has_users, "untyped attribute")
+    assert warning.warning?
+    assert_match(/its SQL is boolean, but without `type` Mensa treats it as text/, warning.message)
+    assert_match(/Fix: add `type :boolean`/, warning.message)
+    # Treated as text, its filter compares the boolean with text and fails
+    assert find_check(result, :filters, :has_users, "is").failed?
+
+    assert find_check(result, :filters, :typed_has_users, "is").passed?, result.to_s
+    assert_equal [:has_users], result.warnings.map(&:subject)
   end
 end

@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.0
+
+- Filters only offer the operators that work for the column's type in SQL,
+  picking one no longer raises. `matches`/`does_not_match` (`LIKE`) are only
+  offered for string, text, citext and untyped attribute columns, so boolean,
+  float, decimal, uuid, time and other columns no longer get them.
+  `gt`/`gteq`/`lt`/`lteq` are only offered for number, date and time columns,
+  so boolean, uuid and text columns no longer get them. json/jsonb columns only
+  get `is_empty`/`isnt_empty` (and jsonb `is_duplicate`). Host apps no longer
+  need to patch `Mensa::Filter#operators` or list `operators` per column to
+  avoid these. An explicit `operators` list is used as given.
+- Time columns use a time input, and a filter value that isn't a time matches
+  nothing instead of raising.
+- The verifier warns when an `attribute` has no `type` but its SQL isn't text,
+  e.g. a boolean `EXISTS (...)`, and says which `type` to add.
+- Columns a `column_order` doesn't list are kept and shown after the listed
+  ones, instead of being dropped. Browser state or views saved before a column
+  was added no longer hide that column (also from the column customizer),
+  ignore filters and sorting on it, or leave its attribute unselected.
+- The verifier checks column order and visibility: a reversed order, an order
+  that lists only one column (like state saved before columns were added),
+  hiding each column and hiding all of them, each rendered and exported.
+- The verifier creates a custom view like a user saving the table's state
+  would, without saving it, and validates, replays and exports it.
+- The verifier confirms when it found no N+1 queries.
+
 ## 0.6.19
 
 - `Mensa::Verifier` checks a table against the database: scope, column SQL,

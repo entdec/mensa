@@ -171,7 +171,8 @@ class TableTest < ActiveSupport::TestCase
       filters: {gone: {value: "x"}}
     })
 
-    assert_equal %i[last_name first_name], t.display_columns.map(&:name)
+    # Columns the order doesn't list (:name) follow the ones it does
+    assert_equal %i[last_name first_name name], t.display_columns.map(&:name)
     assert_empty t.active_filters
     assert_nothing_raised { t.ordered_scope.to_a }
     assert_no_match(/gone/, t.ordered_scope.to_sql)

@@ -175,7 +175,31 @@ end
 ```
 
 The operators are `is`, `isnt`, `matches`, `does_not_match`, `gt`, `gteq`, `lt`,
-`lteq`, `is_duplicate`, `is_current`, `is_empty` and `isnt_empty`.
+`lteq`, `is_duplicate`, `is_current`, `is_empty` and `isnt_empty`. Without an
+`operators` list, a column gets the ones that work for its type in SQL:
+
+| Column type | Operators besides `is_duplicate`, `is_empty` and `isnt_empty` |
+|---|---|
+| string, text, citext, or an `attribute` without `type` | `is`, `isnt`, `matches`, `does_not_match` |
+| integer, float, decimal, time | `is`, `isnt`, `gt`, `gteq`, `lt`, `lteq` |
+| date, datetime | `gt`, `gteq`, `lt`, `lteq` |
+| boolean, uuid, enums and other types | `is`, `isnt` |
+| jsonb, json | none (json also has no `is_duplicate`) |
+
+`matches` and `does_not_match` are left out when the filter has a `collection`, and
+`is_current` is only offered when `Current` has a method named after the column.
+
+Mensa reads the type from the database column. Give an `attribute` that isn't text a
+`type`, otherwise it's treated as text and gets the text operators:
+
+```ruby
+column(:has_orders) do
+  attribute "EXISTS (SELECT 1 FROM orders WHERE orders.user_id = users.id)"
+  type :boolean
+end
+```
+
+An `operators` list is used as given, also when it lists operators the type can't run.
 
 #### Custom filter scopes
 
@@ -382,13 +406,20 @@ real database, using the same code paths as requests do:
 - **Exports**: `Mensa::ExportJob` generates the first page of the export, also for
   each view and as a password protected zip. It needs the expected headers
   (skipped for `exportable false`).
+- **Column order and visibility**: the columns shown, rendered and exported in a
+  reversed order, with an order that lists only one column (like browser state or a
+  view saved before the other columns were added, which must still show them all),
+  with each column hidden and with all of them hidden.
 - **Combined**: search, a filter on every column, sorting on every column and
   grouping with aggregates, all at once.
 - **Grouping**: every groupable column and every aggregate, rendered with their
   group headers. A `group_by` or `aggregates` naming a column that doesn't allow
   it fails, because Mensa would silently ignore it.
 - **Views**: system views load, render and only refer to existing columns. With
-  custom views enabled, saved views load too.
+  custom views enabled, saved views load too, and a custom view is created like a
+  user saving the table's state would (search, filters, sorting, column order, a
+  hidden column and grouping), then validated, replayed and exported. It's never
+  saved, and needs a user to own it (`user:`).
 
 It also warns, without failing:
 
@@ -396,7 +427,11 @@ It also warns, without failing:
   each record. The warning shows the query and how to avoid it for the association
   it loads, e.g. preload it with `includes` (and `internal :customer_id`, since Mensa
   only selects the table's columns), select the value in SQL with `attribute`, or
-  count in SQL.
+  count in SQL. When none is found, the report confirms it under Rendering, e.g.
+  `✓ N+1 queries: none in 18 renders of 7 sampled records`. It needs at least two
+  records to tell.
+- **Untyped attributes**: an `attribute` without `type` whose SQL isn't text, e.g. a
+  boolean `EXISTS (...)`. The warning names the `type` to add.
 - **Slow queries**: queries that take `config.verifier_slow_query` seconds (1.0 by
   default) or more.
 

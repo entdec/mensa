@@ -163,7 +163,8 @@ module Mensa
       Mensa::ExportJob.perform_now(export)
 
       rows = CSV.parse(export.reload.asset.download)
-      assert_equal ["email", "first_name"], rows.first
+      # The ordered columns first, then the ones the order doesn't list
+      assert_equal ["email", "first_name", "last_name", "customer_name", "created_at", "updated_at"], rows.first
     end
 
     test "invokes the export callbacks with the export" do
