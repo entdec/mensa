@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+- `Mensa::Verifier` checks a table against the database: scope, column SQL,
+  sorting, rendering, filters, search, CSV export, grouping/aggregates and
+  views. Run it with `bin/rails "mensa:verify[table]"` / `mensa:verify_all`,
+  or from tests after `require "mensa/testing"` with
+  `assert_mensa_table_valid` or `be_a_valid_mensa_table`. Set defaults for
+  its context with `config.verifier_context`.
+- `Mensa::ExportJob.write_csv(io, table, rows)` writes a table's CSV export and
+  `Mensa::ExportJob#generate_file(export)` generates an export's file without
+  saving it.
+- Exports of tables with a `csv` render block no longer fail: the export job
+  renders with a view context of `config.base_controller`
+  (`Mensa.offline_view_context`).
+- Row actions without an `icon` show their title instead of raising.
+- An unknown helper in a render block raises `NoMethodError` instead of
+  `SystemStackError`. Only the app's `*_path`/`*_url` helpers are forwarded to
+  `main_app`.
+- Search leaves out columns with a `having` filter (aggregates), which broke the
+  query.
+- `is_duplicate` works for columns with a `having` filter.
+
 ## 0.6.16
 
 - Custom filter `scope` blocks can take the operator as a second argument,

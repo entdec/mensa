@@ -21,6 +21,14 @@ class SearchCustomerTable < Mensa::Base
 end
 
 class SearchTest < ActiveSupport::TestCase
+  test "searches tables with aggregate columns, leaving the aggregates out" do
+    table = CustomersTable.new(query: "SAP")
+    table.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    assert_equal [customers(:sap).id], table.ordered_scope.pluck(:id)
+    assert_no_match(/CAST\(\(COUNT/, table.ordered_scope.to_sql)
+  end
+
   test "searches joined selected columns" do
     table = UsersTable.new(query: "SAP")
 

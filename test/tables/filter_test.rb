@@ -249,6 +249,17 @@ class FilterTest < ActiveSupport::TestCase
     assert_equal [asml.id], scope.pluck(:id)
   end
 
+  test "is_duplicate on a having filter compares the aggregate per group" do
+    counts = Customer.joins(:users).group(:id).count("DISTINCT users.id")
+    duplicates = counts.values.tally.select { |_count, times| times > 1 }.keys
+    assert duplicates.any?, "fixtures need customers with the same number of users"
+
+    t = CustomersTable.new({filters: {users_count: {operator: :is_duplicate}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    assert_equal counts.select { |_id, count| duplicates.include?(count) }.keys.sort, t.ordered_scope.pluck(:id).sort
+  end
+
   def custom_scope_table(filters)
     t = CustomScopeFilterTable.new({filters: filters})
     t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))

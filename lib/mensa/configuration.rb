@@ -144,6 +144,12 @@ module Mensa
     option :row_actions_position, default: :back
     # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
     option :search, default: :basic
+    # Default options for Mensa::Verifier (and so `rails mensa:verify`), called
+    # with the table class. Return a hash with any of user:, account:,
+    # context: (Current attributes) and params:, e.g.
+    #
+    #   config.verifier_context = ->(table_class) { {user: User.find_by!(email: "admin@example.com")} }
+    option :verifier_context, default: nil
 
     def initialize
       set_defaults!

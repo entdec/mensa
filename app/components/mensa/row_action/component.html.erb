@@ -4,7 +4,6 @@
     <% if icon = action.icon(row.record) %>
       <i class="fa <%= icon %>"></i>
     <% else %>
-      <%= name %>
+      <%= action.title %>
     <% end %>
   <% end %>
-<% end %>

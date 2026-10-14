@@ -211,6 +211,7 @@ module Mensa
     def apply_duplicate_filter(record_scope)
       column_sql = column.attribute_for_condition.to_s
       base_scope = record_scope.except(:select, :order, :limit, :offset)
+      return apply_duplicate_having_filter(record_scope, base_scope, column_sql) if having?
 
       duplicate_values_scope = base_scope
         .where("#{column_sql} IS NOT NULL")
@@ -221,6 +222,19 @@ module Mensa
       record_scope
         .where("#{column_sql} IS NOT NULL")
         .where("#{column_sql} IN (#{duplicate_values_scope.to_sql})")
+    end
+
+    # Aggregates are only known per group, so the duplicate values come from
+    # a subquery of the grouped rows and are compared in the HAVING
+    def apply_duplicate_having_filter(record_scope, base_scope, column_sql)
+      duplicate_values_scope = base_scope.model.unscoped
+        .from(base_scope.select(Arel.sql("#{column_sql} AS mensa_duplicate_value")), :mensa_values)
+        .where("mensa_values.mensa_duplicate_value IS NOT NULL")
+        .group("mensa_values.mensa_duplicate_value")
+        .having("COUNT(*) > 1")
+        .select("mensa_values.mensa_duplicate_value")
+
+      record_scope.having("#{column_sql} IN (#{duplicate_values_scope.to_sql})")
     end
 
     # Unused at the moment

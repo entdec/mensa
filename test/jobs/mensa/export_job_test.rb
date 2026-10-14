@@ -4,6 +4,18 @@ require "stringio"
 require "tmpdir"
 require "turbo/broadcastable/test_helper"
 
+class ExportJobCsvBlockTable < Mensa::Base
+  definition do
+    model User
+
+    column(:email) do
+      render do
+        csv { |user| "#{user.email.upcase} #{user_path(user)}" }
+      end
+    end
+  end
+end
+
 module Mensa
   class ExportJobTest < ActiveJob::TestCase
     include Turbo::Broadcastable::TestHelper
@@ -30,6 +42,16 @@ module Mensa
       rows = CSV.parse(data.delete_prefix("\uFEFF"))
       assert_equal table.display_columns.map { it.name.to_s }, rows.first
       assert_equal User.count, rows.length - 1
+    end
+
+    test "csv render blocks run, with the app's helpers" do
+      export = Mensa::Export.create!(table_name: "export_job_csv_block", user: @user, format: "plain_csv", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+      rows = CSV.parse(export.reload.asset.download)
+
+      assert export.completed?
+      assert_includes rows.map(&:first), "#{User.first.email.upcase} /users/#{User.first.id}"
     end
 
     test "plain CSV format omits the BOM" do

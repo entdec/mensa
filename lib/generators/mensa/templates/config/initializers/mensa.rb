@@ -7,6 +7,10 @@ Mensa.setup do |config|
     end
   }
 
+  # Context for `rails mensa:verify` and the test helpers (user:, account:,
+  # context:, params:)
+  # config.verifier_context = ->(table_class) { {user: User.find_by!(email: "admin@example.com")} }
+
   # Override icons in use
   config.icons = {
     add_filter_trigger: "fa-solid fa-circle-plus",

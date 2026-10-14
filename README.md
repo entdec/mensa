@@ -320,6 +320,94 @@ If you're just using cron, you can add the following to your crontab:
 0 0 * * * rails runner "Mensa::RecurringExportsJob.perform_later"
 ```
 
+### Verifying tables
+
+`Mensa::Verifier` checks that everything a table configures works against your
+real database, using the same code paths as requests do:
+
+- **Loads**: the table builds, its SQL builds and the first two pages load. A default
+  `order` or `column_order` naming an unknown column fails.
+- **Columns**: every column (internal ones too) can be selected and, when sortable,
+  sorted both ways. Its html and csv renders run for a few records. Columns hidden
+  by a `visible` lambda are reported as skipped.
+- **Filters**: every filterable column is applied with each of its operators, using
+  the first values of its `collection` or a value that fits the column's type, and
+  the filter pill's text is built. `is_current` is skipped when `Current` has no
+  value for the column.
+- **Search**: basic and fuzzy search (when `pg_trgm` is enabled) for a word taken
+  from the records.
+- **Rendering**: the `table` helper as your views call it, the rows and filter pills
+  as Mensa's controller renders them, the row link and every row action.
+- **Exports**: `Mensa::ExportJob` generates the first page of the export, also for
+  each view and as a password protected zip. It needs the expected headers
+  (skipped for `exportable false`).
+- **Grouping**: every groupable column and every aggregate, rendered with their
+  group headers. A `group_by` or `aggregates` naming a column that doesn't allow
+  it fails, because Mensa would silently ignore it.
+- **Views**: system views load, render and only refer to existing columns. With
+  custom views enabled, saved views load too.
+
+Each check runs on its own, so one failure doesn't hide the others. Everything runs
+in a read-only transaction that is rolled back, with small limits, so it is safe to
+run against staging. It never writes.
+
+#### From rake
+
+```sh
+bin/rails "mensa:verify[inventories]"   # or InventoriesTable
+bin/rails mensa:verify_all              # every table in app/tables
+```
+
+The tasks print a report (✓ passed, ✗ failed with the error and SQL, - skipped) and
+exit non-zero when a check failed. Classes and modules that don't descend from
+`Mensa::Base` (e.g. helpers in `app/tables`) are reported as skipped.
+
+#### From tests
+
+```ruby
+# test/test_helper.rb or spec/rails_helper.rb
+require "mensa/testing"
+
+# Minitest
+assert_mensa_table_valid InventoriesTable, user: users(:admin)
+
+# RSpec
+expect(InventoriesTable).to be_a_valid_mensa_table(user: admin)
+
+# Plain Ruby
+result = Mensa::Verifier.new(InventoriesTable, user: admin).call
+result.success?  # => true
+result.failures  # => [#<struct Mensa::Verifier::Check section: :filters, subject: :status, ...>]
+puts result      # the report, also the failure message of the helpers
+```
+
+#### Context
+
+Tables often depend on the request: `Current.user`, policy scopes, or the table's
+params. Give the verifier that context:
+
+- `user:` and `account:` set `Current.user` and `Current.account` while verifying.
+- `context: {organization: org}` sets any other `Current` attributes.
+- `params: {customer_id: 1}` sets the table's params (see "Table params").
+- A block is called with the verifier before the checks, for any other setup.
+
+Html render blocks run in a view context of your `ApplicationController` (see
+`config.base_controller`), so url helpers and your helpers work.
+
+From rake, set `USER_ID=` (finds a `User`), `ACCOUNT_ID=` (finds an `Account`) and
+`PARAMS='{"customer_id":1}'` (JSON), or configure defaults for every table in
+your initializer. The options you pass yourself override these defaults:
+
+```ruby
+Mensa.setup do |config|
+  config.verifier_context = ->(table_class) {
+    options = {user: User.find_by!(email: "admin@example.com")}
+    options[:params] = {customer_id: Customer.first.id} if table_class == CustomerUsersTable
+    options
+  }
+end
+```
+
 ## Contributing
 
 ```

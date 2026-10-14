@@ -9,19 +9,29 @@ module Mensa
   class ExportJob < ApplicationJob
     queue_as :default
 
+    # Writes the CSV for +rows+ (Mensa::Row) of +table+ to +io+: a header row
+    # with the display column names, then one line per row.
+    def self.write_csv(io, table, rows)
+      csv = CSV.new(io)
+      csv << table.display_columns.map(&:name)
+      rows.each do |row|
+        csv << table.display_columns.map { |column| Mensa::Cell.new(row: row, column: column).render(:csv) }
+      end
+      csv.flush
+      io
+    end
+
     def perform(export)
       return unless export
 
       export.update(status: "processing")
       Mensa.config.run_callback(:export_started, export)
 
-      table = build_table(export)
-      unless table.exportable?
+      tempfile, filename, content_type = generate_file(export)
+      unless tempfile
         finalize(export, status: "failed")
         return
       end
-
-      tempfile, filename, content_type = generate(table, export)
 
       export.asset.purge if export.asset.attached?
       export.asset.attach(io: tempfile, filename: filename, content_type: content_type)
@@ -34,6 +44,16 @@ module Mensa
       raise
     ensure
       tempfile&.close!
+    end
+
+    # Builds the table for +export+ and generates its file. Returns
+    # [tempfile, filename, content_type], or nil when the table isn't
+    # exportable. Doesn't touch the export's record or asset.
+    def generate_file(export)
+      table = build_table(export)
+      return unless table.exportable?
+
+      generate(table, export)
     end
 
     private
@@ -54,6 +74,8 @@ module Mensa
       table = Mensa.for_name(export.table_name, config)
       table.request = ActionDispatch::Request.new({})
       table.request.set_header("action_dispatch.request.query_parameters", {"page" => config[:page]})
+      # Render blocks (e.g. csv) run in a view context
+      table.original_view_context = Mensa.offline_view_context
       table
     end
 
@@ -78,12 +100,8 @@ module Mensa
       # with programmatic consumers.
       tempfile.write("\uFEFF") if export.format == "csv_excel"
 
-      csv = CSV.new(tempfile)
-      csv << table.display_columns.map(&:name)
-      export_rows(table, export).each do |row|
-        csv << table.display_columns.map { |column| Mensa::Cell.new(row: row, column: column).render(:csv) }
-      end
-      csv.close
+      self.class.write_csv(tempfile, table, export_rows(table, export))
+      tempfile.close
       tempfile.open
       tempfile.binmode
       tempfile.rewind
