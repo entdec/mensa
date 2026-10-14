@@ -449,9 +449,16 @@ bin/rails "mensa:verify[inventories]"   # or InventoriesTable
 bin/rails mensa:verify_all              # every table in app/tables
 ```
 
-The tasks print a report (✓ passed, ✗ failed with the error and SQL, - skipped) and
-exit non-zero when a check failed. Classes and modules that don't descend from
-`Mensa::Base` (e.g. helpers in `app/tables`) are reported as skipped.
+The tasks print a report of the failures (✗, with the error and SQL) and warnings (!)
+and exit non-zero when a check failed. Add `-v`/`--verbose` (or `VERBOSE=1`) to list
+every check (✓ passed, - skipped):
+
+```sh
+bin/rails "mensa:verify[inventories]" -v
+```
+
+Classes and modules that don't descend from `Mensa::Base` (e.g. helpers in
+`app/tables`) are reported as skipped.
 
 #### From tests
 

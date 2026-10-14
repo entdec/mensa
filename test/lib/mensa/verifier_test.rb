@@ -1,5 +1,6 @@
 require "test_helper"
 require "mensa/testing"
+require "rake"
 
 class VerifierBrokenColumnTable < Mensa::Base
   definition do
@@ -430,6 +431,29 @@ class VerifierTest < ActiveSupport::TestCase
     assert_match(%r{2/2 tables passed}, io.string)
 
     assert_not Mensa::Verifier.run(["customer_users"], env: {}, io: StringIO.new)
+  end
+
+  test "the report lists failures and warnings, verbose lists every check" do
+    result = verify(UsersTable)
+
+    assert_equal "UsersTable\n\nOK: #{result.summary}", result.to_s
+    assert_match(/^    ✓ build SQL$/, result.to_s(verbose: true))
+
+    report = verify(VerifierNPlusOneTable).to_s
+    assert_match(/^    ! customer: N\+1 query in render html$/, report)
+    assert_no_match(/✓/, report)
+  end
+
+  test "run lists every check with verbose or VERBOSE=1" do
+    io = StringIO.new
+    Mensa::Verifier.run(["users"], env: {}, io: io)
+    assert_no_match(/✓/, io.string)
+
+    [{verbose: true, env: {}}, {env: {"VERBOSE" => "1"}}].each do |options|
+      io = StringIO.new
+      Mensa::Verifier.run(["users"], io: io, **options)
+      assert_match(/^    ✓ build SQL$/, io.string)
+    end
   end
 
   test "table_classes finds the tables in app/tables" do

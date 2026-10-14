@@ -94,12 +94,15 @@ module Mensa
       # their reports to +io+ and returns true when all of them passed.
       # Context comes from USER_ID, ACCOUNT_ID and PARAMS (JSON) in +env+, and
       # STRICT=1 makes warnings fail, used by the mensa:verify rake tasks.
-      def run(tables = nil, env: ENV, io: $stdout)
+      # The reports list failures and warnings, +verbose+ (or VERBOSE=1) lists
+      # every check.
+      def run(tables = nil, env: ENV, io: $stdout, verbose: false)
         classes = tables.present? ? Array(tables).map { |table| resolve_table_class(table) } : table_classes
         options = options_from_env(env)
+        verbose ||= %w[1 true yes].include?(env["VERBOSE"].to_s.downcase)
 
         results = classes.flat_map do |klass|
-          verify(klass, **options).each { |result| io.puts(result, "") }
+          verify(klass, **options).each { |result| io.puts(result.to_s(verbose: verbose), "") }
         end
 
         by_table = results.select(&:mensa_table?).group_by(&:table_class)

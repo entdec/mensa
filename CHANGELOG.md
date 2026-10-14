@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The verifier's report only lists failures and warnings. `-v`/`--verbose` (or
+  `VERBOSE=1`) on the rake tasks, or `result.to_s(verbose: true)`, lists every
+  check.
+
 ## 0.7.0
 
 - Filters only offer the operators that work for the column's type in SQL,

@@ -92,12 +92,14 @@ module Mensa
         [table_class.name || table_class.to_s, ("(#{label})" if label)].compact.join(" ")
       end
 
-      def to_s
+      # Lists the failures and warnings, +verbose+ lists every check
+      def to_s(verbose: false)
         return "#{title}\n  - skipped: #{checks.first&.message}" unless mensa_table?
 
         lines = [title]
+        shown = verbose ? checks : checks.select { |check| check.failed? || check.warning? }
 
-        checks.group_by(&:section).each do |section, section_checks|
+        shown.group_by(&:section).each do |section, section_checks|
           lines << "  #{SECTIONS.fetch(section, section.to_s.humanize)}"
           section_checks.each do |check|
             lines << "    #{SYMBOLS[check.status]} #{check.label}#{" (skipped: #{check.message})" if check.skipped?}"
