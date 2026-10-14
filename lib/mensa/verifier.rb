@@ -95,21 +95,23 @@ module Mensa
       # Context comes from USER_ID, ACCOUNT_ID and PARAMS (JSON) in +env+, and
       # STRICT=1 makes warnings fail, used by the mensa:verify rake tasks.
       # The reports list failures and warnings, +verbose+ (or VERBOSE=1) lists
-      # every check.
+      # every check and the classes skipped as they aren't Mensa tables.
       def run(tables = nil, env: ENV, io: $stdout, verbose: false)
         classes = tables.present? ? Array(tables).map { |table| resolve_table_class(table) } : table_classes
         options = options_from_env(env)
         verbose ||= %w[1 true yes].include?(env["VERBOSE"].to_s.downcase)
 
         results = classes.flat_map do |klass|
-          verify(klass, **options).each { |result| io.puts(result.to_s(verbose: verbose), "") }
+          verify(klass, **options).each do |result|
+            io.puts(result.to_s(verbose: verbose), "") if verbose || result.mensa_table?
+          end
         end
 
         by_table = results.select(&:mensa_table?).group_by(&:table_class)
         others = results.reject(&:mensa_table?)
-        if results.size > 1
+        if by_table.size > 1 || (verbose && results.size > 1)
           passed = by_table.count { |_table, table_results| table_results.all?(&:success?) }
-          io.puts ["#{passed}/#{by_table.size} tables passed", ("#{others.size} skipped, not a Mensa::Base subclass" if others.any?)].compact.join(", ")
+          io.puts ["#{passed}/#{by_table.size} tables passed", ("#{others.size} skipped, not a Mensa::Base subclass" if verbose && others.any?)].compact.join(", ")
         end
         results.all?(&:success?)
       end

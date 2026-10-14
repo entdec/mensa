@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.7.2
 
 - The verifier's report only lists failures and warnings. `-v`/`--verbose` (or
   `VERBOSE=1`) on the rake tasks, or `result.to_s(verbose: true)`, lists every
-  check.
+  check, and the classes in `app/tables` that were skipped as they aren't Mensa
+  tables.
 
 ## 0.7.0
 

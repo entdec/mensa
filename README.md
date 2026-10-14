@@ -458,7 +458,7 @@ bin/rails "mensa:verify[inventories]" -v
 ```
 
 Classes and modules that don't descend from `Mensa::Base` (e.g. helpers in
-`app/tables`) are reported as skipped.
+`app/tables`) are skipped, and only reported as such with `-v`.
 
 #### From tests
 

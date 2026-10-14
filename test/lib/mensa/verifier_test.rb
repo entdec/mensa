@@ -567,13 +567,18 @@ class VerifierTest < ActiveSupport::TestCase
     assert verify("TableFormatting").skips.any?
   end
 
-  test "verify_all reports what isn't a Mensa table in app/tables as skipped" do
+  test "verify_all only reports what isn't a Mensa table in app/tables when verbose" do
     assert_includes Mensa::Verifier.table_classes, TableFormatting
 
     io = StringIO.new
-    Mensa::Verifier.run([UsersTable, TableFormatting], env: {}, io: io)
+    Mensa::Verifier.run([UsersTable, TableFormatting], env: {}, io: io, verbose: true)
     assert_match(/^TableFormatting\n  - skipped: TableFormatting does not descend from Mensa::Base/, io.string)
     assert_match(%r{^1/1 tables passed, 1 skipped, not a Mensa::Base subclass$}, io.string)
+
+    io = StringIO.new
+    Mensa::Verifier.run([UsersTable, CustomersTable, TableFormatting], env: {}, io: io)
+    assert_no_match(/TableFormatting|not a Mensa::Base subclass/, io.string)
+    assert_match(%r{^2/2 tables passed$}, io.string)
   end
 
   test "N+1 queries in a render block are warned about, with how to preload" do
