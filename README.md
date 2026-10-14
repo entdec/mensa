@@ -187,6 +187,11 @@ The operators are `is`, `isnt`, `matches`, `does_not_match`, `gt`, `gteq`, `lt`,
 | boolean, uuid, enums and other types | `is`, `isnt` |
 | jsonb, json | none (json also has no `is_duplicate`) |
 
+`matches` finds rows where the column contains the value anywhere, ignoring case
+(`ILIKE '%value%'`), and `does_not_match` finds the others, including rows where the
+column is empty (NULL). The value is taken literally: `%`, `_` and `\` are matched as
+characters, not as wildcards. A blank value matches only empty strings.
+
 `matches` and `does_not_match` are left out when the filter has a `collection`, and
 `is_current` is only offered when `Current` has a method named after the column.
 

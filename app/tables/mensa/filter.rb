@@ -14,7 +14,7 @@ module Mensa
     config_reader :multiple
     config_reader :having?
 
-    # Types that LIKE works on, nil is an attribute without a type
+    # Types that ILIKE works on, nil is an attribute without a type
     TEXT_TYPES = [:string, :text, :citext, nil].freeze
     # Types with a meaningful order, for gt, gteq, lt and lteq
     RANGE_TYPES = %i[integer bigint float decimal money date datetime timestamp timestamptz time interval].freeze
@@ -139,9 +139,12 @@ module Mensa
         hash[:value] = Current.public_send(column.name)
         "#{col} = :value"
       when :matches
-        "#{col} LIKE :value"
+        hash[:value] = contains_pattern(hash[:value])
+        "#{text_col(col)} ILIKE :value"
       when :does_not_match
-        "#{col} NOT LIKE :value"
+        # Rows without a value don't contain it either
+        hash[:value] = contains_pattern(hash[:value])
+        "(#{col} IS NULL OR #{text_col(col)} NOT ILIKE :value)"
       when :is
         hash[:value].is_a?(Array) ? "#{col} IN (:value)" : "#{col} = :value"
       when :isnt
@@ -278,6 +281,23 @@ module Mensa
         .select("mensa_values.mensa_duplicate_value")
 
       record_scope.having("#{column_sql} IN (#{duplicate_values_scope.to_sql})")
+    end
+
+    # A case-insensitive "contains" pattern, with %, _ and \ in the value
+    # matched literally. A blank value is compared as it is, like `is` does,
+    # so it doesn't turn into '%%' and match everything.
+    def contains_pattern(value)
+      return value if value.to_s.empty?
+
+      "%#{ActiveRecord::Base.sanitize_sql_like(value.to_s)}%"
+    end
+
+    # An attribute without a type may not be text in SQL (e.g. a count), cast
+    # it like search does. Typed columns are compared as they are, so an
+    # explicit `matches` on e.g. a boolean still fails (and the verifier
+    # reports it).
+    def text_col(col)
+      column.type.nil? ? "CAST(#{col} AS text)" : col
     end
 
     # Unused at the moment

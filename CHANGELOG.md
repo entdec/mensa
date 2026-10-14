@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.3
+
+- **Behaviour change:** the `matches` and `does_not_match` filters now do a
+  case-insensitive "contains" (`ILIKE '%value%'`), the same way search does.
+  Before, they passed the value to `LIKE` as it was, so `matches "LLC"` only
+  found rows that were exactly `LLC`. The value is taken literally, so saved
+  views that relied on typing `%` or `_` wildcards now match a literal `%` or
+  `_`. `does_not_match` now also returns rows where the column is NULL.
+  Attributes without a `type` are cast to text for the comparison.
+
 ## 0.7.2
 
 - The verifier's report only lists failures and warnings. `-v`/`--verbose` (or

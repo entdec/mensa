@@ -34,6 +34,25 @@ class CustomerFilterTable < Mensa::Base
   end
 end
 
+class CustomerUserEmailsFilterTable < Mensa::Base
+  definition do
+    model Customer
+
+    column(:name)
+    # Untyped aggregate, filtered in the HAVING
+    column(:user_emails) do
+      attribute "STRING_AGG(users.email, ', ')"
+      filter do
+        having true
+      end
+    end
+
+    scope do
+      Customer.joins(:users).group(:id)
+    end
+  end
+end
+
 class CustomScopeFilterTable < Mensa::Base
   definition do
     model Customer
@@ -190,6 +209,61 @@ class FilterTest < ActiveSupport::TestCase
 
   test "does_not_match operator excludes matching rows" do
     assert_equal Customer.where.not(country: "NL").count, filtered_scope({country: {value: "NL", operator: :does_not_match}}).count
+  end
+
+  test "matches finds the value anywhere in the column, ignoring case" do
+    Customer.find_by!(name: "SAP").update!(name: "Acme LLC")
+    Customer.find_by!(name: "ESA").update!(name: "llc holdings")
+
+    assert_equal ["Acme LLC", "llc holdings"], filtered_scope({name: {value: "llc", operator: :matches}}).pluck(:name).sort
+    assert_match(/ILIKE '%llc%'/, filtered_scope({name: {value: "llc", operator: :matches}}).to_sql)
+  end
+
+  test "does_not_match excludes rows containing the value, ignoring case" do
+    Customer.find_by!(name: "SAP").update!(name: "Acme LLC")
+
+    names = filtered_scope({name: {value: "llc", operator: :does_not_match}}).pluck(:name)
+    assert_equal Customer.count - 1, names.size
+    assert_not_includes names, "Acme LLC"
+  end
+
+  test "does_not_match includes rows without a value" do
+    # ESA has no isin
+    isins = filtered_scope({isin: {value: "nl", operator: :does_not_match}}).pluck(:isin)
+
+    assert_includes isins, nil
+    assert_equal Customer.where("isin IS NULL OR isin NOT ILIKE 'NL%'").count, isins.size
+  end
+
+  test "matches takes % and _ in the value literally" do
+    Customer.find_by!(name: "SAP").update!(name: "100% Dutch")
+    Customer.find_by!(name: "ESA").update!(name: "big_co")
+
+    assert_equal ["100% Dutch"], filtered_scope({name: {value: "0%", operator: :matches}}).pluck(:name)
+    assert_equal ["big_co"], filtered_scope({name: {value: "g_c", operator: :matches}}).pluck(:name)
+    assert_empty filtered_scope({name: {value: "%", operator: :does_not_match}}).where(name: "100% Dutch")
+    assert_equal Customer.count - 1, filtered_scope({name: {value: "_", operator: :does_not_match}}).count
+  end
+
+  test "matches with a blank value compares with the empty string, like is" do
+    Customer.find_by!(name: "SAP").update!(isin: "")
+
+    assert_equal ["SAP"], filtered_scope({isin: {value: "", operator: :matches}}).pluck(:name)
+    assert_equal Customer.count - 1, filtered_scope({isin: {value: "", operator: :does_not_match}}).count
+  end
+
+  test "matches casts an untyped attribute to text" do
+    assert_match(/CAST\(\(LOWER\(customers\.country\)\) AS text\) ILIKE/, filtered_scope({country_code: {value: "N", operator: :matches}}).to_sql)
+    assert_equal 4, filtered_scope({country_code: {value: "N", operator: :matches}}).count
+  end
+
+  test "matches on a having filter filters on the aggregate" do
+    t = CustomerUserEmailsFilterTable.new({filters: {user_emails: {value: users(:asml_user).email.upcase, operator: :matches}}})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    scope = t.ordered_scope
+
+    assert_match(/HAVING .*STRING_AGG.* ILIKE/, scope.to_sql)
+    assert_equal [customers(:asml).id], scope.pluck(:id)
   end
 
   test "is_empty operator returns rows with a blank value" do
