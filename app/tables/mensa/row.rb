@@ -9,17 +9,14 @@ module Mensa
       @record = record
     end
 
+    # A model method is only called when the column asks for one with
+    # `method`, otherwise the value is what was selected under the column's
+    # name, so a model method with the same name doesn't shadow it
     def value(column)
-      if column.attribute && record.respond_to?(column.attribute)
-        record.public_send(column.attribute)
-      elsif column.method && record.respond_to?(column.method)
-        record.public_send(column.method)
-      elsif record.respond_to?(column.name)
-        record.public_send(column.name)
-      elsif record.respond_to?(:[])
+      if column.value_method
+        record.public_send(column.value_method)
+      elsif record.has_attribute?(column.name)
         record[column.name]
-      else
-        "-"
       end
     end
 

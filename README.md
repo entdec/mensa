@@ -119,6 +119,28 @@ You can show your tables on the page using the following:
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.
 When you enable these, they are stored in the database and can be used across sessions, by the user who created them.
 
+### Column values
+
+A column shows what was selected in SQL under its name: the database column of
+the model, its `attribute`, or an alias your table's `scope` selects. Methods of
+the model are never called, unless the column asks for one with `method`, so a
+model method with the same name as the column doesn't take its place:
+
+```ruby
+column(:contact) do                 # shows the concat_ws, even if the model has a #contact method
+  attribute "concat_ws(', ', contacts.last_name, contacts.first_name)"
+end
+column(:full_name) do               # calls user.to_s
+  method :to_s
+end
+column(:customer) do                # calls user.customer
+  method true
+end
+```
+
+Calling methods is slow, it happens for each row, and select what those methods
+need with `internal` columns, as Mensa only selects the table's columns.
+
 ### Sortable and filterable columns
 
 Sorting and filtering happen in SQL, so whether a column can be sorted or filtered

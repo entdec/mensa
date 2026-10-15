@@ -453,6 +453,7 @@ module Mensa
     def verify_columns
       @table.columns.each do |column|
         verify_column_select(column)
+        warn_empty_column(column) unless column.internal?
         verify_column_sort(column) if column.sortable? && !column.internal?
         verify_column_render(column) unless column.internal?
       end
@@ -460,7 +461,7 @@ module Mensa
 
     def verify_column_select(column)
       check(:columns, column.name, "select") do |c|
-        skip!("no SQL attribute, the value comes from #{column.method ? "method :#{column.method}" : "the record"}") if column.attribute.blank?
+        skip!("no SQL attribute, the value comes from #{column.value_method ? "method :#{column.value_method}" : "the scope"}") if column.attribute.blank?
 
         # What Mensa selects besides the column: the id and internal columns,
         # which preloads in the scope need
@@ -471,6 +472,25 @@ module Mensa
         result = table.model.connection.select_all(relation)
         warn_untyped_attribute(column, result.column_types[column.name.to_s]&.type)
       end
+    end
+
+    # A column only calls a model method when it asks for one with `method`,
+    # without one its value is what the scope selects under its name. When
+    # nothing is selected under it, and no render block shows something else,
+    # the column is always empty.
+    def warn_empty_column(column)
+      return if column.value_method || column.config[:render].present?
+
+      record = @rows&.first&.record
+      return if record.nil? || record.has_attribute?(column.name)
+
+      fix = if record.respond_to?(column.name)
+        "Fix: add `method true` to the column to show the model's ##{column.name}, or give it an `attribute`."
+      else
+        "Fix: give the column an `attribute`, select #{column.name} in the table's scope, or add a `method`."
+      end
+      warn!(:columns, column.name, "empty column",
+        "nothing is selected as #{column.name} and it has no `method` or `render`, so it is always empty.\n#{fix}")
     end
 
     # The SQL type of an `attribute` decides which filter operators and values

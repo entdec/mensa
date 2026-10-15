@@ -22,6 +22,12 @@ module Mensa
 
     AGGREGATE_FUNCTIONS = %i[count sum min max].freeze
 
+    # The record method that gives the value: `method :to_s` names one,
+    # `method true` uses the column's name
+    def value_method
+      config[:method] == true ? name : config[:method].presence
+    end
+
     def sort_direction
       value = table.config.dig(:order, name)
       value.presence&.to_sym

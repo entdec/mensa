@@ -259,6 +259,28 @@ class VerifierUntypedAttributeTable < Mensa::Base
   end
 end
 
+class VerifierEmptyColumnTable < Mensa::Base
+  definition do
+    model User
+
+    column(:first_name)
+    column(:customer)
+    column(:nickname)
+    column(:customer_record) do
+      method :customer
+    end
+    column(:avatar) do
+      render do
+        html { |user| user.first_name }
+      end
+    end
+    column(:users_count)
+    internal :customer_id
+
+    scope -> { User.select("users.*, 1 AS users_count") }
+  end
+end
+
 class VerifierTest < ActiveSupport::TestCase
   def verify(table, **options, &)
     Mensa::Verifier.new(table, **options, &).call
@@ -753,5 +775,19 @@ class VerifierTest < ActiveSupport::TestCase
 
     assert find_check(result, :filters, :typed_has_users, "is").passed?, result.to_s
     assert_equal [:has_users], result.warnings.map(&:subject)
+  end
+
+  test "a column that selects nothing and has no method or render is warned about" do
+    result = verify(VerifierEmptyColumnTable)
+
+    warning = find_check(result, :columns, :customer, "empty column")
+    assert warning.warning?
+    assert_match(/nothing is selected as customer and it has no `method` or `render`/, warning.message)
+    assert_match(/Fix: add `method true` to the column to show the model's #customer/, warning.message)
+
+    assert_match(/Fix: give the column an `attribute`, select nickname in the table's scope/,
+      find_check(result, :columns, :nickname, "empty column").message)
+
+    assert_equal %i[customer nickname], result.checks.select { |c| c.name == "empty column" }.map(&:subject)
   end
 end

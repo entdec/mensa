@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0
+
+- **Behaviour change:** a column shows what was selected in SQL under its name
+  (a database column, its `attribute` or an alias in the `scope`), and only
+  calls a model method when it asks for one with `method`. Before, a model
+  method with the same name as the column took its place, so
+  `column(:contact) { attribute "concat_ws(...)" }` on a model with a
+  `#contact` method showed the method's result. Columns that relied on a
+  model method of their name need `method true`.
+- `method true` calls the model method named after the column.
+- The verifier warns about columns that are always empty: nothing is selected
+  under their name and they have no `method` or `render`. When the model has a
+  method of that name, it suggests `method true`.
+
 ## 0.7.4
 
 - **Behaviour change:** the `matches` and `does_not_match` filters now do a

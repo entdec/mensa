@@ -45,6 +45,40 @@ class RenderOnlyColumnTable < Mensa::Base
   end
 end
 
+# The customer column shadows the User#customer association
+class ShadowingAttributeColumnTable < Mensa::Base
+  definition do
+    model User
+
+    column(:customer) do
+      attribute "upper(users.first_name)"
+    end
+  end
+end
+
+# The customer column comes from an alias in the scope, not User#customer
+class ShadowingAliasColumnTable < Mensa::Base
+  definition do
+    model User
+
+    column(:customer)
+
+    scope -> { User.select("users.*, 'aliased' AS customer") }
+  end
+end
+
+# The customer column calls User#customer, as it asks for it
+class MethodColumnTable < Mensa::Base
+  definition do
+    model User
+
+    column(:customer) do
+      method true
+    end
+    internal :customer_id
+  end
+end
+
 class ColumnTest < ActiveSupport::TestCase
   test "it returns the quoted attribute" do
     t = TestTable.new({})
@@ -191,5 +225,29 @@ class ColumnTest < ActiveSupport::TestCase
     assert_equal [:role], t.active_filters.map { |filter| filter.column.name }
     assert_match(/"users"."email"/, UsersTable.new(column_order: %w[last_name first_name]).selected_scope.to_sql)
     assert t.rows.all? { |row| row.record.role == "admin" }
+  end
+
+  test "a column with an attribute shows the selected value, not a model method of the same name" do
+    t = ShadowingAttributeColumnTable.new({})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    user = users(:asml_user)
+    row = t.rows.find { |r| r.record.id == user.id }
+
+    assert_equal user.first_name.upcase, row.value(t.column(:customer))
+  end
+
+  test "an alias in the scope is shown, not a model method of the same name" do
+    t = ShadowingAliasColumnTable.new({})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+
+    assert_equal ["aliased"], t.rows.map { |row| row.value(t.column(:customer)) }.uniq
+  end
+
+  test "method true calls the model method named after the column" do
+    t = MethodColumnTable.new({})
+    t.request = ActionDispatch::Request.new(Rack::MockRequest.env_for("/"))
+    row = t.rows.find { |r| r.record.id == users(:asml_user).id }
+
+    assert_equal users(:asml_user).customer, row.value(t.column(:customer))
   end
 end
