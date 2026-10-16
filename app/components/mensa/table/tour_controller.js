@@ -1,5 +1,5 @@
 import ApplicationController from "mensa/controllers/application_controller";
-import { driver } from "driver.js";
+import { driver } from "mensa/components/table/driver";
 
 // Explains the table's features the first time each one is seen. Every feature is
 // its own segment, remembered in localStorage, so a feature missing on one table is

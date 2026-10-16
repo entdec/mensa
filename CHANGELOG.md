@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.2
+
+- The table tour no longer needs the `driver.js` npm package. Mensa now ships
+  driver.js (1.10.1, MIT) itself in `app/components/mensa/table/driver.js` and
+  imports it as `mensa/components/table/driver`, so host apps that bundle
+  Mensa's JS with esbuild (jsbundling-rails) build again without adding
+  anything. In 0.9.0 and 0.9.1 those builds failed with
+  `Could not resolve "driver.js"`.
+- driver.js is updated from 1.3.6 to 1.10.1; its CSS
+  (`app/assets/stylesheets/mensa/driver.css`) is updated to the same version.
+- The table tour has a dark mode. It follows the host app's Tailwind dark mode
+  setting, like the rest of Mensa.
+- The engine's importmap no longer pins `driver.js`. Host apps that import
+  `driver.js` themselves need their own pin or npm package.
+
 ## 0.8.0
 
 - **Behaviour change:** a column shows what was selected in SQL under its name
