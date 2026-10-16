@@ -70,8 +70,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
       assert_equal customer.id, query.dig("params", "customer_id"), "expected #{value} to carry the table's params"
     end
 
-    scope = "#{@controller.controller_name}_#{@controller.action_name}_customer_users"
-    storage_key = Mensa.for_name("customer_users", params: table_params).storage_key.sub(/\Acustomer_users/, scope)
+    storage_key = "#{@controller.controller_name}_#{@controller.action_name}_customer_users"
     assert_select "[data-mensa-filter-pill-list-storage-key-value='#{storage_key}']"
     assert_select "##{Mensa::Export.badge_dom_id("customer_users", User.first, params: table_params)}"
     assert_select "##{Mensa::Export.list_dom_id("customer_users", User.first, params: table_params)}"

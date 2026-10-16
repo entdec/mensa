@@ -313,7 +313,14 @@ export default class FilterPillListComponentController extends ApplicationContro
             Object.keys(order).length > 0 ||
             columnOrder.length > 0;
 
-        const alreadyRendered = Object.keys(this.renderedFilters()).length > 0;
+        // Pills rendered by the server (e.g. a view's default filters) must not win
+        // over filters the user changed or cleared.
+        const rendered = this.renderedFilters();
+        const filtersDiffer =
+            filtersProvided &&
+            JSON.stringify(rendered) !== JSON.stringify(filters);
+        const alreadyRendered =
+            Object.keys(rendered).length > 0 && !filtersDiffer;
 
         if (!hasState || alreadyRendered || table.frameLoadHandled) {
             if (typeof table.loadFrame === "function") {

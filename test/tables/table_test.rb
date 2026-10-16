@@ -198,12 +198,12 @@ class TableTest < ActiveSupport::TestCase
     assert_equal User.distinct.count(:role), t.selected_scope.to_a.size
   end
 
-  test "path_with_params and storage_key include the table's params" do
+  test "path_with_params carries the table's params and storage_key ignores them" do
     customer = customers(:asml)
     t = Mensa.for_name("customer_users", params: {customer_id: customer.id})
 
     assert_equal "/x?params%5Bcustomer_id%5D=#{customer.id}", t.path_with_params("/x")
-    assert_match(/\Acustomer_users:[0-9a-f]{12}\z/, t.storage_key)
+    assert_equal "customer_users", t.storage_key
     assert_equal "/x", TestTable.new({}).path_with_params("/x")
   end
 
