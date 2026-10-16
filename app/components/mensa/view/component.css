@@ -1,4 +1,4 @@
-@import "paging.css";
+@import "./paging.css";
 
 .mensa-batch-bar {
     /* Sits on top of the thead row. Positioned relative to the .overflow-y-auto.relative
@@ -10,18 +10,18 @@
     left: 0;
     z-index: 10;
     @apply pt-[7px] pb-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
+}
 
-    &__content {
-        @apply h-5 flex items-center gap-2 pl-2;
-    }
+.mensa-batch-bar__content {
+    @apply h-5 flex items-center gap-2 pl-2;
+}
 
-    &__count {
-        @apply text-xs font-medium text-gray-700 dark:text-gray-200 mr-1;
-    }
+.mensa-batch-bar__count {
+    @apply text-xs font-medium text-gray-700 dark:text-gray-200 mr-1;
+}
 
-    &__button {
-        @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
-    }
+.mensa-batch-bar__button {
+    @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
 }
 
 .mensa-table {

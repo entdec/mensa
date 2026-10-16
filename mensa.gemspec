@@ -37,7 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "pg", ">= 1.6"
   spec.add_dependency "view_component", ">=3"
 
-  spec.add_dependency "tailwindcss-rails", "~> 3.3"
+  spec.add_dependency "tailwindcss-rails", ">= 3.3", "< 5"
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
   spec.add_dependency "stimulus-rails"

@@ -1,46 +1,44 @@
-.mensa-table {
-    &__search-bar {
-        @apply flex items-center gap-1.5 flex-1 min-w-0 h-full px-2;
+.mensa-table__search-bar {
+    @apply flex items-center gap-1.5 flex-1 min-w-0 h-full px-2;
+}
 
-        &__pills-area {
-            @apply flex flex-1 flex-wrap items-center gap-1 min-w-0;
-        }
+.mensa-table__search-bar__pills-area {
+    @apply flex flex-1 flex-wrap items-center gap-1 min-w-0;
+}
 
-        &__input-wrapper {
-            @apply relative flex items-center flex-1 min-w-[4rem];
-        }
+.mensa-table__search-bar__input-wrapper {
+    @apply relative flex items-center flex-1 min-w-[4rem];
+}
 
-        &__search-icon {
-            @apply absolute left-2 text-gray-400 pointer-events-none -ml-4;
-            font-size: 0.9rem;
-            /* icon is after input in DOM but floats left via absolute positioning */
-        }
+.mensa-table__search-bar__search-icon {
+    @apply absolute left-2 text-gray-400 pointer-events-none -ml-4;
+    font-size: 0.9rem;
+    /* icon is after input in DOM but floats left via absolute positioning */
+}
 
-        &__input {
-            @apply w-full bg-transparent text-xs text-gray-700 dark:text-gray-200 placeholder:text-gray-400;
-            /* Override @tailwindcss/forms — direct CSS beats attribute selector specificity */
-            background-color: transparent !important;
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            padding: 0 0.25rem 0 1.5rem;
+.mensa-table__search-bar__input {
+    @apply w-full bg-transparent text-xs text-gray-700 dark:text-gray-200 placeholder:text-gray-400;
+    /* Override @tailwindcss/forms — direct CSS beats attribute selector specificity */
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 0.25rem 0 1.5rem;
 
-            &:focus {
-                border: none !important;
-                outline: none !important;
-                box-shadow: none !important;
-            }
-
-            /* Hide the icon that follows when input has content (placeholder not shown) */
-            &:not(:placeholder-shown) ~ .mensa-table__search-bar__search-icon {
-                display: none;
-            }
-        }
-
-        &__clear {
-            @apply flex-none p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer;
-        }
+    &:focus {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
     }
+
+    /* Hide the icon that follows when input has content (placeholder not shown) */
+    &:not(:placeholder-shown) ~ .mensa-table__search-bar__search-icon {
+        display: none;
+    }
+}
+
+.mensa-table__search-bar__clear {
+    @apply flex-none p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer;
 }
 
 /* Hide placeholder when visible filter pills exist.

@@ -1,37 +1,37 @@
 .mensa-filter-pill {
     @apply inline-flex items-stretch text-xs rounded-md overflow-hidden;
+}
 
-    &__chip {
-        @apply flex items-center gap-1 pl-2 pr-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md cursor-pointer transition-all;
-    }
+.mensa-filter-pill__chip {
+    @apply flex items-center gap-1 pl-2 pr-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md cursor-pointer transition-all;
+}
 
-    &:hover &__chip,
-    &:focus-within &__chip {
-        @apply bg-gray-200 dark:bg-gray-600 rounded-r-none;
-    }
+.mensa-filter-pill:hover .mensa-filter-pill__chip,
+.mensa-filter-pill:focus-within .mensa-filter-pill__chip {
+    @apply bg-gray-200 dark:bg-gray-600 rounded-r-none;
+}
 
-    &__column {
-        @apply text-gray-600 dark:text-gray-300;
-    }
+.mensa-filter-pill__column {
+    @apply text-gray-600 dark:text-gray-300;
+}
 
-    &__operator {
-        @apply rounded px-1 bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300;
-    }
+.mensa-filter-pill__operator {
+    @apply rounded px-1 bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300;
+}
 
-    &__value {
-        @apply rounded pl-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium;
-    }
+.mensa-filter-pill__value {
+    @apply rounded pl-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-medium;
+}
 
-    &__remove {
-        @apply inline-flex items-center justify-center w-0 px-0 text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-pointer overflow-hidden opacity-0 -translate-x-1 pointer-events-none transition-all duration-200;
-    }
+.mensa-filter-pill__remove {
+    @apply inline-flex items-center justify-center w-0 px-0 text-gray-400 bg-gray-100 dark:bg-gray-700 cursor-pointer overflow-hidden opacity-0 -translate-x-1 pointer-events-none transition-all duration-200;
+}
 
-    &:hover &__remove,
-    &:focus-within &__remove {
-        @apply w-7 px-1.5 opacity-100 translate-x-0 pointer-events-auto;
-    }
+.mensa-filter-pill:hover .mensa-filter-pill__remove,
+.mensa-filter-pill:focus-within .mensa-filter-pill__remove {
+    @apply w-7 px-1.5 opacity-100 translate-x-0 pointer-events-auto;
+}
 
-    &__remove:hover {
-        @apply text-gray-700 bg-gray-200 dark:bg-gray-600 dark:text-gray-200;
-    }
+.mensa-filter-pill__remove:hover {
+    @apply text-gray-700 bg-gray-200 dark:bg-gray-600 dark:text-gray-200;
 }

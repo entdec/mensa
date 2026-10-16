@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mensa (0.7.4)
+    mensa (0.8.0)
       csv
       importmap-rails
       pagy (>= 43)
@@ -9,7 +9,7 @@ PATH
       rails (>= 7.1)
       rubyzip (>= 1.2.2)
       stimulus-rails
-      tailwindcss-rails (~> 3.3)
+      tailwindcss-rails (>= 3.3, < 5)
       turbo-rails
       view_component (>= 3)
 
