@@ -145,6 +145,8 @@ module Mensa
       path = original_view_context.mensa.table_path(name)
       query = {
         params: user_params || params,
+        filters: filters_param,
+        query: current_query,
         order: order_hash(order),
         turbo_frame_id: turbo_frame_id,
         table_view_id: table_view_id,
@@ -255,6 +257,13 @@ module Mensa
 
     def aggregates_param
       current_aggregates.presence || ("" unless config[:aggregates].nil?)
+    end
+
+    # Blank means "explicitly no filters", which overrides the view's default
+    def filters_param
+      return unless config.key?(:filters)
+
+      config[:filters].presence || ""
     end
 
     private

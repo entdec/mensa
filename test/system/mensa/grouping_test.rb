@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class GroupingTest < ApplicationSystemTestCase
+class GroupingSystemTest < ApplicationSystemTestCase
   setup do
     # Visit the page first so we can clear this origin's localStorage,
     # preventing state from leaking between tests.
