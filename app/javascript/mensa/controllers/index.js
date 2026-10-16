@@ -21,6 +21,9 @@ application.register("mensa-search", SearchComponentController);
 import TableComponentController from "mensa/components/table/component_controller";
 application.register("mensa-table", TableComponentController);
 
+import TourController from "mensa/components/table/tour_controller";
+application.register("mensa-tour", TourController);
+
 import ViewsComponentController from "mensa/components/views/component_controller";
 application.register("mensa-views", ViewsComponentController);
 

@@ -1,5 +1,43 @@
 nl:
   mensa:
+    tour:
+      ui:
+        next: Volgende
+        previous: Vorige
+        done: Begrepen
+        replay_hint: Beweeg over de tabel en druk op ? om deze uitleg opnieuw te bekijken.
+        progress: "{{current}} van {{total}}"
+      search:
+        title: Zoeken en filteren
+        description: Typ om in de tabel te zoeken, of klik op de plusknop om op een specifieke kolom te filteren. Actieve filters verschijnen als labels die je kunt aanpassen of verwijderen.
+        description_only: Typ om in de tabel te zoeken. Druk op Enter om je zoekopdracht toe te passen.
+      columns:
+        title: Kolommen
+        description: Toon, verberg en herorden kolommen door ze te slepen naar de gewenste volgorde.
+      sorting:
+        title: Sorteren
+        description: Klik op een kolomkop om op die kolom te sorteren. Klik nogmaals om de volgorde om te draaien.
+      group_by:
+        title: Groeperen op
+        description: Groepeer rijen op een kolom en toon eventueel totalen of aantallen per groep.
+      views:
+        title: Weergaven
+        description: Wissel tussen opgeslagen weergaven, of bewaar je huidige filters, zoekopdracht en kolommen als eigen weergave om later opnieuw te gebruiken.
+      export:
+        title: Exporteren
+        description: Download de tabel met je huidige filters toegepast. Druk op Volgende om het exportvenster te openen.
+      export_list:
+        title: Je downloads
+        description: Voltooide exports verschijnen hier, zodat je ze kunt downloaden of verwijderen.
+      export_scope:
+        title: Wat exporteren
+        description: Exporteer alle records die overeenkomen met je huidige filters, of alleen de pagina die je nu bekijkt.
+      export_format:
+        title: Bestandsformaat
+        description: Kies een CSV die geoptimaliseerd is voor spreadsheetprogramma's, of een gewoon CSV-bestand.
+      export_repeat:
+        title: Herhalen
+        description: Exporteer eenmalig, of laat de export automatisch herhalen per dag, week, maand of een ander interval.
     column_customizer:
       heading: Kolommen
     group_by:

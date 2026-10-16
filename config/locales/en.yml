@@ -1,5 +1,43 @@
 en:
   mensa:
+    tour:
+      ui:
+        next: Next
+        previous: Previous
+        done: Got it
+        replay_hint: Hover over the table and press ? to see this tour again.
+        progress: "{{current}} of {{total}}"
+      search:
+        title: Search and filter
+        description: Type to search the table, or click the plus button to filter on a specific column. Active filters appear as pills that you can edit or remove.
+        description_only: Type to search the table. Press Enter to apply your search.
+      columns:
+        title: Columns
+        description: Show, hide and reorder the columns by dragging them into the order you prefer.
+      sorting:
+        title: Sorting
+        description: Click a column header to sort by that column. Click again to reverse the order.
+      group_by:
+        title: Group by
+        description: Group rows by a column and optionally show totals or counts per group.
+      views:
+        title: Views
+        description: Switch between saved views, or save your current filters, search and columns as a custom view to reuse later.
+      export:
+        title: Export
+        description: Download the table with your current filters applied. Press Next to open the export dialog.
+      export_list:
+        title: Your downloads
+        description: Finished exports show up here so you can download or delete them.
+      export_scope:
+        title: What to export
+        description: Export all records matching your current filters, or only the page you are looking at.
+      export_format:
+        title: File format
+        description: Choose a CSV optimised for spreadsheet programs, or a plain CSV file.
+      export_repeat:
+        title: Repeat
+        description: Export once, or have the export repeat automatically at a daily, weekly, monthly or other interval.
     column_customizer:
       heading: Columns
     group_by:

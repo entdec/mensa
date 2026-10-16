@@ -10,10 +10,12 @@
     </header>
 
     <div class="mensa-table__export-dialog__body">
-      <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, table_params: table.params, exports: exports} %>
+      <div data-mensa-tour="export_list">
+        <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, table_params: table.params, exports: exports} %>
+      </div>
 
       <form class="mensa-table__export-dialog__form" data-action="submit->mensa-table#confirmExport">
-        <fieldset class="mensa-table__export-dialog__fieldset">
+        <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_scope">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.new_export", default: "New export") %></legend>
           <label class="mensa-table__export-dialog__option">
             <input type="radio" name="scope" value="all" checked>
@@ -25,7 +27,7 @@
           </label>
         </fieldset>
 
-        <fieldset class="mensa-table__export-dialog__fieldset">
+        <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_format">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.export_as", default: "Export as") %></legend>
           <label class="mensa-table__export-dialog__option">
             <input type="radio" name="export_format" value="csv_excel" checked>
@@ -37,7 +39,7 @@
           </label>
         </fieldset>
 
-        <fieldset class="mensa-table__export-dialog__fieldset">
+        <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_repeat">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.repeat_section", default: "Repeat") %></legend>
           <label class="mensa-table__export-dialog__option">
             <input type="radio" name="repeat_mode" value="once" checked data-action="change->mensa-table#toggleExportRepeat">
