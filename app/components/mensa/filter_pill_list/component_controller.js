@@ -480,8 +480,8 @@ export default class FilterPillListComponentController extends ApplicationContro
                 filter.value = isMultiple
                     ? this.mensaAddFilterOutlet.selectedValues
                     : this.mensaAddFilterOutlet.hasValueTarget
-                      ? this.mensaAddFilterOutlet.valueTarget.value
-                      : "";
+                        ? this.mensaAddFilterOutlet.valueTarget.value
+                        : "";
             }
             filters[this.mensaAddFilterOutlet.selectedFilterColumn] = filter;
         }
@@ -580,7 +580,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         this.updateSearchPlaceholder();
     }
 
-    updateSearchPlaceholder() {}
+    updateSearchPlaceholder() { }
 
     _supportsColumnFilters() {
         return (
@@ -722,7 +722,7 @@ export default class FilterPillListComponentController extends ApplicationContro
             } else {
                 window.localStorage.setItem(key, value);
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 
     readStorage(key) {
@@ -772,7 +772,7 @@ export default class FilterPillListComponentController extends ApplicationContro
 
     // Tables built with different params keep separate browser state.
     get storageName() {
-        return this.storageKeyValue || this.tableNameValue;
+        return this.tableStorageKey || this.storageKeyValue || this.tableNameValue;
     }
 
     get filtersStorageKey() {

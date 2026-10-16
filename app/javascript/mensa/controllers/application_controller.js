@@ -6,6 +6,12 @@ export default class ApplicationController extends Controller {
     this.element[this.identifier] = this
   }
 
+  // Turbo streams re-render parts of the table via Mensa's own controllers, so the key
+  // rendered on the page's table element is the only stable one.
+  get tableStorageKey() {
+    return this.element.closest('.mensa-table')?.dataset.mensaTableStorageKeyValue
+  }
+
   // Appends a member id to a collection URL while keeping its query string
   // (e.g. the table's params[...]) intact.
   memberUrl(collectionUrl, id) {

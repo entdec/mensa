@@ -27,6 +27,7 @@ export default class TableComponentController extends ApplicationController {
         saveViewUrl: String,
         viewsUrl: String,
         exportsUrl: String,
+        storageKey: String,
     };
 
     connect() {
@@ -372,7 +373,7 @@ export default class TableComponentController extends ApplicationController {
         let aggregates = {};
         try {
             aggregates = JSON.parse(element.dataset.aggregates || "{}");
-        } catch (e) {}
+        } catch (e) { }
         this.groupState = {
             group_by: element.dataset.groupBy || "",
             aggregates,
@@ -505,7 +506,7 @@ export default class TableComponentController extends ApplicationController {
             } else {
                 window.localStorage.removeItem(this._viewFiltersStorageKey());
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 
     // --- Export ---

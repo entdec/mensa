@@ -21,7 +21,7 @@
     <table class="w-full"
            <% if table.grouped? %>
              data-controller="mensa-groups"
-             data-mensa-groups-storage-key-value="<%= "mensa:collapsed_groups:#{table.storage_key}:#{table.group_column.name}" %>"
+             data-mensa-groups-column-value="<%= table.group_column.name %>"
            <% end %>>
       <% if table.show_header? %>
         <thead>

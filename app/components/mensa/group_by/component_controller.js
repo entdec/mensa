@@ -135,11 +135,11 @@ export default class GroupByController extends ApplicationController {
     }
 
     get groupByStorageKey() {
-        return `mensa:group_by:${this.storageKeyValue}`;
+        return `mensa:group_by:${this.tableStorageKey || this.storageKeyValue}`;
     }
 
     get aggregatesStorageKey() {
-        return `mensa:aggregates:${this.storageKeyValue}`;
+        return `mensa:aggregates:${this.tableStorageKey || this.storageKeyValue}`;
     }
 
     _readJson(key) {
@@ -155,7 +155,7 @@ export default class GroupByController extends ApplicationController {
     _writeStorage(key, value) {
         try {
             window.localStorage.setItem(key, value);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     _readStorage(key) {

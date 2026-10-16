@@ -342,7 +342,7 @@ export default class ColumnCustomizerController extends ApplicationController {
 
     // Tables built with different params keep separate browser state.
     get storageName() {
-        return this.storageKeyValue || this.tableNameValue;
+        return this.tableStorageKey || this.storageKeyValue || this.tableNameValue;
     }
 
     get _columnOrderKey() {

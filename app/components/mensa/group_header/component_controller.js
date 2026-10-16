@@ -4,7 +4,12 @@ import ApplicationController from "mensa/controllers/application_controller";
 // remembered per table and group column.
 export default class GroupsController extends ApplicationController {
     static targets = ["header", "row"];
-    static values = { storageKey: String };
+    static values = { column: String };
+
+    // The frame is rendered by Mensa's own controller, so the page's key is read from the table element.
+    get storageKeyValue() {
+        return `mensa:collapsed_groups:${this.tableStorageKey}:${this.columnValue}`;
+    }
 
     connect() {
         super.connect();
@@ -58,6 +63,6 @@ export default class GroupsController extends ApplicationController {
             } else {
                 window.localStorage.removeItem(this.storageKeyValue);
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 }

@@ -169,7 +169,13 @@ module Mensa
     # Key under which the browser persists this table's state (filters, order,
     # column order, ...). Tables built with different params get separate state.
     def storage_key
-      [name, Mensa::TableParams.digest(params)].compact.join(":")
+      context = original_view_context if @original_view_context || component
+      scope = if context.respond_to?(:controller_name) && context.respond_to?(:action_name)
+        "#{context.controller_name}_#{context.action_name}_#{name}"
+      else
+        name
+      end
+      [scope, Mensa::TableParams.digest(params)].compact.join(":")
     end
 
     def all_views
