@@ -14,15 +14,20 @@
         <%= render partial: "mensa/exports/list", locals: {table_name: table.name, user: user, table_params: table.params, exports: exports} %>
       </div>
 
-      <form class="mensa-table__export-dialog__form" data-action="submit->mensa-table#confirmExport">
+      <%# These controls belong to no form: form= names an element that doesn't
+          exist, so a host <form> around the table neither submits nor
+          validates them. Radios without a form owner group by name across
+          the whole document, so the names carry the table id. %>
+      <% form_id = "mensa-export-#{table.table_id}" %>
+      <div class="mensa-table__export-dialog__form">
         <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_scope">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.new_export", default: "New export") %></legend>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="scope" value="all" checked>
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-scope" data-mensa-export-field="scope" value="all" checked>
             <span><%= t("mensa.exports.scope_all", default: "All records (matching current filters)") %></span>
           </label>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="scope" value="current_page">
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-scope" data-mensa-export-field="scope" value="current_page">
             <span><%= t("mensa.exports.scope_current_page", default: "Current page") %></span>
           </label>
         </fieldset>
@@ -30,11 +35,11 @@
         <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_format">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.export_as", default: "Export as") %></legend>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="export_format" value="csv_excel" checked>
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-export_format" data-mensa-export-field="export_format" value="csv_excel" checked>
             <span><%= t("mensa.exports.format_excel", default: "CSV for Excel, Numbers, or other spreadsheet programs") %></span>
           </label>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="export_format" value="plain_csv">
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-export_format" data-mensa-export-field="export_format" value="plain_csv">
             <span><%= t("mensa.exports.format_plain", default: "Plain CSV file") %></span>
           </label>
         </fieldset>
@@ -42,16 +47,16 @@
         <fieldset class="mensa-table__export-dialog__fieldset" data-mensa-tour="export_repeat">
           <legend class="mensa-table__export-dialog__section-title"><%= t("mensa.exports.repeat_section", default: "Repeat") %></legend>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="repeat_mode" value="once" checked data-action="change->mensa-table#toggleExportRepeat">
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-repeat_mode" data-mensa-export-field="repeat_mode" value="once" checked data-action="change->mensa-table#toggleExportRepeat">
             <span><%= t("mensa.exports.repeat_once", default: "Only once") %></span>
           </label>
           <label class="mensa-table__export-dialog__option">
-            <input type="radio" name="repeat_mode" value="repeating" data-action="change->mensa-table#toggleExportRepeat">
+            <input type="radio" form="<%= form_id %>" name="<%= form_id %>-repeat_mode" data-mensa-export-field="repeat_mode" value="repeating" data-action="change->mensa-table#toggleExportRepeat">
             <span><%= t("mensa.exports.repeat_repeating", default: "Repeating") %></span>
           </label>
 
           <div class="mensa-table__export-dialog__repeat-options" hidden data-mensa-table-repeat-options>
-            <select name="repeat" class="mensa-table__export-dialog__select">
+            <select form="<%= form_id %>" name="<%= form_id %>-repeat" data-mensa-export-field="repeat" class="mensa-table__export-dialog__select">
               <option value="daily"><%= t("mensa.exports.repeat_intervals.daily", default: "daily") %></option>
               <option value="weekly"><%= t("mensa.exports.repeat_intervals.weekly", default: "weekly") %></option>
               <option value="monthly"><%= t("mensa.exports.repeat_intervals.monthly", default: "monthly") %></option>
@@ -66,12 +71,12 @@
           <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--secondary" type="button" data-action="mensa-table#cancelExport">
             <%= t("mensa.exports.cancel", default: "Cancel") %>
           </button>
-          <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--primary" type="submit">
+          <button class="mensa-table__export-dialog__button mensa-table__export-dialog__button--primary" type="button" data-action="mensa-table#confirmExport">
             <i class="<%= Mensa.config.icons[:exports_dialog_submit] %>"></i>
             <%= t("mensa.exports.submit", default: "Export") %>
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </dialog>

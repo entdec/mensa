@@ -15,6 +15,9 @@ class GroupedCustomerTable < Mensa::Base
     column(:number_of_employees) do
       aggregates :sum, :min, :max, :count
     end
+    column(:market_cap) do
+      aggregates :sum
+    end
   end
 end
 
@@ -112,6 +115,21 @@ class GroupingTest < ActiveSupport::TestCase
     assert_equal "4,000,000", t.groups["NL"].aggregate(t.column(:number_of_employees))
     assert_equal "Sum", t.groups["NL"].aggregate_label(t.column(:number_of_employees))
     assert_nil t.groups["NL"].aggregate(t.column(:name))
+  end
+
+  test "whole aggregates of bigint columns are formatted without decimals" do
+    Customer.update_all(market_cap: 1000)
+    t = table(group_by: :country, aggregates: {market_cap: :sum})
+
+    assert_kind_of BigDecimal, t.groups["NL"].aggregates[:market_cap], "SUM of a bigint column is numeric"
+    assert_equal "4,000", t.groups["NL"].aggregate(t.column(:market_cap))
+  end
+
+  test "fractional aggregates keep their decimals" do
+    t = table(group_by: :country, aggregates: {market_cap: :sum})
+    group = Mensa::Group.new(table: t, value: "NL", aggregates: {market_cap: BigDecimal("1333.25")})
+
+    assert_equal "1,333.25", group.aggregate(t.column(:market_cap))
   end
 
   test "rows without a value form their own group" do

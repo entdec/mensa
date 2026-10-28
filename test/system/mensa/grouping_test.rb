@@ -5,7 +5,7 @@ class GroupingSystemTest < ApplicationSystemTestCase
     # Visit the page first so we can clear this origin's localStorage,
     # preventing state from leaking between tests.
     visit customers_url
-    execute_script("localStorage.clear()")
+    clear_local_storage
   end
 
   def group_by(label)
@@ -60,6 +60,6 @@ class GroupingSystemTest < ApplicationSystemTestCase
     group_by "Country"
     find("select[data-column-name='market_cap']").select("Sum")
 
-    assert_selector "tr.mensa-table__group-header .mensa-table__group-header__aggregate", text: /Sum\s*3,000/
+    assert_selector "tr.mensa-table__group-header .mensa-table__group-header__aggregate", text: /Sum\s*3,000\b(?!\.)/i
   end
 end

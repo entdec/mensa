@@ -1,0 +1,22 @@
+<% if @submitted %>
+  <h1>Host form submitted</h1>
+  <pre id="submitted-params"><%= @submitted %></pre>
+<% end %>
+
+<%= form_with url: form_embedded_users_path, scope: :host, id: "host-form", class: "flex flex-col gap-4" do |form| %>
+  <div>
+    <%= form.label :before_table, "Before table" %>
+    <%= form.text_field :before_table, class: "block rounded-md border px-3 py-2" %>
+  </div>
+
+  <div class="max-w rounded-lg overflow-hidden bg-white shadow-lg dark:bg-gray-800 dark:shadow-none">
+    <%= table :users %>
+  </div>
+
+  <div>
+    <%= form.label :after_table, "After table" %>
+    <%= form.text_field :after_table, class: "block rounded-md border px-3 py-2" %>
+  </div>
+
+  <%= form.submit "Create Customer", class: "rounded-md px-3.5 py-2.5 bg-blue-600 text-white" %>
+<% end %>

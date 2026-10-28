@@ -6,13 +6,13 @@
     <ul class="mensa-table__export-dialog__list">
       <% exports.each do |export| %>
         <li class="mensa-table__export-dialog__item">
-          <%= button_to mensa.table_export_path(export.table_name, export),
-            method: :delete,
-            class: "mensa-table__export-dialog__delete",
-            form_class: "mensa-table__export-dialog__delete-form",
-            aria: {label: t("mensa.exports.delete", default: "Delete export") } do %>
+          <button class="mensa-table__export-dialog__delete"
+                  type="button"
+                  data-action="mensa-table#deleteExport"
+                  data-url="<%= mensa.table_export_path(export.table_name, export) %>"
+                  aria-label="<%= t("mensa.exports.delete", default: "Delete export") %>">
             <i class="<%= Mensa.config.icons[:exports_list_delete] %>"></i>
-          <% end %>
+          </button>
 
           <div class="mensa-table__export-dialog__item-info">
             <span class="mensa-table__export-dialog__item-name"><%= export.filename.presence || t("mensa.exports.item_name", default: "%{table} export", table: export.table_name.to_s.humanize) %></span>

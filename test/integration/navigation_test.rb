@@ -11,11 +11,11 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_select "[data-action='mensa-table#export']"
     assert_select "##{Mensa::Export.badge_dom_id("users", User.first)}"
 
-    # Export dialog with the downloads list and the new-export form.
+    # Export dialog with the downloads list and the new-export controls.
     assert_select "dialog.mensa-table__export-dialog"
     assert_select "##{Mensa::Export.list_dom_id("users", User.first)}"
-    assert_select "input[name=export_format]"
-    assert_select "input[name=scope]"
+    assert_select "input[data-mensa-export-field=export_format]"
+    assert_select "input[data-mensa-export-field=scope]"
 
     # Turbo stream subscription so finished exports update the badge live.
     assert_select "turbo-cable-stream-source"

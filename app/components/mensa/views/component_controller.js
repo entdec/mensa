@@ -90,6 +90,7 @@ export default class ViewsComponentController extends ApplicationController {
         if (this.hasRenameDialogTarget) {
             this.renameViewIdTarget.value = viewId;
             this.renameInputTarget.value = viewName;
+            this.renameInputTarget.setCustomValidity("");
             if (typeof this.renameDialogTarget.showModal === "function") {
                 this.renameDialogTarget.showModal();
             } else {
@@ -111,11 +112,18 @@ export default class ViewsComponentController extends ApplicationController {
     }
 
     async confirmRename(event) {
+        // Called from a button click or Enter in the name input. The table may
+        // sit inside a host <form>; this stops Enter from submitting it.
         event.preventDefault();
         const viewId = this.renameViewIdTarget.value;
         const newName = this.renameInputTarget.value.trim();
         if (!newName) {
-            this.renameInputTarget.reportValidity();
+            // The input isn't `required` (that would block a host <form>), so
+            // the browser's message is set by hand and cleared on input.
+            const input = this.renameInputTarget;
+            input.setCustomValidity(input.dataset.requiredMessage || "");
+            input.reportValidity();
+            input.focus();
             return;
         }
 
@@ -129,6 +137,10 @@ export default class ViewsComponentController extends ApplicationController {
         if (response.ok) {
             this._closeRenameDialog();
         }
+    }
+
+    clearRenameValidity() {
+        this.renameInputTarget.setCustomValidity("");
     }
 
     async duplicateView(event) {

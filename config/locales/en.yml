@@ -93,6 +93,7 @@ en:
         view_name_placeholder: e.g. Active customers
         view_description: Description
         view_description_placeholder: Optional notes about this view
+        view_name_required: Please enter a name for this view.
     exports:
       title: "Export %{table}"
       close: Close
@@ -132,3 +133,5 @@ en:
       clear_button: Clear search and filters
     views:
       default: All
+      component:
+        view_name_required: Please enter a name for this view.

@@ -34,4 +34,29 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   setup_browser
+
+  # Segment keys of the table tour (SEGMENTS in
+  # app/components/mensa/table/tour_controller.js).
+  TOUR_SEGMENTS = %w[search columns sorting group_by views export].freeze
+
+  # The tour starts on a table's first visit and its overlay covers the
+  # elements tests click. Capybara clears localStorage after every test, so
+  # mark the tour as seen before each one.
+  setup do
+    visit root_url
+    mark_tour_seen
+  end
+
+  # Clears this origin's localStorage, preventing state from leaking between
+  # tests, but keeps the tour marked as seen.
+  def clear_local_storage
+    execute_script("localStorage.clear()")
+    mark_tour_seen
+  end
+
+  def mark_tour_seen
+    execute_script(<<~JS, TOUR_SEGMENTS)
+      arguments[0].forEach((key) => localStorage.setItem(`mensa:tour:seen:${key}`, "1"));
+    JS
+  end
 end

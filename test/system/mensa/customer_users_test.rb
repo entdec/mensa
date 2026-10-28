@@ -65,9 +65,9 @@ class CustomerUsersTest < ApplicationSystemTestCase
     find("[data-action='mensa-table#export']").click
     assert_selector "dialog.mensa-table__export-dialog[open]", wait: 10
     within "dialog.mensa-table__export-dialog" do
-      find("input[name='scope'][value='#{scope}']").choose
-      find("input[name='export_format'][value='plain_csv']").choose
-      find("button[type='submit']").click
+      find("input[data-mensa-export-field='scope'][value='#{scope}']").choose
+      find("input[data-mensa-export-field='export_format'][value='plain_csv']").choose
+      find("button[data-action='mensa-table#confirmExport']").click
     end
 
     export = wait_for_export

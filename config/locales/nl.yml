@@ -93,6 +93,7 @@ nl:
         view_name_placeholder: bijv. Actieve klanten
         view_description: Omschrijving
         view_description_placeholder: Optionele notities over deze weergave
+        view_name_required: Vul een naam in voor deze weergave.
     exports:
       title: "%{table} exporteren"
       close: Sluiten
@@ -132,3 +133,5 @@ nl:
       clear_button: Zoekopdracht en filters wissen
     views:
       default: Alles
+      component:
+        view_name_required: Vul een naam in voor deze weergave.

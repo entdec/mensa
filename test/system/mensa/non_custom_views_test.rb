@@ -5,9 +5,12 @@ class NonCustomViewsTest < ApplicationSystemTestCase
     visit non_custom_view_users_url
     assert_selector "tbody tr", wait: 15
 
+    # Filters are stored per page, under the key the table renders.
     execute_script <<~JS
+      const key = document.querySelector("[data-mensa-filter-pill-list-storage-key-value]")
+        .dataset.mensaFilterPillListStorageKeyValue;
       localStorage.setItem(
-        "mensa:filters:non_custom_view_users",
+        `mensa:filters:${key}`,
         JSON.stringify({ role: { operator: "is", value: "admin" } })
       )
     JS

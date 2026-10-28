@@ -1,5 +1,5 @@
 import ApplicationController from "mensa/controllers/application_controller";
-import { get, post, patch } from "@rails/request.js";
+import { get, post, patch, destroy } from "@rails/request.js";
 
 export default class TableComponentController extends ApplicationController {
     static targets = [
@@ -300,6 +300,8 @@ export default class TableComponentController extends ApplicationController {
     }
 
     async confirmSaveView(event) {
+        // Called from a button click or Enter in the name input. The table may
+        // sit inside a host <form>; this stops Enter from submitting it.
         event.preventDefault();
 
         const name = this.hasSaveViewNameTarget
@@ -307,7 +309,7 @@ export default class TableComponentController extends ApplicationController {
             : "";
         if (!name) {
             if (this.hasSaveViewNameTarget)
-                this.saveViewNameTarget.reportValidity();
+                this.reportMissing(this.saveViewNameTarget);
             return;
         }
 
@@ -560,28 +562,18 @@ export default class TableComponentController extends ApplicationController {
         );
         if (!options) return;
 
-        const mode = dialog.querySelector(
-            'input[name="repeat_mode"]:checked',
-        )?.value;
-        options.hidden = mode !== "repeating";
+        options.hidden = this._exportField("repeat_mode") !== "repeating";
     }
 
     confirmExport(event) {
-        event.preventDefault();
+        if (event) event.preventDefault();
         if (!this.hasExportsUrlValue) return;
 
-        const dialog = this.exportDialogTarget;
-        const scope =
-            dialog.querySelector('input[name="scope"]:checked')?.value || "all";
-        const exportFormat =
-            dialog.querySelector('input[name="export_format"]:checked')
-                ?.value || "csv_excel";
-        const repeatMode = dialog.querySelector(
-            'input[name="repeat_mode"]:checked',
-        )?.value;
+        const scope = this._exportField("scope") || "all";
+        const exportFormat = this._exportField("export_format") || "csv_excel";
         const repeat =
-            repeatMode === "repeating"
-                ? dialog.querySelector('select[name="repeat"]')?.value || ""
+            this._exportField("repeat_mode") === "repeating"
+                ? this._exportField("repeat") || ""
                 : "";
 
         const state = this.currentViewState();
@@ -611,6 +603,27 @@ export default class TableComponentController extends ApplicationController {
         });
     }
 
+    deleteExport(event) {
+        if (event) event.preventDefault();
+        const url = event.currentTarget.dataset.url;
+        if (!url) return;
+
+        destroy(url, { responseKind: "turbo-stream" });
+    }
+
+    // Shows the browser's validation bubble for an empty text input. The
+    // inputs aren't `required` (that would block a host <form> around the
+    // table), so the message is set by hand and cleared again on input.
+    reportMissing(input) {
+        input.setCustomValidity(input.dataset.requiredMessage || "");
+        input.reportValidity();
+        input.focus();
+    }
+
+    clearValidity(event) {
+        event.currentTarget.setCustomValidity("");
+    }
+
     get ourUrl() {
         if (
             this.hasTurboFrameTarget &&
@@ -628,6 +641,17 @@ export default class TableComponentController extends ApplicationController {
     }
 
     // --- Private ---
+
+    // Export controls are found by data attribute: their names carry the
+    // table id so they don't group with radios elsewhere on the page.
+    _exportField(field) {
+        const dialog = this.exportDialogTarget;
+        const selector = `[data-mensa-export-field="${field}"]`;
+        const control =
+            dialog.querySelector(`input${selector}:checked`) ||
+            dialog.querySelector(`select${selector}`);
+        return control?.value;
+    }
 
     // Reads the currently-selected view ID from the DOM (after Turbo re-renders
     // the views component) and persists it to localStorage.
@@ -674,7 +698,10 @@ export default class TableComponentController extends ApplicationController {
 
     _openSaveDialog() {
         if (!this.hasSaveViewDialogTarget) return;
-        if (this.hasSaveViewNameTarget) this.saveViewNameTarget.value = "";
+        if (this.hasSaveViewNameTarget) {
+            this.saveViewNameTarget.value = "";
+            this.saveViewNameTarget.setCustomValidity("");
+        }
         if (this.hasSaveViewDescriptionTarget)
             this.saveViewDescriptionTarget.value = "";
         if (typeof this.saveViewDialogTarget.showModal === "function") {

@@ -34,6 +34,9 @@ module Mensa
       return unless aggregates.key?(column.name)
 
       value = aggregates[column.name]
+      # SUM of a bigint column comes back as a BigDecimal, which would show as
+      # "3,000.0". Whole numbers are shown without decimals.
+      value = value.to_i if value.is_a?(BigDecimal) && value.frac.zero?
       return ActiveSupport::NumberHelper.number_to_delimited(value) if value.is_a?(Numeric)
 
       Mensa::Cell.new(row: nil, column: column, value: value).formatted

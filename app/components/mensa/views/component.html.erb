@@ -55,21 +55,21 @@
   </div>
 
   <dialog class="mensa-table__views__rename-dialog" data-mensa-views-target="renameDialog" data-action="click->mensa-views#renameDialogBackdrop">
-    <form class="mensa-table__views__rename-form" data-action="submit->mensa-views#confirmRename">
+    <div class="mensa-table__views__rename-form">
       <input type="hidden" data-mensa-views-target="renameViewId">
       <h3 class="mensa-table__views__rename-title"><%= t(".rename_view", default: "Rename view") %></h3>
       <label class="mensa-table__views__rename-label">
         <%= t(".view_name", default: "Name") %>
-        <input class="mensa-table__views__rename-input" type="text" required placeholder="<%= t(".view_name_placeholder", default: "View name") %>" data-mensa-views-target="renameInput">
+        <input class="mensa-table__views__rename-input" type="text" aria-required="true" placeholder="<%= t(".view_name_placeholder", default: "View name") %>" data-required-message="<%= t(".view_name_required", default: "Please enter a name for this view.") %>" data-mensa-views-target="renameInput" data-action="keydown.enter->mensa-views#confirmRename input->mensa-views#clearRenameValidity">
       </label>
       <div class="mensa-table__views__rename-actions">
         <button class="mensa-table__views__rename-btn mensa-table__views__rename-btn--secondary" type="button" data-action="mensa-views#cancelRename">
           <%= t(".cancel", default: "Cancel") %>
         </button>
-        <button class="mensa-table__views__rename-btn mensa-table__views__rename-btn--primary" type="submit">
+        <button class="mensa-table__views__rename-btn mensa-table__views__rename-btn--primary" type="button" data-action="mensa-views#confirmRename">
           <%= t(".rename", default: "Rename") %>
         </button>
       </div>
-    </form>
+    </div>
   </dialog>
 </div>

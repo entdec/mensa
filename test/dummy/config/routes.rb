@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   resources :no_views_users, only: :index
   resources :default_filtered_users, only: :index
   resources :users_export_with_password, only: :index
+  resources :form_embedded_users, only: %i[index create]
 
   mount Mensa::Engine => "/mensa"
 end

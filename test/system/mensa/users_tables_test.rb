@@ -13,7 +13,7 @@ class UsersTablesTest < ApplicationSystemTestCase
     # Visit the page first so we can clear this origin's localStorage,
     # preventing state from leaking between tests.
     visit users_url
-    execute_script("localStorage.clear()")
+    clear_local_storage
   end
 
   teardown do

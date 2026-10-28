@@ -5,7 +5,7 @@ class NoViewsUsersTest < ApplicationSystemTestCase
     Mensa::TableView.where(table_name: "no_views_users").destroy_all
 
     visit no_views_users_url
-    execute_script("localStorage.clear()")
+    clear_local_storage
     visit no_views_users_url
   end
 

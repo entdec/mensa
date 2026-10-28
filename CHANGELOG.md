@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.9.3
+
+- A Mensa table can be rendered inside a host `<form>`, such as a tab on an
+  edit page. Before, the save-view, rename-view and export dialogs (and the
+  delete button of each export) rendered their own `<form>`s. HTML has no
+  nested forms, so the outer form was closed early, its submit was silently
+  blocked by Mensa's empty `required` inputs, and the export options were
+  sent along with it. Mensa now renders no `<form>` elements, no `required`
+  attributes and no controls that a host form submits.
+- The save-view and rename-view dialogs confirm with their button or Enter in
+  the name field. An empty name still shows the browser's validation message,
+  now from the translatable `mensa.search.component.view_name_required` and
+  `mensa.views.component.view_name_required` keys.
+- **Behaviour change:** the export dialog's controls have a `form` attribute
+  that matches no element and names that include the table id (e.g.
+  `mensa-export-users-scope`), so they never belong to a host form and don't
+  group with radios elsewhere on the page. Select them with
+  `data-mensa-export-field="scope"` (or `export_format`, `repeat_mode`,
+  `repeat`) instead of `name`.
+- **Behaviour change:** the search input no longer has `name="search_query"`,
+  and the `.mensa-table__export-dialog__delete-form` class is gone: an export
+  is deleted with a plain `button.mensa-table__export-dialog__delete`.
+- Group header aggregates of `bigint` columns no longer show a trailing `.0`
+  (`3,000` instead of `3,000.0`). Postgres returns their SUM as `numeric`;
+  whole numbers are now shown without decimals.
+
 ## 0.9.2
 
 - The table tour no longer needs the `driver.js` npm package. Mensa now ships
