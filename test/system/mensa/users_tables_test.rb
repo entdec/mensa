@@ -416,8 +416,8 @@ class UsersTablesTest < ApplicationSystemTestCase
 
     assert_selector ".mensa-table__views__trigger-label", text: "Admins only", wait: 3
     open_views_dropdown
-    # Entry shouldn't be in the dropdown
-    refute_selector "li[data-mensa-views-target='view'] span", text: "Admins only"
+    # The table has a single admin, the dropdown must not be clipped by it
+    assert_selector "li[data-mensa-views-target='view'] span", text: "Admins only"
   end
 
   test "switching away from a custom view and back restores its filters" do

@@ -25,6 +25,16 @@
 - Group header aggregates of `bigint` columns no longer show a trailing `.0`
   (`3,000` instead of `3,000.0`). Postgres returns their SUM as `numeric`;
   whole numbers are now shown without decimals.
+- A selected view survives a page reload when the default view has filters.
+  Before, the table showed the selected view's rows, but the views dropdown
+  and the filter pills still showed the default view.
+- A view filter that the user changes (another value or operator) becomes a
+  user filter: it's always shown, and the eye button disappears when no
+  unchanged view filters remain. Before, a pill was a view filter as long as
+  the view filtered on its column, so a changed filter could still be hidden.
+- The views dropdown is positioned `fixed`, like the other popovers, so a
+  table with few rows (or a host element with `overflow: hidden`) no longer
+  clips it.
 
 ## 0.9.2
 

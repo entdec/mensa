@@ -210,8 +210,17 @@ export default class ViewsComponentController extends ApplicationController {
     // --- private ---
 
     _openDropdown() {
+        this._positionDropdown();
         this.dropdownTarget.classList.remove("hidden");
         this._bindOutsideClick();
+    }
+
+    // Fixed positioning with viewport coordinates, so a small table (or a host
+    // element with overflow hidden) doesn't clip the dropdown.
+    _positionDropdown() {
+        const rect = this.triggerTarget.getBoundingClientRect();
+        this.dropdownTarget.style.top = `${rect.bottom + 4}px`;
+        this.dropdownTarget.style.left = `${rect.left}px`;
     }
 
     _closeDropdown() {
