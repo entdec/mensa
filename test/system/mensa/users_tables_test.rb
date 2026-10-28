@@ -387,6 +387,20 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_selector "tbody", text: "BMW"
   end
 
+  test "changing a default view filter makes it a user filter that can't be hidden" do
+    visit default_filtered_users_url
+
+    assert_selector "[data-mensa-table-target='eyeButton']:not(.hidden)", wait: 3
+    find("[data-mensa-table-target='eyeButton']").click
+    find(".mensa-filter-pill[data-view-filter='true'] .mensa-filter-pill__chip", wait: 3).click
+    find("[data-mensa-add-filter-target='valueOption'][data-value='BMW']", wait: 3).click
+
+    assert_selector ".mensa-filter-pill__value", text: "BMW", wait: 3
+    assert_no_selector ".mensa-filter-pill[data-view-filter='true']", visible: :all
+    assert_selector "[data-mensa-table-target='eyeButton'].hidden", visible: :all, wait: 3
+    assert_no_selector "tbody", text: "Audi", wait: 3
+  end
+
   test "saving filters as a new view adds it to the views dropdown" do
     visit users_url
     assert_selector "tbody tr", wait: 3
