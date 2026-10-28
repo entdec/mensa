@@ -319,8 +319,11 @@ export default class FilterPillListComponentController extends ApplicationContro
         const filtersDiffer =
             filtersProvided &&
             JSON.stringify(rendered) !== JSON.stringify(filters);
+        // The pills belong to the view the server rendered, so they only count
+        // when the stored view is that same view.
+        const viewDiffers = view.length > 0 && view !== this.renderedView();
         const alreadyRendered =
-            Object.keys(rendered).length > 0 && !filtersDiffer;
+            Object.keys(rendered).length > 0 && !filtersDiffer && !viewDiffers;
 
         if (!hasState || alreadyRendered || table.frameLoadHandled) {
             if (typeof table.loadFrame === "function") {
@@ -544,6 +547,18 @@ export default class FilterPillListComponentController extends ApplicationContro
             this.searchInputTarget.value = query || "";
         }
         this._monitorResetButton();
+    }
+
+    // The id of the view checked in the views dropdown, "" without views.
+    renderedView() {
+        const root = this.element.closest(".mensa-table");
+        const check = root?.querySelector(
+            '[data-mensa-views-target="view"] .mensa-table__views__option-check:not(.invisible)',
+        );
+        return (
+            check?.closest('[data-mensa-views-target="view"]')?.dataset
+                .viewId || ""
+        );
     }
 
     setViewHighlight(view) {

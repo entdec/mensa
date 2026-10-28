@@ -563,6 +563,29 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_selector "li[data-view-id='default'] .mensa-table__views__option-check.invisible", visible: false
   end
 
+  test "a selected view survives a page reload when the default view has filters" do
+    view = Mensa::TableView.create!(
+      table_name: "default_filtered_users",
+      name: "BMW users",
+      config: {filters: {customer_name: {operator: "is", value: "BMW"}}}
+    )
+
+    visit default_filtered_users_url
+    assert_selector "tbody", text: "Audi", wait: 3
+    open_views_dropdown
+    find("li[data-view-id='#{view.id}'] button[data-action='mensa-views#select']").click
+    assert_no_selector "tbody", text: "Audi", wait: 3
+
+    visit default_filtered_users_url
+
+    assert_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+    assert_selector "tbody", text: "BMW", wait: 3
+    assert_no_selector "tbody", text: "Audi"
+    assert_no_selector ".mensa-filter-pill", text: "Audi", visible: :all
+  ensure
+    view&.destroy
+  end
+
   private
 
   # Clicks the + button, selects a column, then selects a value to add a filter pill.
