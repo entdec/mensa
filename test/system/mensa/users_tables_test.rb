@@ -600,6 +600,91 @@ class UsersTablesTest < ApplicationSystemTestCase
     view&.destroy
   end
 
+  test "a selected view survives navigating back to the table" do
+    view = Mensa::TableView.create!(
+      table_name: "default_filtered_users",
+      name: "BMW users",
+      config: {filters: {customer_name: {operator: "is", value: "BMW"}}}
+    )
+
+    visit default_filtered_users_url
+    assert_selector "tbody", text: "Audi", wait: 3
+    open_views_dropdown
+    find("li[data-view-id='#{view.id}'] button[data-action='mensa-views#select']").click
+    assert_no_selector "tbody", text: "Audi", wait: 3
+
+    click_link "Users"
+    assert_no_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+    click_link "Default filtered users"
+
+    assert_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+    assert_selector "tbody", text: "BMW", wait: 3
+    assert_no_selector "tbody", text: "Audi"
+  ensure
+    view&.destroy
+  end
+
+  # Visiting the page you're on is a page refresh, which the layout morphs
+  test "a selected view and its filters survive navigating to the same page" do
+    visit users_url
+    assert_selector "thead th", text: "Role", wait: 3
+    open_views_dropdown
+    find("li[data-view-id='users'] button[data-action='mensa-views#select']").click
+    assert_no_selector "thead th", text: "Role", wait: 3
+
+    click_link "Users"
+
+    assert_selector ".mensa-table__views__trigger-label", text: "Users", exact_text: true, wait: 3
+    assert_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+    assert_no_selector "thead th", text: "Role"
+    open_views_dropdown
+    assert_selector "li[data-view-id='users'] .mensa-table__views__option-check:not(.invisible)", wait: 3
+    assert_selector "li[data-view-id='default'] .mensa-table__views__option-check.invisible", visible: false
+    find(".mensa-table__views__trigger").click
+
+    add_filter(column: "customer_name", value: "BMW")
+    assert_no_selector "tbody", text: "Audi", wait: 3
+
+    click_link "Users"
+
+    assert_selector ".mensa-table__views__trigger-label", text: "Users", exact_text: true, wait: 3
+    assert_selector ".mensa-filter-pill__column", text: "Customer", visible: :all, wait: 3
+    assert_no_selector "tbody", text: "Audi", wait: 3
+    assert_no_selector "thead th", text: "Role"
+  end
+
+  test "filters added to a selected view survive navigating back to the table" do
+    view = Mensa::TableView.create!(
+      table_name: "default_filtered_users",
+      name: "BMW users",
+      config: {filters: {customer_name: {operator: "is", value: "BMW"}}}
+    )
+
+    visit default_filtered_users_url
+    assert_selector "tbody", text: "Audi", wait: 3
+    open_views_dropdown
+    find("li[data-view-id='#{view.id}'] button[data-action='mensa-views#select']").click
+    assert_no_selector "tbody", text: "Audi", wait: 3
+
+    click_link "Users"
+    click_link "Default filtered users"
+    assert_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+
+    add_filter(column: "role", value: "guest")
+    assert_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+    rows_with_filter = all("tbody tr", wait: 3).size
+
+    click_link "Users"
+    click_link "Default filtered users"
+
+    assert_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+    assert_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+    assert_selector "tbody tr", count: rows_with_filter, wait: 3
+    assert_no_selector "tbody", text: "Audi"
+  ensure
+    view&.destroy
+  end
+
   private
 
   # Clicks the + button, selects a column, then selects a value to add a filter pill.

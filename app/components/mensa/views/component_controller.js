@@ -42,7 +42,7 @@ export default class ViewsComponentController extends ApplicationController {
             check?.classList.toggle("invisible", !isThis);
         });
 
-        const viewName = event.currentTarget.querySelector("span")?.textContent?.trim() || "";
+        const viewName = selected.closest("[data-mensa-views-target='view']")?.dataset.viewName || "";
         if (this.hasTriggerLabelTarget) {
             this.triggerLabelTarget.textContent = viewName;
         }

@@ -592,9 +592,7 @@ export default class FilterPillListComponentController extends ApplicationContro
                 `[data-mensa-views-target="view"][data-view-id="${view}"]`,
             );
             if (viewEl) {
-                const name =
-                    viewEl.dataset.viewName ||
-                    viewEl.querySelector("span")?.textContent?.trim();
+                const name = viewEl.dataset.viewName;
                 if (name) triggerLabel.textContent = name;
             }
         }
