@@ -106,17 +106,14 @@ module Mensa
     end
 
     def active_filters
-      (config[:filters] || {}).filter_map do |column_name, filter_config|
-        col = column(column_name)
-        # Columns without SQL can only be filtered with a custom scope, skip
-        # filters on them, e.g. from browser state saved earlier
-        next if col.nil? || !(col.sql? || col.filter?)
+      filters_for(config[:filters])
+    end
 
-        definition = config.dig(:columns, col.name, :filter)
-        definition = {} unless definition.is_a?(Hash)
-        requested = (filter_config || {}).to_h.symbolize_keys.slice(:value, :operator)
-        Mensa::Filter.new(column: col, config: definition.merge(requested), table: self)
-      end
+    # True when the filters differ from the selected view's, so there is
+    # something to save or reset
+    def filters_customized?
+      view_filters = (table_view&.config || {}).deep_symbolize_keys[:filters]
+      comparable_filters(active_filters) != comparable_filters(filters_for(view_filters))
     end
 
     def actions?
@@ -272,6 +269,28 @@ module Mensa
     end
 
     private
+
+    def filters_for(filters)
+      (filters || {}).filter_map do |column_name, filter_config|
+        col = column(column_name)
+        # Columns without SQL can only be filtered with a custom scope, skip
+        # filters on them, e.g. from browser state saved earlier
+        next if col.nil? || !(col.sql? || col.filter?)
+
+        definition = config.dig(:columns, col.name, :filter)
+        definition = {} unless definition.is_a?(Hash)
+        requested = (filter_config || {}).to_h.symbolize_keys.slice(:value, :operator)
+        Mensa::Filter.new(column: col, config: definition.merge(requested), table: self)
+      end
+    end
+
+    # Operator and value per column, the value only when the operator takes one
+    def comparable_filters(filters)
+      filters.to_h do |filter|
+        value = Array(filter.value).map(&:to_s).reject(&:blank?).sort if filter.operator_with_value?
+        [filter.column.name, [filter.operator, value]]
+      end
+    end
 
     def ensure_internal_columns_for_joined_associations
       return if @internal_columns_ensured

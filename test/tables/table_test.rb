@@ -178,6 +178,17 @@ class TableTest < ActiveSupport::TestCase
     assert_no_match(/gone/, t.ordered_scope.to_sql)
   end
 
+  test "filters are customized only when they differ from the view's" do
+    view = DefaultFilteredUsersTable.new.default_system_view
+    table = ->(config) { DefaultFilteredUsersTable.new(config).tap { |t| t.table_view = view } }
+
+    refute table.call(filters: {customer_name: {operator: "is", value: "Audi"}}).filters_customized?
+    refute table.call(filters: {customer_name: {value: ["Audi"]}}).filters_customized?
+    assert table.call(filters: {customer_name: {operator: "is", value: "BMW"}}).filters_customized?
+    assert table.call(filters: {}).filters_customized?
+    assert table.call(filters: {customer_name: {value: "Audi"}, role: {value: "guest"}}).filters_customized?
+  end
+
   test "a column_order with only unknown names falls back to all columns" do
     t = TestTable.new({column_order: %w[gone]})
 

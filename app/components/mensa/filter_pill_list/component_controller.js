@@ -9,6 +9,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         supportsViews: Boolean,
         tableName: String,
         storageKey: String,
+        filtersCustomized: Boolean,
     };
 
     connect() {
@@ -213,9 +214,7 @@ export default class FilterPillListComponentController extends ApplicationContro
         const order = this.parseOrderParams(url.searchParams);
         this.persistOrder(order);
 
-        if (Object.keys(order).length > 0) {
-            this._notifyUnsavedState();
-        }
+        this._updateUnsavedState();
     }
 
     currentRequestState() {
@@ -289,21 +288,8 @@ export default class FilterPillListComponentController extends ApplicationContro
         const page = this.loadPage();
         const order = this.loadOrder();
         const columnOrder = this.loadColumnOrder();
-        const hiddenColumns = this.loadHiddenColumns();
 
-        // Show save/reset if any persistent state exists (order, column layout, filters, search)
-        if (
-            Object.keys(filters).length > 0 ||
-            filtersProvided ||
-            query.length > 0 ||
-            Object.keys(order).length > 0 ||
-            columnOrder.length > 0 ||
-            hiddenColumns.length > 0 ||
-            this.loadGroupBy() !== null ||
-            this.loadAggregates() !== null
-        ) {
-            this._notifyUnsavedState();
-        }
+        this._updateUnsavedState();
 
         const hasFilterOrSearch =
             Object.keys(filters).length > 0 ||
@@ -612,6 +598,21 @@ export default class FilterPillListComponentController extends ApplicationContro
         );
     }
 
+    // Whether the table differs from the selected view, so there's something
+    // to save or reset. The server tells whether the rendered filters differ,
+    // as stored filters can equal the view's own.
+    hasUnsavedState() {
+        return (
+            this.filtersCustomizedValue ||
+            this.loadQuery().length > 0 ||
+            Object.keys(this.loadOrder()).length > 0 ||
+            this.loadColumnOrder().length > 0 ||
+            this.loadHiddenColumns().length > 0 ||
+            this.loadGroupBy() !== null ||
+            this.loadAggregates() !== null
+        );
+    }
+
     // Clears all dirty-state localStorage keys so the view is clean after save.
     clearPersistedDirtyState() {
         this.writeStorage(this.filtersStorageKey, null);
@@ -831,6 +832,15 @@ export default class FilterPillListComponentController extends ApplicationContro
         const hasValue = this.searchInputTarget.value.length > 0;
         if (this.hasResetSearchButtonTarget) {
             this.resetSearchButtonTarget.classList.toggle("hidden", !hasValue);
+        }
+    }
+
+    _updateUnsavedState() {
+        if (
+            this.hasMensaTableOutlet &&
+            typeof this.mensaTableOutlet.updateUnsavedState === "function"
+        ) {
+            this.mensaTableOutlet.updateUnsavedState();
         }
     }
 

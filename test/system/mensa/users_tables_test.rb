@@ -401,6 +401,25 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_no_selector "tbody", text: "Audi", wait: 3
   end
 
+  test "save and reset disappear again once a change is undone" do
+    visit default_filtered_users_url
+    assert_selector "tbody", text: "Audi", wait: 3
+    assert_selector ".mensa-table__save-reset.hidden", visible: :all
+
+    add_filter(column: "role", value: "guest")
+    assert_selector ".mensa-table__save-reset:not(.hidden)", wait: 3
+
+    remove_filter(column: "Role")
+    assert_no_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+    assert_selector ".mensa-table__save-reset.hidden", visible: :all, wait: 3
+
+    # The view's own filter is no change either after navigating back
+    click_link "Users"
+    click_link "Default filtered users"
+    assert_selector "tbody", text: "Audi", wait: 3
+    assert_selector ".mensa-table__save-reset.hidden", visible: :all, wait: 3
+  end
+
   test "saving filters as a new view adds it to the views dropdown" do
     visit users_url
     assert_selector "tbody tr", wait: 3

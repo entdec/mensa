@@ -185,6 +185,17 @@ export default class TableComponentController extends ApplicationController {
         this.showSaveReset();
     }
 
+    // Shows the save/reset buttons only while something differs from the view,
+    // so they disappear again once a change is undone.
+    updateUnsavedState() {
+        if (!this.hasMensaFilterPillListOutlet) return;
+        if (this.mensaFilterPillListOutlet.hasUnsavedState()) {
+            this.notifyUnsavedState();
+        } else {
+            this.hideSaveReset();
+        }
+    }
+
     // --- Cancel / Reset ---
 
     // Resets all filters, search, and column customisation to the active view's clean state.
@@ -400,6 +411,8 @@ export default class TableComponentController extends ApplicationController {
     // Called when the filter-pill-list outlet connects (including after turbo-stream re-renders).
     // Re-applied on every connect so late-arriving pills (from restoreState) get the right state.
     mensaFilterPillListOutletConnected() {
+        // The pill list is rendered again after every change
+        this.updateUnsavedState();
         const hasViewFilters = this._hasViewFilterPills();
         if (hasViewFilters) {
             const visible = this._loadViewFiltersVisible();
