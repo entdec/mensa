@@ -21,7 +21,7 @@ test/dummy/config/tailwind.config.js
 
 **/**/.DS_Store
 mise.toml
+mise.local.toml
 todo.md
 
-# Written by .devcontainer/initialize.sh
 .devcontainer/.env

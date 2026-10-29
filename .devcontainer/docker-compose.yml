@@ -1,41 +1,102 @@
-name: ${COMPOSE_PROJECT_NAME:-mensa}
+# One compose project per checkout. The variables come from .devcontainer/.env,
+# written by bin/de up (or bin/de initialize when opened from an editor).
+name: ${COMPOSE_PROJECT_NAME:?run bin/de up to write .devcontainer/.env}
+
+x-env-labels: &env-labels
+  dev.env.name: ${ENV_NAME}
+  dev.env.kind: ${ENV_KIND}
+  dev.env.branch: ${ENV_BRANCH}
+  dev.env.path: ${ENV_PATH}
+  dev.env.gitdir: ${ENV_GIT_COMMON_DIR}
 
 services:
   app:
     image: ghcr.io/rails/devcontainer/images/ruby:4.0.5
+    labels: *env-labels
 
     volumes:
-      # .env is written by initialize.sh, the defaults are for the main checkout
-      - ${WORKSPACES_ROOT:-../..}:/workspaces
-      # A worktree's .git file points here by absolute path
-      - ${GIT_COMMON_DIR:-../.git}:${GIT_COMMON_DIR:-/workspaces/mensa/.git}
+      # The checkout and the common .git directory sit at the same place
+      # relative to each other as on the host (under /workspaces), so a
+      # worktree's relative .git link resolves. /workspaces/<repo> links to
+      # the checkout.
+      - ${ENV_PATH}:${ENV_PATH_IN_CONTAINER}
+      - ${ENV_GIT_COMMON_DIR}:${ENV_GIT_COMMON_DIR_IN_CONTAINER}
+      # The global gitignore. Here, not in devcontainer.json, which drops
+      # readonly from its mounts.
+      - ${ENV_GIT_CONFIG_DIR}:/home/vscode/.config/git:ro
 
     environment:
-      CAPYBARA_APP_HOST: http://app.${COMPOSE_PROJECT_NAME:-mensa}.orb.local
+      DEV_ENV_NAME: ${ENV_NAME}
+      DEV_ENV_KIND: ${ENV_KIND}
+      DB_HOST: postgres
+      REDIS_URL: redis://redis:6379/1
+      # See SELENIUM_URL in env.conf
+      SELENIUM_URL: ${SELENIUM_URL}
+      CAPYBARA_APP_HOST: ${CAPYBARA_APP_HOST}
+      # Other worktrees aren't mounted here, keep git gc from pruning them
+      GIT_CONFIG_COUNT: 1
+      GIT_CONFIG_KEY_0: gc.worktreePruneExpire
+      GIT_CONFIG_VALUE_0: never
 
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
+    expose:
+      - "3000"
+
+    # Keeps the container running after the process ends
+    command: ["sh", "-c", "sudo ln -sfn \"$$0\" \"$$1\" && exec sleep infinity", "${ENV_PATH_IN_CONTAINER}", "${ENV_WORKSPACE_LINK}"]
+    restart: ${ENV_RESTART:-no}
 
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      selenium:
+        condition: service_healthy
 
   postgres:
     image: postgres:18
-    restart: unless-stopped
+    labels: *env-labels
+    restart: ${ENV_RESTART:-no}
     volumes:
       - postgres-data:/var/lib/postgresql/18/docker
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
 
   redis:
     image: valkey/valkey:8
-    restart: unless-stopped
+    labels: *env-labels
+    restart: ${ENV_RESTART:-no}
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
 
   selenium:
     image: selenium/standalone-firefox
-    restart: unless-stopped
+    labels: *env-labels
+    restart: ${ENV_RESTART:-no}
+    shm_size: 2gb
+    environment:
+      # The dark mode system test opens a second browser next to the default one
+      SE_NODE_MAX_SESSIONS: 2
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+    healthcheck:
+      test: ["CMD", "/opt/bin/check-grid.sh", "--host", "localhost", "--port", "4444"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
 
 volumes:
   postgres-data:
+    labels: *env-labels
+
+networks:
+  default:
+    labels: *env-labels

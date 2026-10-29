@@ -1,0 +1,737 @@
+#!/usr/bin/env bash
+# de: development environments for this repository. Run without arguments
+# for help. Repository specific settings live in .devcontainer/env.conf, this
+# script is generic and can be copied as-is between repositories.
+#
+# Every checkout (main checkout or git worktree) gets its own environment: a
+# Docker Compose project named after the branch, labelled with
+#
+#   dev.env.name    the environment (and compose project) name
+#   dev.env.kind    persistent | ephemeral
+#   dev.env.branch  the branch, empty for a detached HEAD
+#   dev.env.path    the checkout on the host
+#   dev.env.gitdir  the repository's common .git directory on the host
+#
+# Cleanup selects resources by these labels, never by name.
+set -euo pipefail
+
+DE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+# `de exec` passes a SELENIUM_URL from the caller on, see env.conf. Unset it
+# so env.conf's value isn't exported to the commands this script runs.
+ENV_SELENIUM_URL_GIVEN="${SELENIUM_URL:-}"
+unset SELENIUM_URL
+UP_COMMAND=()
+# shellcheck source=../.devcontainer/env.conf
+source "$DE_ROOT/.devcontainer/env.conf"
+
+usage() {
+  cat <<EOF
+Usage: bin/de <command> [arguments]
+
+Every checkout of this repository, the main one and each git worktree, gets
+its own development environment: a devcontainer with its own services,
+volumes and network. Environments for ${PERSISTENT_BRANCHES[*]} are persistent
+and keep their data, all others are ephemeral.
+
+Commands:
+  new <branch> [folder] [--from <ref>]
+                     Create a worktree for a branch (next to the main checkout
+                     as $ENV_REPO-<branch> unless a folder is given) and start
+                     its environment. New branches start from the default
+                     branch, or from --from.
+  up [--rebuild]     Create or start this checkout's environment and prepare
+                     its databases. --rebuild recreates the containers after
+                     changing .devcontainer/, keeping the data.
+  exec <command...>  Run a command in this checkout's devcontainer, in the same
+                     directory relative to the checkout.
+  status             Show the environment's containers, health and URLs.
+  code [<checkout>]  Open a checkout in VS Code inside its devcontainer,
+                     starting it first if needed. <checkout> is a branch,
+                     environment name or worktree folder, default this one.
+  down [--destroy-persistent]
+                     Remove an ephemeral environment with its data. A
+                     persistent one is only stopped, unless
+                     --destroy-persistent is given and its name confirmed.
+  prune [--yes]      Remove ephemeral environments whose worktree or branch
+                     is gone. --yes skips the confirmation.
+  init <repository> [--force]
+                     Set up this devcontainer setup in another repository, or
+                     update its bin/de. Repository specific files that already
+                     exist there are kept, unless --force is given.
+  help               Show this help.
+
+Examples:
+  bin/de new fix-login
+  bin/de exec bin/rails test
+  SELENIUM_URL=http://host.docker.internal:4444/ HEADLESS=0 bin/de exec bin/rails test:system
+  bin/de code main
+
+Settings: .devcontainer/env.conf, docs: .devcontainer/README.md
+EOF
+}
+
+# --- Output -------------------------------------------------------------
+
+log() { printf '\033[1;34m==>\033[0m %s\n' "$*" >&2; }
+warn() { printf '\033[1;33mwarning:\033[0m %s\n' "$*" >&2; }
+die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+
+# Prints a command, then runs it
+run() {
+  printf '\033[2m+' >&2
+  printf ' %q' "$@" >&2
+  printf '\033[0m\n' >&2
+  "$@"
+}
+
+devcontainer_cli() {
+  if command -v devcontainer >/dev/null 2>&1; then
+    run devcontainer "$@"
+  else
+    run npx --yes "@devcontainers/cli@$DEVCONTAINER_CLI_VERSION" "$@"
+  fi
+}
+
+# --- Environment identity -----------------------------------------------
+
+# Lowercases and replaces everything but [a-z0-9-] with dashes
+env_sanitize() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | tr -s '-' | sed 's/^-//; s/-$//'
+}
+
+env_is_persistent_branch() {
+  local branch
+  for branch in "${PERSISTENT_BRANCHES[@]}"; do
+    [ "$1" = "$branch" ] && return 0
+  done
+  return 1
+}
+
+# Prints the environment name for a checkout directory
+env_name_for() {
+  local dir="$1" branch name
+  branch="$(git -C "$dir" symbolic-ref --short -q HEAD || true)"
+  if [ -n "$branch" ]; then
+    name="$(env_sanitize "$ENV_REPO-$branch")"
+  else
+    name="$(env_sanitize "$ENV_REPO-detached-$(basename "$dir")")"
+  fi
+  # Compose project names and OrbStack domain labels max out at 63 characters
+  if [ "${#name}" -gt 63 ]; then
+    name="${name:0:54}-$(printf '%s' "$name" | shasum | cut -c1-8)"
+  fi
+  printf '%s' "$name"
+}
+
+# Sets the ENV_* variables describing the checkout that contains $1
+env_init() {
+  local dir="${1:-$PWD}" common
+
+  ENV_PATH="$(cd "$(git -C "$dir" rev-parse --show-toplevel)" && pwd -P)" ||
+    die "$dir is not inside a git checkout"
+  common="$(git -C "$ENV_PATH" rev-parse --git-common-dir)"
+  ENV_GIT_COMMON_DIR="$(cd "$ENV_PATH" && cd "$common" && pwd -P)"
+  ENV_MAIN_CHECKOUT="$(dirname "$ENV_GIT_COMMON_DIR")"
+  ENV_BRANCH="$(git -C "$ENV_PATH" symbolic-ref --short -q HEAD || true)"
+  ENV_NAME="$(env_name_for "$ENV_PATH")"
+
+  if [ -n "$ENV_BRANCH" ] && env_is_persistent_branch "$ENV_BRANCH"; then
+    ENV_KIND=persistent
+    ENV_RESTART=unless-stopped
+  else
+    ENV_KIND=ephemeral
+    ENV_RESTART=no
+  fi
+
+  # Inside the container, both the checkout and the common .git directory are
+  # mounted at /workspaces/<host path>, so the relative paths in a worktree's
+  # .git file (worktree.useRelativePaths) resolve the same way.
+  # devcontainer.json uses the same path as its workspaceFolder.
+  ENV_PATH_IN_CONTAINER="/workspaces$ENV_PATH"
+  ENV_GIT_COMMON_DIR_IN_CONTAINER="/workspaces$ENV_GIT_COMMON_DIR"
+  # A shorter, stable path to the checkout, for interactive use
+  ENV_WORKSPACE_LINK="/workspaces/$ENV_REPO"
+
+  ENV_DOTENV="$ENV_PATH/.devcontainer/.env"
+}
+
+# Prints where a browser driven through Selenium at $1 reaches the app's test
+# server: by service name from the environment's own selenium container, and
+# by OrbStack domain from a browser on the Mac
+env_capybara_app_host() {
+  case "$1" in
+    *//selenium:*) echo "http://app:3100" ;;
+    *) echo "http://app.$ENV_NAME.orb.local:3100" ;;
+  esac
+}
+
+# Writes .devcontainer/.env, which docker compose reads for the project name,
+# labels and mounts
+env_write_dotenv() {
+  cat > "$ENV_DOTENV" <<EOF
+# Written by bin/de, don't edit
+COMPOSE_PROJECT_NAME=$ENV_NAME
+ENV_NAME=$ENV_NAME
+ENV_KIND=$ENV_KIND
+ENV_BRANCH=$ENV_BRANCH
+ENV_PATH=$ENV_PATH
+ENV_GIT_COMMON_DIR=$ENV_GIT_COMMON_DIR
+ENV_PATH_IN_CONTAINER=$ENV_PATH_IN_CONTAINER
+ENV_GIT_COMMON_DIR_IN_CONTAINER=$ENV_GIT_COMMON_DIR_IN_CONTAINER
+ENV_WORKSPACE_LINK=$ENV_WORKSPACE_LINK
+ENV_RESTART=$ENV_RESTART
+ENV_GIT_CONFIG_DIR=$HOME/.config/git
+SELENIUM_URL=$SELENIUM_URL
+CAPYBARA_APP_HOST=$(env_capybara_app_host "$SELENIUM_URL")
+EOF
+}
+
+# --- Docker resources ---------------------------------------------------
+
+# Runs docker compose for this checkout's project
+env_compose() {
+  run docker compose --project-directory "$ENV_PATH/.devcontainer" \
+    -f "$ENV_PATH/.devcontainer/docker-compose.yml" \
+    --env-file "$ENV_DOTENV" -p "$ENV_NAME" "$@"
+}
+
+# Succeeds when the app container of an environment is running
+env_running() {
+  [ -n "$(docker container ls -q --filter "label=dev.env.name=$1" --filter label=com.docker.compose.service=app)" ]
+}
+
+# Prints the value of a label on any container, volume or network of an
+# environment
+env_label() {
+  local name="$1" label="$2" kind values
+  for kind in container volume network; do
+    values="$(docker "$kind" ls $([ "$kind" = container ] && echo -a) --filter "label=dev.env.name=$name" --format "{{.Label \"$label\"}}")"
+    if [ -n "$values" ]; then
+      head -n1 <<<"$values"
+      return
+    fi
+  done
+}
+
+# Prints the names of this repository's environments of a kind, one per line
+env_list() {
+  local kind_filter="label=dev.env.kind=$1" repo_filter="label=dev.env.gitdir=$ENV_GIT_COMMON_DIR"
+  {
+    docker container ls -a --filter "$kind_filter" --filter "$repo_filter" --format '{{.Label "dev.env.name"}}'
+    docker volume ls --filter "$kind_filter" --filter "$repo_filter" --format '{{.Label "dev.env.name"}}'
+    docker network ls --filter "$kind_filter" --filter "$repo_filter" --format '{{.Label "dev.env.name"}}'
+  } | sort -u | sed '/^$/d'
+}
+
+# Succeeds when any resource of the environment is labelled persistent
+env_is_persistent() {
+  [ -n "$(docker container ls -aq --filter "label=dev.env.name=$1" --filter label=dev.env.kind=persistent)$(docker volume ls -q --filter "label=dev.env.name=$1" --filter label=dev.env.kind=persistent)$(docker network ls -q --filter "label=dev.env.name=$1" --filter label=dev.env.kind=persistent)" ]
+}
+
+# Removes every container, volume and network of an environment. Resources are
+# found by the dev.env.name label, plus the compose project label for the ones
+# devcontainer features add without our labels (the docker-in-docker volume).
+env_destroy() {
+  local name="$1" ids filter
+  for filter in "label=dev.env.name=$name" "label=com.docker.compose.project=$name"; do
+    ids="$(docker container ls -aq --filter "$filter")"
+    [ -z "$ids" ] || run docker container rm --force --volumes $ids >/dev/null
+  done
+  for filter in "label=dev.env.name=$name" "label=com.docker.compose.project=$name"; do
+    ids="$(docker volume ls -q --filter "$filter")"
+    [ -z "$ids" ] || run docker volume rm --force $ids >/dev/null
+    ids="$(docker network ls -q --filter "$filter")"
+    [ -z "$ids" ] || run docker network rm $ids >/dev/null
+  done
+}
+
+# Prints "<service> <health>" for every running container of an environment,
+# where health is the healthcheck status, or "running" without a healthcheck
+env_health() {
+  local ids
+  ids="$(docker container ls -q --filter "label=dev.env.name=$1")"
+  [ -z "$ids" ] && return
+  # shellcheck disable=SC2086
+  docker container inspect $ids --format '{{ index .Config.Labels "com.docker.compose.service" }} {{ if .State.Health }}{{ .State.Health.Status }}{{ else }}{{ .State.Status }}{{ end }}'
+}
+
+# Prints "<path>\t<branch>" for every checkout of the repository
+checkouts() {
+  git -C "$ENV_PATH" worktree list --porcelain | awk '
+    /^worktree / { if (path != "") print path "\t" branch; path = substr($0, 10); branch = "" }
+    /^branch /   { branch = substr($0, 8); sub("^refs/heads/", "", branch) }
+    END          { if (path != "") print path "\t" branch }'
+}
+
+# --- Commands -----------------------------------------------------------
+
+# Runs on the host before the containers start, see initializeCommand in
+# devcontainer.json, so opening a checkout from an editor works too
+cmd_initialize() {
+  # docker-compose.yml mounts it, and Docker refuses a missing bind source
+  mkdir -p "$HOME/.config/git"
+  env_write_dotenv
+  log "Environment $ENV_NAME ($ENV_KIND)"
+}
+
+# Prints an env.conf for a repository named $1, with this repository's
+# settings as defaults
+env_conf_for() {
+  local repo="$1" target="$2" up_command
+  if [ -d "$target/test/dummy" ] && [ -x "$target/bin/rails" ]; then
+    up_command="env RAILS_ENV=test bin/rails app:db:prepare"
+  elif [ -x "$target/bin/rails" ]; then
+    up_command="env RAILS_ENV=test bin/rails db:prepare"
+  else
+    up_command=""
+  fi
+  cat <<EOF
+# Per-repository settings for bin/de, which is generic and can be copied as-is
+# between repositories.
+
+# Prefix of every environment name, and the folder the checkout appears at
+# inside the container (/workspaces/<ENV_REPO>, see devcontainer.json).
+ENV_REPO=$repo
+
+# Branches whose environments are persistent: they keep their volumes and are
+# never removed by bin/de prune. Every other branch gets an ephemeral one.
+PERSISTENT_BRANCHES=(${PERSISTENT_BRANCHES[*]})
+
+# Selenium the system tests drive: the environment's own container. To watch
+# a test in a browser on the Mac instead, override it for one command:
+#
+#   SELENIUM_URL=http://host.docker.internal:4444/ HEADLESS=0 bin/de exec bin/rails test:system
+SELENIUM_URL="$SELENIUM_URL"
+
+# Run in the container at the end of bin/de up, from the checkout root, e.g.
+# to prepare the test database (postStart.sh prepares the development one).
+# A Rails engine runs it from the engine root, so its own migrations are
+# included.
+UP_COMMAND=($up_command)
+
+# Version of @devcontainers/cli to run through npx when \`devcontainer\` isn't
+# installed.
+DEVCONTAINER_CLI_VERSION=$DEVCONTAINER_CLI_VERSION
+EOF
+}
+
+# Copies this setup into another repository. bin/de and the docs are generic
+# and always updated; the rest is repository specific, a starting point that
+# is only copied when missing, or with --force.
+cmd_init() {
+  local target="" force=false arg rel common repo entry
+  local usage_line="usage: bin/de init <repository> [--force]"
+  for arg in "$@"; do
+    case "$arg" in
+      --force) force=true ;;
+      -*) die "$usage_line" ;;
+      *) [ -z "$target" ] || die "$usage_line"; target="$arg" ;;
+    esac
+  done
+  [ -n "$target" ] || die "$usage_line"
+  [ -d "$target" ] || die "$target doesn't exist"
+  target="$(cd "$(git -C "$target" rev-parse --show-toplevel 2>/dev/null)" && pwd -P)" ||
+    die "$target isn't a git checkout"
+  [ "$target" != "$ENV_PATH" ] || die "$target is this checkout"
+
+  common="$(cd "$target" && cd "$(git rev-parse --git-common-dir)" && pwd -P)"
+  repo="$(env_sanitize "$(basename "$(dirname "$common")")")"
+  log "Setting up development environments in $target ($repo)"
+
+  # Generic: always the same as here
+  for rel in bin/de .devcontainer/README.md; do
+    if cmp -s "$ENV_PATH/$rel" "$target/$rel"; then
+      printf '  %-36s up to date\n' "$rel" >&2
+      continue
+    fi
+    run mkdir -p "$(dirname "$target/$rel")"
+    run cp -p "$ENV_PATH/$rel" "$target/$rel"
+  done
+
+  # Repository specific: services, image, setup steps and settings
+  for rel in "$ENV_PATH"/.devcontainer/* .worktreeinclude; do
+    rel="${rel#"$ENV_PATH"/}"
+    case "$rel" in .devcontainer/.env | .devcontainer/env.conf | .devcontainer/README.md) continue ;; esac
+    [ -e "$ENV_PATH/$rel" ] || continue
+    if [ -e "$target/$rel" ] && ! $force; then
+      printf '  %-36s exists, kept (--force to replace)\n' "$rel" >&2
+      continue
+    fi
+    run mkdir -p "$(dirname "$target/$rel")"
+    run cp -p "$ENV_PATH/$rel" "$target/$rel"
+  done
+  if [ -e "$target/.devcontainer/env.conf" ] && ! $force; then
+    printf '  %-36s exists, kept (--force to replace)\n' .devcontainer/env.conf >&2
+  else
+    log "Writing $target/.devcontainer/env.conf"
+    env_conf_for "$repo" "$target" > "$target/.devcontainer/env.conf"
+  fi
+
+  # Never commit the generated .env or local secrets
+  for entry in .devcontainer/.env mise.local.toml; do
+    git -C "$target" check-ignore -q --no-index -- "$entry" && continue
+    log "Adding $entry to .gitignore"
+    printf '%s\n' "$entry" >> "$target/.gitignore"
+  done
+
+  cat <<EOF
+
+Done. Review the repository specific files for $repo, then start it:
+
+  .devcontainer/env.conf            ENV_REPO, PERSISTENT_BRANCHES, UP_COMMAND
+  .devcontainer/docker-compose.yml  services, keep the x-env-labels and mounts
+  .devcontainer/Dockerfile          the image
+  .devcontainer/postStart.sh        installing dependencies, the dev database
+  .devcontainer/devcontainer.json   features and editor extensions
+  .worktreeinclude                  ignored files new worktrees need
+
+  cd $target && bin/de up
+
+Run bin/de init again later to update bin/de there.
+EOF
+}
+
+cmd_new() {
+  local branch="" folder="" from="" file dest
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --from) [ "$#" -ge 2 ] || die "usage: bin/de new <branch> [folder] [--from <ref>]"; from="$2"; shift 2 ;;
+      -*) die "usage: bin/de new <branch> [folder] [--from <ref>]" ;;
+      *)
+        if [ -z "$branch" ]; then branch="$1"
+        elif [ -z "$folder" ]; then folder="$1"
+        else die "usage: bin/de new <branch> [folder] [--from <ref>]"
+        fi
+        shift
+        ;;
+    esac
+  done
+  [ -n "$branch" ] || die "usage: bin/de new <branch> [folder] [--from <ref>]"
+  git check-ref-format --branch "$branch" >/dev/null || die "$branch isn't a valid branch name"
+
+  [ -n "$folder" ] || folder="$(dirname "$ENV_MAIN_CHECKOUT")/$(env_sanitize "$ENV_REPO-$branch")"
+  [ -e "$folder" ] && die "$folder already exists"
+
+  log "Creating worktree $folder for $branch"
+  if git -C "$ENV_PATH" show-ref --verify --quiet "refs/heads/$branch"; then
+    run git -C "$ENV_PATH" worktree add "$folder" "$branch"
+  elif [ -n "$(git -C "$ENV_PATH" for-each-ref --format='%(refname)' "refs/remotes/*/$branch")" ]; then
+    # Creates a local branch tracking the remote one
+    run git -C "$ENV_PATH" worktree add "$folder" "$branch"
+  else
+    if [ -z "$from" ]; then
+      from="$(git -C "$ENV_PATH" symbolic-ref --quiet --short refs/remotes/origin/HEAD || echo HEAD)"
+      # Prefer the local branch when there is one, e.g. main over origin/main
+      git -C "$ENV_PATH" show-ref --verify --quiet "refs/heads/${from#origin/}" && from="${from#origin/}"
+    fi
+    run git -C "$ENV_PATH" worktree add -b "$branch" "$folder" "$from"
+  fi
+  folder="$(cd "$folder" && pwd -P)"
+
+  # Branches that predate the environment setup get it from this checkout,
+  # with mise.toml: its SELENIUM_URL would override the environment's
+  if [ ! -x "$folder/bin/de" ]; then
+    warn "$branch has no environment setup, copying it from $ENV_PATH (uncommitted there)"
+    for file in "$ENV_PATH"/.devcontainer/* "$ENV_PATH/bin/de" "$ENV_PATH/mise.toml"; do
+      [ -e "$file" ] || continue
+      dest="$folder/${file#"$ENV_PATH"/}"
+      run mkdir -p "$(dirname "$dest")"
+      run cp -p "$file" "$dest"
+    done
+  fi
+
+  run "$folder/bin/de" up
+
+  cat <<EOF
+
+Worktree $folder is ready:
+
+  cd $folder
+  bin/de exec bin/rails test
+  bin/de code               # open in VS Code
+  bin/de down               # when done, then: git worktree remove $folder
+EOF
+}
+
+cmd_up() {
+  local up_args=() arg other entry health deadline
+  for arg in "$@"; do
+    case "$arg" in
+      --rebuild) up_args=(--remove-existing-container) ;;
+      *) die "usage: bin/de up [--rebuild]" ;;
+    esac
+  done
+
+  log "Environment $ENV_NAME ($ENV_KIND, branch ${ENV_BRANCH:-detached}) for $ENV_PATH"
+
+  # Share nothing: refuse to adopt another checkout's resources
+  other="$(env_label "$ENV_NAME" dev.env.path)"
+  if [ -n "$other" ] && [ "$other" != "$ENV_PATH" ]; then
+    die "$ENV_NAME already belongs to $other, remove that environment first"
+  fi
+
+  # Worktree .git files point to the main repository by relative path, so the
+  # link also resolves inside the container
+  if [ "$(git -C "$ENV_PATH" config --get worktree.useRelativePaths || true)" != true ]; then
+    log "Enabling relative worktree paths"
+    run git -C "$ENV_PATH" config worktree.useRelativePaths true
+  fi
+  if [ "$ENV_PATH" != "$ENV_MAIN_CHECKOUT" ]; then
+    run git -C "$ENV_MAIN_CHECKOUT" worktree repair --relative-paths "$ENV_PATH"
+
+    # Copy (never link) the ignored local files a worktree needs, from the
+    # same list other worktree tools use
+    if [ -f "$ENV_MAIN_CHECKOUT/.worktreeinclude" ]; then
+      while IFS= read -r entry || [ -n "$entry" ]; do
+        case "$entry" in "" | "#"*) continue ;; esac
+        [ -e "$ENV_MAIN_CHECKOUT/$entry" ] || continue
+        [ -e "$ENV_PATH/$entry" ] && continue
+        git -C "$ENV_MAIN_CHECKOUT" check-ignore -q -- "$entry" || continue
+        log "Copying $entry from the main checkout"
+        run mkdir -p "$(dirname "$ENV_PATH/$entry")"
+        run cp -pR "$ENV_MAIN_CHECKOUT/$entry" "$ENV_PATH/$entry"
+      done < "$ENV_MAIN_CHECKOUT/.worktreeinclude"
+    fi
+  fi
+
+  log "Writing $ENV_DOTENV"
+  env_write_dotenv
+
+  log "Building and starting the devcontainer"
+  devcontainer_cli up --workspace-folder "$ENV_PATH" ${up_args[@]+"${up_args[@]}"}
+
+  log "Waiting for health checks"
+  deadline=$((SECONDS + 300))
+  while :; do
+    health="$(env_health "$ENV_NAME")"
+    if [ -n "$health" ] && ! grep -qvE ' (healthy|running)$' <<<"$health"; then
+      break
+    fi
+    [ "$SECONDS" -lt "$deadline" ] || die "services not healthy after 5 minutes:"$'\n'"$health"
+    sleep 2
+  done
+  sed 's/^/    /' <<<"$health" >&2
+
+  if [ "${#UP_COMMAND[@]}" -gt 0 ]; then
+    log "Running UP_COMMAND from env.conf"
+    (cd "$ENV_PATH" && cmd_exec "${UP_COMMAND[@]}")
+  fi
+
+  cmd_status
+}
+
+cmd_exec() {
+  local cwd dir remote_env=()
+  [ "$#" -gt 0 ] || die "usage: bin/de exec <command> [arguments]"
+  env_running "$ENV_NAME" || die "environment $ENV_NAME isn't running, start it with bin/de up"
+
+  cwd="$(pwd -P)"
+  case "$cwd/" in
+    "$ENV_PATH/"*) dir="$ENV_PATH_IN_CONTAINER${cwd#"$ENV_PATH"}" ;;
+    *) dir="$ENV_PATH_IN_CONTAINER" ;;
+  esac
+
+  if [ -n "$ENV_SELENIUM_URL_GIVEN" ]; then
+    log "Using Selenium at $ENV_SELENIUM_URL_GIVEN"
+    remote_env+=(--remote-env "SELENIUM_URL=$ENV_SELENIUM_URL_GIVEN")
+    remote_env+=(--remote-env "CAPYBARA_APP_HOST=$(env_capybara_app_host "$ENV_SELENIUM_URL_GIVEN")")
+  fi
+  if [ -n "${HEADLESS:-}" ]; then
+    remote_env+=(--remote-env "HEADLESS=$HEADLESS")
+  fi
+
+  devcontainer_cli exec --workspace-folder "$ENV_PATH" ${remote_env[@]+"${remote_env[@]}"} \
+    bash -c 'cd "$1" && shift && exec "$HOME/.local/bin/mise" exec -- "$@"' de-exec "$dir" "$@"
+}
+
+cmd_status() {
+  local ids id service port
+  [ "$#" -eq 0 ] || die "usage: bin/de status"
+
+  cat <<EOF
+Environment  $ENV_NAME
+Kind         $ENV_KIND
+Branch       ${ENV_BRANCH:-(detached)}
+Checkout     $ENV_PATH
+In container $ENV_WORKSPACE_LINK
+
+EOF
+
+  log "Containers"
+  run docker container ls -a --filter "label=dev.env.name=$ENV_NAME" \
+    --format 'table {{.Label "com.docker.compose.service"}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+  ids="$(docker container ls -q --filter "label=dev.env.name=$ENV_NAME")"
+  if [ -n "$ids" ]; then
+    echo
+    log "Reachable from the Mac (OrbStack domains)"
+    for id in $ids; do
+      service="$(docker container inspect "$id" --format '{{ index .Config.Labels "com.docker.compose.service" }}')"
+      for port in $(docker container inspect "$id" --format '{{ range $p, $_ := .Config.ExposedPorts }}{{ $p }} {{ end }}'); do
+        printf '  %-10s %s.%s.orb.local:%s\n' "$service" "$service" "$ENV_NAME" "${port%/*}"
+      done
+      # Only when a host port was published, Docker picks the number
+      docker port "$id" | sed "s/^/  $service published /"
+    done
+  fi
+
+  echo
+  log "Volumes"
+  run docker volume ls --filter "label=com.docker.compose.project=$ENV_NAME"
+  echo
+  log "Networks"
+  run docker network ls --filter "label=dev.env.name=$ENV_NAME"
+}
+
+# Runs `code` (CODE to override, e.g. CODE=cursor) with the dev container URI
+# itself: vscli resolves ${localWorkspaceFolder} in devcontainer.json to
+# /workspaces/<folder name> instead of the host path.
+cmd_code() {
+  local target="$ENV_PATH" path branch name host_hex
+  if [ "$#" -gt 1 ]; then
+    die "usage: bin/de code [branch | environment | folder]"
+  elif [ "$#" -eq 1 ]; then
+    target=""
+    while IFS=$'\t' read -r path branch; do
+      [ -d "$path" ] || continue
+      if [ "$1" = "$branch" ] || [ "$1" = "$(basename "$path")" ] || [ "$1" = "$(env_name_for "$path")" ]; then
+        target="$path"
+        break
+      fi
+    done < <(checkouts)
+
+    if [ -z "$target" ]; then
+      warn "no checkout of $ENV_REPO matches $1, these exist:"
+      while IFS=$'\t' read -r path branch; do
+        [ -d "$path" ] && printf '  %-40s %-30s %s\n' "$(env_name_for "$path")" "${branch:-(detached)}" "$path" >&2
+      done < <(checkouts)
+      die "create one with: bin/de new $1"
+    fi
+  fi
+
+  [ -x "$target/bin/de" ] || die "$target has no bin/de, it predates the environment setup"
+
+  name="$(env_name_for "$target")"
+  if ! env_running "$name"; then
+    log "Environment $name isn't running, starting it"
+    if ! run "$target/bin/de" up; then
+      # Still open it when only a setup step failed, the editor helps fix it
+      env_running "$name" || die "bin/de up failed and $name isn't running"
+      warn "bin/de up failed, see above, opening $name anyway"
+    fi
+  fi
+
+  log "Opening $target ($name) in VS Code"
+  # The authority is the host folder, hex encoded, the path is
+  # devcontainer.json's workspaceFolder: /workspaces/<host path>
+  host_hex="$(printf '%s' "$target" | xxd -p | tr -d '\n')"
+  run "${CODE:-code}" --folder-uri "vscode-remote://dev-container+$host_hex/workspaces$target"
+}
+
+cmd_down() {
+  local destroy_persistent=false arg answer
+  for arg in "$@"; do
+    case "$arg" in
+      --destroy-persistent) destroy_persistent=true ;;
+      *) die "usage: bin/de down [--destroy-persistent]" ;;
+    esac
+  done
+
+  env_write_dotenv
+
+  if [ "$ENV_KIND" = persistent ] || env_is_persistent "$ENV_NAME"; then
+    if ! $destroy_persistent; then
+      log "Stopping persistent environment $ENV_NAME, its volumes are kept"
+      env_compose stop
+      return
+    fi
+
+    [ -t 0 ] || die "--destroy-persistent needs a terminal to confirm"
+    warn "This deletes $ENV_NAME and all of its data:"
+    docker volume ls --filter "label=com.docker.compose.project=$ENV_NAME" >&2
+    read -r -p "Type the environment name to confirm: " answer
+    [ "$answer" = "$ENV_NAME" ] || die "name didn't match, nothing removed"
+  else
+    log "Removing ephemeral environment $ENV_NAME"
+  fi
+
+  env_compose down --volumes --remove-orphans
+  env_destroy "$ENV_NAME"
+  log "Removed $ENV_NAME"
+}
+
+cmd_prune() {
+  local yes=false arg name path branch reason answer orphans=()
+  for arg in "$@"; do
+    case "$arg" in
+      --yes | -y) yes=true ;;
+      *) die "usage: bin/de prune [--yes]" ;;
+    esac
+  done
+
+  log "Looking for ephemeral environments of $ENV_GIT_COMMON_DIR"
+  for name in $(env_list ephemeral); do
+    if env_is_persistent "$name"; then
+      warn "$name has persistent resources, skipping"
+      continue
+    fi
+
+    path="$(env_label "$name" dev.env.path)"
+    branch="$(env_label "$name" dev.env.branch)"
+    reason=""
+    if [ -z "$path" ] || [ ! -d "$path" ]; then
+      reason="checkout ${path:-?} no longer exists"
+    elif ! git -C "$path" rev-parse --git-dir >/dev/null 2>&1; then
+      reason="$path is no longer a git checkout"
+    elif [ -n "$branch" ] && ! git -C "$path" show-ref --verify --quiet "refs/heads/$branch"; then
+      reason="branch $branch is gone"
+    elif [ "$(env_name_for "$path")" != "$name" ]; then
+      reason="$path is now on another branch"
+    fi
+
+    if [ -n "$reason" ]; then
+      orphans+=("$name")
+      printf '  %-50s %s\n' "$name" "$reason"
+    else
+      printf '  %-50s in use by %s, keeping\n' "$name" "$path"
+    fi
+  done
+
+  if [ "${#orphans[@]}" -eq 0 ]; then
+    log "Nothing to prune"
+    return
+  fi
+
+  echo
+  log "These resources will be removed:"
+  for name in "${orphans[@]}"; do
+    docker container ls -a --filter "label=com.docker.compose.project=$name" --format '  container {{.Names}}'
+    docker volume ls --filter "label=com.docker.compose.project=$name" --format '  volume    {{.Name}}'
+    docker network ls --filter "label=com.docker.compose.project=$name" --format '  network   {{.Name}}'
+  done
+
+  if ! $yes; then
+    [ -t 0 ] || die "pass --yes to prune without a terminal"
+    read -r -p "Remove ${#orphans[@]} environment(s)? [y/N] " answer
+    [ "$answer" = y ] || [ "$answer" = Y ] || die "nothing removed"
+  fi
+
+  for name in "${orphans[@]}"; do
+    log "Removing $name"
+    env_destroy "$name"
+  done
+}
+
+# --- Main ---------------------------------------------------------------
+
+command="${1:-help}"
+[ "$#" -gt 0 ] && shift
+
+case "$command" in
+  help | -h | --help) usage; exit ;;
+  init | initialize | new | up | exec | status | code | down | prune) ;;
+  *) usage >&2; die "unknown command: $command" ;;
+esac
+
+env_init "$DE_ROOT"
+"cmd_$command" "$@"
