@@ -1,0 +1,9 @@
+.mensa-table {
+    tbody {
+        td {
+            a {
+                color: inherit;
+            }
+        }
+    }
+}

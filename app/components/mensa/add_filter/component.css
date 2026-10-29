@@ -1,13 +1,118 @@
-.sts-table {
-    &__add_filter {
-        @apply relative;
+.mensa-table__add_filter {
+    @apply relative inline-flex items-center;
+}
 
-        &__popover_container {
-            @apply p-2 absolute z-10 mt-1 max-h-60 w-64 overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+.mensa-table__add_filter__trigger {
+    /* Hidden by default; shown via sibling selector when filter pills exist */
+    @apply hidden items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer transition-colors text-sm;
+}
 
-            &__clear {
-                @apply text-gray-600 dark:text-gray-400 no-underline;
-            }
-        }
-    }
+.mensa-table__add_filter__enter-hint {
+    display: none;
+    @apply text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 rounded px-1.5 py-0.5 whitespace-nowrap;
+}
+
+.mensa-table__add_filter__checkbox {
+    @apply h-4 w-4 flex-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 inline-block;
+}
+
+.mensa-table__add_filter__checkbox--checked {
+    @apply bg-gray-900 border-gray-900 dark:bg-white dark:border-white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.mensa-table__add_filter__popover_container {
+    @apply p-4 fixed z-50 w-96 max-h-96 overflow-y-auto rounded-lg bg-white dark:bg-gray-800 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm;
+}
+
+.mensa-table__add_filter__popover_container__heading {
+    @apply font-semibold text-gray-900 dark:text-gray-100 mb-2;
+}
+
+input.mensa-table__add_filter__popover_container__input {
+    @apply w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none;
+}
+
+.mensa-table__add_filter__popover_container__separator {
+    @apply border-t border-gray-200 dark:border-gray-600 my-3 -mx-4;
+}
+
+.mensa-table__add_filter__popover_container__values {
+    @apply mb-2;
+}
+
+.mensa-table__add_filter__popover_container__value {
+    @apply flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+}
+
+.mensa-table__add_filter__popover_container__value__check {
+    @apply w-4 flex-none inline-flex items-center justify-center text-xs;
+}
+
+.mensa-table__add_filter__popover_container__operators {
+    @apply mb-2;
+}
+
+.mensa-table__add_filter__popover_container__operator {
+    @apply flex items-center gap-2 py-1.5 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 select-none;
+}
+
+.mensa-table__add_filter__popover_container__operator__check {
+    @apply w-4 flex-none inline-flex items-center justify-center text-xs;
+}
+
+.mensa-table__add_filter__popover_container__clear {
+    @apply flex items-center gap-2 mt-3 text-gray-500 dark:text-gray-400 no-underline hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer;
+}
+
+/* Show key hint on hover or keyboard highlight — covers column list and value popover */
+.mensa-table__add_filter li:hover .mensa-table__add_filter__enter-hint,
+.mensa-table__add_filter li.highlighted .mensa-table__add_filter__enter-hint,
+.mensa-table__add_filter__popover_container__clear:hover
+    .mensa-table__add_filter__enter-hint {
+    display: inline-flex;
+}
+
+/* Keyboard highlight background — mirrors the hover style */
+.mensa-table__add_filter li.highlighted {
+    @apply bg-gray-100 dark:bg-gray-700;
+}
+
+/* Show + when user-added (non-view-filter) committed pills are present.
+   User pills are always visible, so no ancestor visibility check needed. */
+.mensa-table__search-bar__pills-area:has(
+        .mensa-filter-pill:not([data-view-filter="true"]):not(
+                .mensa-filter-pill--pending
+            )
+    ):not(:has(.mensa-filter-pill--pending))
+    .mensa-table__add_filter
+    .mensa-table__add_filter__trigger {
+    @apply inline-flex;
+}
+
+/* Show + when view-defined filter pills are present AND currently visible
+   (eye toggle on). Hidden view filters must not reveal the + button. */
+.mensa-table:not(.mensa-table--view-filters-hidden)
+    .mensa-table__search-bar__pills-area:has(
+        .mensa-filter-pill[data-view-filter="true"]
+    ):not(:has(.mensa-filter-pill--pending))
+    .mensa-table__add_filter
+    .mensa-table__add_filter__trigger {
+    @apply inline-flex;
+}
+
+/* While a filter is being configured, collapse the add-filter wrapper so it
+   doesn't create an extra flex gap between the pending pill and the search input.
+   The value popover inside is position:fixed so display:contents doesn't affect it. */
+.mensa-table__search-bar__pills-area:has(.mensa-filter-pill--pending)
+    .mensa-table__add_filter {
+    display: contents;
+}
+
+/* Pending pill while the value popover is open — rounded on both sides (no remove button) */
+.mensa-filter-pill--pending .mensa-filter-pill__chip {
+    @apply rounded-md opacity-70;
 }

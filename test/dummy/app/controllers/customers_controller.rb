@@ -1,5 +1,6 @@
 class CustomersController < ApplicationController
   before_action :set_customer, only: %i[show edit update destroy]
+  before_action :set_navigation, only: %i[show edit]
 
   # GET /customers
   def index
@@ -49,6 +50,13 @@ class CustomersController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_customer
     @customer = Customer.find(params.expect(:id))
+  end
+
+  def set_navigation
+    @mensa_table = traversed_mensa_table(:customers)
+    @mensa_navigation_params = mensa_navigation_params
+    @previous_customer = @mensa_table.previous_record(@customer)
+    @next_customer = @mensa_table.next_record(@customer)
   end
 
   # Only allow a list of trusted parameters through.

@@ -1,16 +1,13 @@
 # frozen_string_literal: true
 
 module Mensa
+  # scope -> filtered_scope -> ordered_scope -> selected_scope ->
   module Scope
     extend ActiveSupport::Concern
+    include Search
+    include Grouping
 
     included do
-    end
-
-    # Returns the records we want to display, using the Active Record Query Interface
-    # By default it returns all records
-    def scope
-      model.all
     end
 
     # Returns the scope, but filtered
@@ -18,9 +15,7 @@ module Mensa
       return @filtered_scope if @filtered_scope
 
       @filtered_scope = scope
-      # See https://github.com/textacular/textacular
-      # This has problems - not all table fields are searched
-      @filtered_scope = @filtered_scope.basic_search(params[:query]) if params[:query]
+      @filtered_scope = search(@filtered_scope, current_query) if current_query.present?
 
       # Use inject
       active_filters.each do |filter|
@@ -34,18 +29,28 @@ module Mensa
     def ordered_scope
       return @ordered_scope if @ordered_scope
 
-      @ordered_scope = filtered_scope
-      @ordered_scope = @ordered_scope.reorder(order_hash)
+      # Builds the search order clause too, so do this first
+      relation = filtered_scope
 
-      @ordered_scope
+      # Grouped rows are sorted by the group first, so groups stay together
+      clauses = []
+      clauses << group_order_clause if grouped?
+      clauses << effective_order(except: group_column&.name)
+      clauses << search_order_clause if clauses.last.blank?
+      clause = clauses.compact_blank.join(", ")
+
+      @ordered_scope = relation.reorder(clause.presence && Arel.sql(clause))
     end
 
     # Return the ordered_scope, but with only the columns selected
     def selected_scope
       return @selected_scope if @selected_scope
 
+      ensure_internal_columns_for_joined_associations
+
       @selected_scope = ordered_scope
-      @selected_scope = @selected_scope.select([:id] + columns.filter_map(&:attribute))
+      @selected_scope = @selected_scope.select((id_column? ? [:id] : []) + columns.filter_map(&:attribute))
+      @selected_scope = @selected_scope.select(group_select) if grouped?
 
       @selected_scope
     end
@@ -60,7 +65,50 @@ module Mensa
       @pagy_details
     end
 
+    # Returns the next record in the fully filtered/ordered result set.
+    # Pagination is intentionally ignored.
+    def next_record(record)
+      adjacent_record(record, step: 1)
+    end
+
+    # Returns the previous record in the fully filtered/ordered result set.
+    # Pagination is intentionally ignored.
+    def previous_record(record)
+      adjacent_record(record, step: -1)
+    end
+
     private
+
+    # Relations without an id column (e.g. a read-only model backed by a
+    # subquery) can't select it.
+    def id_column?
+      relation = ordered_scope
+      klass = relation.respond_to?(:klass) ? relation.klass : model
+      klass.column_names.include?("id")
+    rescue ActiveRecord::ActiveRecordError
+      false
+    end
+
+    def adjacent_record(record, step:)
+      records = ordered_scope.to_a
+      index = records.find_index { |candidate| same_record?(candidate, record) }
+      return if index.nil?
+
+      adjacent_index = index + step
+      return if adjacent_index.negative? || adjacent_index >= records.length
+
+      records[adjacent_index]
+    end
+
+    def same_record?(left, right)
+      return false if left.nil? || right.nil?
+
+      if left.respond_to?(:id) && right.respond_to?(:id)
+        left.id == right.id
+      else
+        left == right
+      end
+    end
 
     def pagy_object
       return if @pagy_details && @records
@@ -68,11 +116,42 @@ module Mensa
       @pagy_details, @records = selected_scope.is_a?(Array) ? pagy(:offset, ordered_scope, anchor_string: 'data-turbo-frame="_self"') : pagy(:offset, selected_scope, anchor_string: 'data-turbo-frame="_self"')
     end
 
-    # Though this works, perhaps moving this in column(s) is nicer
+    # Effective ordering for SQL: when the request includes any order[] params
+    # (even with blank values), use only those — blank means "explicitly no sort".
+    # Falls back to the view/config default only when no order params were sent.
+    def effective_order(except: nil)
+      result = current_order_provided? ? (current_order || {}) : (config[:order] || {})
+      result = result.symbolize_keys.compact_blank.transform_values { |v| v.to_s.downcase }
+      clause = result.filter_map { |k, v|
+        next if k == except
+
+        col = column(k)
+        # Skip orders on unknown names, e.g. from browser state saved for
+        # different params.
+        next unless col || model_attribute?(k)
+        # Columns without SQL can't be sorted on, unless they're explicitly
+        # sortable, e.g. on an alias the scope selects
+        next if col && !col.sql? && !col.sortable?
+        next unless %w[asc desc].include?(v)
+
+        attribute = col&.attribute_for_condition || k
+        "#{attribute} #{v} NULLS LAST"
+      }.join(", ")
+
+      clause.presence && Arel.sql(clause)
+    end
+
+    def model_attribute?(name)
+      model.respond_to?(:column_names) && model.column_names.include?(name.to_s)
+    end
+
+    # Builds an order hash for URL generation. Merges current order with overrides;
+    # nil values become "" so they appear in the URL as order[col]= (which tells
+    # the server the user explicitly cleared that column's sort direction).
     def order_hash(new_params = {})
-      (params[:order] || config[:order]).merge(new_params.symbolize_keys)
-        .compact_blank
-        .transform_values { |value| value.to_sym }
+      base = current_order&.symbolize_keys || config[:order]&.symbolize_keys || {}
+      merged = base.merge(new_params.symbolize_keys)
+      merged.transform_values { |v| v.nil? ? "" : v.to_sym }
     end
   end
 end

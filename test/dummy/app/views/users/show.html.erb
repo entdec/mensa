@@ -7,6 +7,15 @@
 
   <h1 class="font-bold text-4xl">Showing user</h1>
 
+  <div class="mt-3">
+    <% if @previous_user %>
+      <%= link_to "Previous user", user_path(@previous_user, @mensa_navigation_params), class: "rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+    <% end %>
+    <% if @next_user %>
+      <%= link_to "Next user", user_path(@next_user, @mensa_navigation_params), class: "ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+    <% end %>
+  </div>
+
   <%= render @user %>
 
   <%= link_to "Edit this user", edit_user_path(@user), class: "mt-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>

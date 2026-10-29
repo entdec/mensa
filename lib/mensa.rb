@@ -1,6 +1,7 @@
 require "mensa/version"
 require "mensa/engine"
 require "mensa/configuration"
+require "mensa/verifier"
 require "importmap-rails"
 
 module Mensa
@@ -11,6 +12,16 @@ module Mensa
       instance = class_for_name(name).new(config)
       instance.name = name
       instance
+    end
+
+    # A view context of the app's base controller, for rendering tables outside
+    # a request (exports, Mensa::Verifier), with the app's (url) helpers
+    def offline_view_context(request = nil)
+      request ||= ActionDispatch::Request.new(Rack::MockRequest.env_for("http://#{Rails.application.routes.default_url_options[:host] || "localhost"}/"))
+      controller = config.base_controller.constantize.new
+      controller.set_request!(request)
+      controller.set_response!(ActionDispatch::Response.new)
+      controller.view_context
     end
 
     def class_for_name(name)

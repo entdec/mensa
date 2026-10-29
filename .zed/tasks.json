@@ -1,0 +1,12 @@
+[
+    {
+        "label": "Rails server",
+        "command": "pkill -f 'puma' && bin/rails server -p 3000 -b 0.0.0.0",
+        "tags": ["rails"]
+    },
+    {
+        "label": "CSS",
+        "command": "cd test/dummy && bin/rails tailwindcss:config && bin/rails tailwindcss:watch",
+        "tags": ["rails"]
+    }
+]

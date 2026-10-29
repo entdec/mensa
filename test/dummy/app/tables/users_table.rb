@@ -1,47 +1,84 @@
 # frozen_string_literal: true
 
 class UsersTable < Mensa::Base
-  definition do
-    model User
+  render do
+    html
+    csv
+  end
 
+  column(:first_name)
+  column(:last_name)
+  column(:email)
+  column(:role) do
+    sortable false
+    filter do
+      collection -> { User.ROLES }
+    end
     render do
-      html
-      xlsx
-    end
+      html do |user|
+        label = User.ROLES.find { |_, role| role == user.role }&.first
 
-    column(:first_name)
-    column(:last_name)
-    column(:email)
-    column(:role) do
-      filter do
-        collection -> { User.ROLES }
-      end
-    end
-    column :customer_id do
-      internal true
-    end
-    column(:customer_name) do
-      attribute "customers.name"
-      render do
-        html do |user|
-          # You should not use customer_path(user.customer) here, that causes additional queries.
-          link_to user.customer_name, customer_path(user.customer_id) if user.customer_id
+        content_tag(:td, class: "whitespace-nowrap") do
+          content_tag(:span, label, class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset")
         end
       end
     end
+  end
+  column(:customer_name) do
+    attribute "customers.name"
+    render do
+      html do |user|
+        # You should not use customer_path(user.customer) here, that causes additional queries.
+        link_to user.customer_name, customer_path(user.customer_id) if user.customer_id
+      end
+    end
+    filter do
+      collection -> { Customer.select(:name).order(:name).pluck(:name) }
+    end
+  end
+  column(:created_at)
+  column(:updated_at)
 
-    link { |user| edit_user_path(user) }
+  link { |user| edit_user_path(user) }
 
-    supports_views true
-
-    # view :default do
-    #   name "All Users"
-    # end
+  view :default do
+    name "All users"
+    description "All users"
   end
 
-  private
+  view :users do
+    name "Users"
+    filter :role do
+      operator :is
+      value "user"
+    end
+    hidden_columns [:role]
+  end
 
-  def scope
-    User.all.left_outer_joins(:customer)
+  action :show do
+    link { |user| user_path(user) }
+    icon "fal fa-eye"
+  end
+  action :edit do
+    link { |user| edit_user_path(user) }
+    icon "fal fa-pencil"
+  end
+  action :delete do
+    link { |user| user_path(user) }
+    link_attributes { {data: {turbo: {confirm: "Are you sure?", method: :delete}}} }
+    icon "fal fa-trash"
+  end
+
+  batch :confirm do
+    description "Confirm users"
+    process do |records|
+      ConfirmUsersJob.perform_later(records)
+    end
+  end
+
+  scope do
+    scope = User.all.left_outer_joins(:customer)
+    scope = scope.where(customers: {name: params[:customer_name]}) if params[:customer_name]
+    scope
   end
 end

@@ -1,35 +1,39 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ruby
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
 {
-  "name": "mensa",
-  "dockerComposeFile": "compose.yaml",
-  "service": "app",
-  "workspaceFolder": "/workspaces/mensa",
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": { },
-    "ghcr.io/rails/devcontainer/features/activestorage": { },
-    "ghcr.io/rails/devcontainer/features/postgres-client": {
-      "version": "17"
+    "name": "mensa",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "features": {
+        "ghcr.io/devcontainers/features/node:2": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": false,
+            "installOhMyZshConfig": false
+        },
+        "ghcr.io/rails/devcontainer/features/activestorage": {},
+        "ghcr.io/rails/devcontainer/features/postgres-client": {
+            "version": "18"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": false
+        }
     },
-    "ghcr.io/devcontainers/features/node:1": { },
-    "ghcr.io/duduribeiro/devcontainer-features/tmux:1": { }
-  },
-  "containerEnv": {
-    "CAPYBARA_SERVER_PORT": "45678",
-    "SELENIUM_HOST": "selenium",
-    "DB_HOST": "postgres"
-  },
-  "forwardPorts": [
-    3000,
-    5432
-  ],
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "Shopify.ruby-lsp"
-      ]
-    }
-  },
-  "postCreateCommand": "bin/setup"
+    "mounts": [
+        "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+    ],
+    "initializeCommand": ".devcontainer/initialize.sh",
+    "postStartCommand": ".devcontainer/postStart.sh",
+    "containerEnv": {
+        "VISUAL": "vi",
+        "SSH_AUTH_SOCK": "/ssh-agent"
+    },
+    // Credentials for the GitHub Packages gem source in the Gemfile
+    "remoteEnv": {
+        "BUNDLE_RUBYGEMS__PKG__GITHUB__COM": "${localEnv:BUNDLE_RUBYGEMS__PKG__GITHUB__COM}"
+    },
+    "customizations": {},
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
 }

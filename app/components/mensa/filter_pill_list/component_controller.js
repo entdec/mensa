@@ -1,50 +1,855 @@
-import ApplicationController from 'mensa/controllers/application_controller'
-import { get } from '@rails/request.js'
+import ApplicationController from "mensa/controllers/application_controller";
+import { get } from "@rails/request.js";
 
 export default class FilterPillListComponentController extends ApplicationController {
-  static outlets = [
-    "mensa-table",
-    "mensa-filter-pill",
-    "mensa-add-filter"
-  ]
+    static outlets = ["mensa-table", "mensa-filter-pill", "mensa-add-filter"];
+    static targets = ["searchInput", "resetSearchButton"];
 
-  static targets = [
-  ]
+    static values = {
+        supportsViews: Boolean,
+        tableName: String,
+        storageKey: String,
+        filtersCustomized: Boolean,
+    };
 
-  static values = {
-    supportsViews: Boolean
-  }
+    connect() {
+        super.connect();
+        this._monitorResetButton();
+    }
 
-  connect() {
-    super.connect()
-  }
+    // The mensa-table outlet provides `ourUrl`, which we need both to apply and
+    // to restore state. Outlets connect asynchronously, so we trigger the restore
+    // from the outlet-connected callback to be sure it's available.
+    mensaTableOutletConnected() {
+        this.restoreState();
+    }
 
-  refreshFilters() {
-    let url = this.mensaTableOutlet.ourUrl
+    // --- Search actions (formerly in search component controller) ---
 
-    let filters = url.searchParams.get('filters') || {}
-    this.mensaFilterPillOutlets.forEach((filterOutlet) => {
-      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][value]`, filterOutlet.valueValue)
-      url.searchParams.append(`filters[${filterOutlet.columnNameValue}][operator]`, filterOutlet.operatorValue)
-    })
+    searchFocused(event) {
+        if (this._supportsColumnFilters()) {
+            // Don't open the column list while the value popover is already showing —
+            // focusing the search input for keyboard nav must not clobber the popover.
+            if (this.mensaAddFilterOutlet.isValuePopoverOpen) return;
+            this.mensaAddFilterOutlet.filterColumns("");
+            this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+        }
+    }
 
-    url.searchParams.append(`filters[${this.mensaAddFilterOutlet.selectedFilterColumn}][value]`, this.mensaAddFilterOutlet.valueTarget.value)
-    url.searchParams.append(`filters[${this.mensaAddFilterOutlet.selectedFilterColumn}][operator]`, 'equals')
+    monitorSearch(event) {
+        const value = this.hasSearchInputTarget
+            ? this.searchInputTarget.value
+            : "";
+        this._monitorResetButton();
 
+        if (this._supportsColumnFilters()) {
+            if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+                this.mensaAddFilterOutlet.filterValues(value);
+                return;
+            }
+            this.mensaAddFilterOutlet.filterColumns(value);
+            if (value.length > 0) {
+                if (this.mensaAddFilterOutlet.visibleColumnCount > 0) {
+                    this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+                } else {
+                    // No matching columns — hide column list so Enter does a text search
+                    this.mensaAddFilterOutlet.hideList();
+                }
+            } else {
+                this.mensaAddFilterOutlet.showList(this.searchInputTarget);
+            }
+        }
+    }
 
-    get(url, {
-      responseKind: 'turbo-stream'
-    }).then(() => {
-      // FIXME: There should be a better way to do this, possibly using
-      // this.mensaTableOutlet.filterListTarget.addEventListener("turbo:after-stream-render", this.unhide.bind(this)) ?
-      setTimeout(() => {
-        this.mensaTableOutlet.filterListTarget.classList.remove('hidden')
-      }, 50)
-    })
-  }
+    resetSearch(event) {
+        if (event) event.preventDefault();
 
-  get ourUrl() {
-    let url = this.mensaTableOutlet.ourUrl
-    return url
-  }
+        if (this.hasSearchInputTarget) {
+            this.searchInputTarget.value = "";
+            this.searchInputTarget.focus();
+        }
+        if (this.hasResetSearchButtonTarget) {
+            this.resetSearchButtonTarget.classList.add("hidden");
+        }
+        if (this._supportsColumnFilters()) {
+            this.mensaAddFilterOutlet.hideList();
+            this.mensaAddFilterOutlet.closeValuePopover?.();
+        }
+
+        this.setQuery("");
+    }
+
+    search(event) {
+        event.preventDefault();
+
+        // If the value popover is open, Enter confirms the highlighted/selected item
+        if (
+            this._supportsColumnFilters() &&
+            this.mensaAddFilterOutlet.isValuePopoverOpen
+        ) {
+            this.mensaAddFilterOutlet.confirmHighlightedValue();
+            return;
+        }
+
+        // If the column autocomplete has visible options and one is selected via
+        // keyboard, let the add-filter controller handle it
+        if (
+            this._supportsColumnFilters() &&
+            this.mensaAddFilterOutlet.hasHighlightedColumn
+        ) {
+            this.mensaAddFilterOutlet.confirmHighlightedColumn();
+            return;
+        }
+
+        // Hide column dropdown before searching
+        if (this._supportsColumnFilters()) {
+            this.mensaAddFilterOutlet.hideList();
+        }
+
+        const query = this.hasSearchInputTarget
+            ? this.searchInputTarget.value
+            : "";
+        if (query.length > 0 && query.length < 3) return;
+
+        this.setQuery(query);
+    }
+
+    navigateDown(event) {
+        if (!this._supportsColumnFilters()) return;
+        event.preventDefault();
+        if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+            this.mensaAddFilterOutlet.highlightNextValue();
+        } else {
+            this.mensaAddFilterOutlet.highlightNext();
+        }
+    }
+
+    navigateUp(event) {
+        if (!this._supportsColumnFilters()) return;
+        event.preventDefault();
+        if (this.mensaAddFilterOutlet.isValuePopoverOpen) {
+            this.mensaAddFilterOutlet.highlightPrevValue();
+        } else {
+            this.mensaAddFilterOutlet.highlightPrev();
+        }
+    }
+
+    // --- Filter state management ---
+
+    // Called when an existing filter pill is clicked.
+    editFilter(columnName, value, operator, anchor) {
+        if (!this.hasMensaAddFilterOutlet) return;
+        this.mensaAddFilterOutlet.editColumn(
+            columnName,
+            value,
+            operator,
+            anchor,
+        );
+    }
+
+    // Called when a filter is added/changed.
+    refreshFilters() {
+        this._notifyUnsavedState();
+        return this.applyState({
+            filters: this.collectFilters(),
+            query: this.loadQuery(),
+            view: this.loadView(),
+            order: this.loadOrder(),
+            page: "",
+        });
+    }
+
+    // Called by the search controller when the query is submitted or reset.
+    setQuery(query) {
+        if (query && query.length > 0) this._notifyUnsavedState();
+        const state = {
+            query,
+            view: this.loadView(),
+            order: this.loadOrder(),
+            page: "",
+        };
+        if (this.hasPersistedFilters()) state.filters = this.loadFilters();
+        this.applyState(state);
+    }
+
+    // Called by the views controller when a view tab is selected.
+    viewSelected(view) {
+        const state = {
+            query: "",
+            view,
+            order: this.loadOrder(),
+            page: "",
+        };
+        this.persistState(state);
+        // The selected view brings its own filters and grouping. Stored filters
+        // hold the previous view's pills (its defaults included), which would
+        // otherwise be replayed onto this view when the page is visited again.
+        this.writeStorage(this.filtersStorageKey, null);
+        this.clearPersistedGrouping();
+        this.setSearchField("");
+        this.updateSearchPlaceholder();
+        if (this.hasMensaTableOutlet) {
+            this.mensaTableOutlet.viewChanged();
+        }
+        this.requestState(state);
+    }
+
+    // Called by the table controller after a turbo-frame navigation.
+    captureNavigation(src) {
+        let url;
+        try {
+            url = new URL(src, window.location.origin);
+        } catch (e) {
+            return;
+        }
+
+        this.lastTableUrl = url.toString();
+        this.persistPage(url.searchParams.get("page") || "");
+        // Only update the stored view when the param is explicitly present.
+        // An absent table_view_id (e.g. the plain tableUrlValue on back-navigation)
+        // must not erase a view the user deliberately selected.
+        if (url.searchParams.has("table_view_id")) {
+            this.persistView(url.searchParams.get("table_view_id") || "");
+        }
+        const order = this.parseOrderParams(url.searchParams);
+        this.persistOrder(order);
+
+        this._updateUnsavedState();
+    }
+
+    currentRequestState() {
+        let url;
+        try {
+            url = this.lastTableUrl
+                ? new URL(this.lastTableUrl, window.location.origin)
+                : this.mensaTableOutlet.ourUrl;
+        } catch (e) {
+            url = this.mensaTableOutlet.ourUrl;
+        }
+
+        const params = url.searchParams;
+        const filters = {};
+        const order = {};
+        params.forEach((value, key) => {
+            // Multi-select: filters[col][value][]
+            const multiMatch = key.match(/^filters\[(.+?)\]\[value\]\[\]$/);
+            if (multiMatch) {
+                const column = multiMatch[1];
+                const f = (filters[column] = filters[column] || {});
+                f.value = Array.isArray(f.value)
+                    ? [...f.value, value]
+                    : [value];
+                return;
+            }
+            const filterMatch = key.match(
+                /^filters\[(.+?)\]\[(value|operator)\]$/,
+            );
+            if (filterMatch) {
+                const column = filterMatch[1];
+                (filters[column] = filters[column] || {})[filterMatch[2]] =
+                    value;
+                return;
+            }
+            const orderMatch = key.match(/^order\[(.+)\]$/);
+            if (orderMatch) order[orderMatch[1]] = value;
+        });
+
+        return {
+            filters,
+            query: params.get("query") || "",
+            view: params.get("table_view_id") || "",
+            page: params.get("page") || "",
+            order,
+        };
+    }
+
+    clearFiltersAndSearch() {
+        const view = this.loadView();
+        // Wipe all dirty-state entries; keep only the active view.
+        this.clearPersistedDirtyState();
+        this.persistView(view);
+        this.setSearchField("");
+        // buildUrl reads column_order/hidden_columns from localStorage — now empty,
+        // so the server receives a completely clean request for the current view.
+        this.requestState({
+            query: "",
+            view,
+            order: {},
+            page: "",
+        });
+    }
+
+    restoreState() {
+        const table = this.mensaTableOutlet;
+        const filters = this.loadFilters();
+        const filtersProvided = this.hasPersistedFilters();
+        const query = this.loadQuery();
+        const view = this.loadView();
+        const page = this.loadPage();
+        const order = this.loadOrder();
+        const columnOrder = this.loadColumnOrder();
+
+        this._updateUnsavedState();
+
+        const hasFilterOrSearch =
+            Object.keys(filters).length > 0 ||
+            filtersProvided ||
+            query.length > 0;
+        const hasState =
+            hasFilterOrSearch ||
+            view.length > 0 ||
+            page.length > 0 ||
+            Object.keys(order).length > 0 ||
+            columnOrder.length > 0;
+
+        // Pills rendered by the server (e.g. a view's default filters) must not win
+        // over filters the user changed or cleared.
+        const rendered = this.renderedFilters();
+        const filtersDiffer =
+            filtersProvided &&
+            JSON.stringify(rendered) !== JSON.stringify(filters);
+        // The pills belong to the view the server rendered, so they only count
+        // when the stored view is that same view.
+        const viewDiffers = view.length > 0 && view !== this.renderedView();
+        const alreadyRendered =
+            Object.keys(rendered).length > 0 && !filtersDiffer && !viewDiffers;
+
+        if (!hasState || alreadyRendered || table.frameLoadHandled) {
+            if (typeof table.loadFrame === "function") {
+                table.loadFrame();
+            }
+            return;
+        }
+
+        table.frameLoadHandled = true;
+
+        this.setSearchField(query);
+        this.setViewHighlight(view);
+
+        const state = { query, view, page, order };
+        if (filtersProvided) state.filters = filters;
+
+        // No need to show/hide the filter bar — it's always visible.
+        // Just apply state and load the frame.
+        this.applyState(state);
+    }
+
+    applyState(state) {
+        return this.persistAndRequest(state);
+    }
+
+    persistAndRequest(state) {
+        this.persistState(state);
+        return this.requestState(state);
+    }
+
+    requestState(state) {
+        const url = this.buildUrl(state);
+        this.lastTableUrl = url.toString();
+        return get(url, { responseKind: "turbo-stream" });
+    }
+
+    buildUrl(state) {
+        const url = this.mensaTableOutlet.ourUrl;
+
+        this.removeFilterParams(url);
+        this.removeOrderParams(url);
+        this.removeColumnParams(url);
+        this.removeGroupingParams(url);
+        url.searchParams.delete("query");
+        url.searchParams.delete("page");
+        url.searchParams.delete("table_view_id");
+
+        Object.entries(state.filters || {}).forEach(([columnName, filter]) => {
+            if (Object.prototype.hasOwnProperty.call(filter, "value")) {
+                if (Array.isArray(filter.value)) {
+                    filter.value.forEach((v) =>
+                        url.searchParams.append(
+                            `filters[${columnName}][value][]`,
+                            v,
+                        ),
+                    );
+                } else {
+                    url.searchParams.append(
+                        `filters[${columnName}][value]`,
+                        filter.value ?? "",
+                    );
+                }
+            }
+            url.searchParams.append(
+                `filters[${columnName}][operator]`,
+                filter.operator,
+            );
+        });
+
+        Object.entries(state.order || {}).forEach(([columnName, direction]) => {
+            url.searchParams.set(`order[${columnName}]`, direction);
+        });
+
+        if (
+            Object.prototype.hasOwnProperty.call(state, "filters") &&
+            Object.keys(state.filters || {}).length === 0
+        ) {
+            url.searchParams.set("filters", "");
+        }
+        if (state.query) url.searchParams.set("query", state.query);
+        if (state.view) url.searchParams.set("table_view_id", state.view);
+        if (state.page) url.searchParams.set("page", state.page);
+
+        this.loadColumnOrder().forEach((col) =>
+            url.searchParams.append("column_order[]", col),
+        );
+        this.loadHiddenColumns().forEach((col) =>
+            url.searchParams.append("hidden_columns[]", col),
+        );
+
+        // Only send grouping the user chose, otherwise the view's default
+        // applies. Blank values mean "explicitly none".
+        const groupBy = this.loadGroupBy();
+        if (groupBy !== null) url.searchParams.set("group_by", groupBy);
+        const aggregates = this.loadAggregates();
+        if (aggregates !== null) {
+            const entries = Object.entries(aggregates);
+            if (entries.length === 0) url.searchParams.set("aggregates", "");
+            entries.forEach(([column, fn]) =>
+                url.searchParams.set(`aggregates[${column}]`, fn),
+            );
+        }
+
+        return url;
+    }
+
+    removeGroupingParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (key === "group_by" || key.startsWith("aggregates")) keys.push(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
+    }
+
+    removeFilterParams(url) {
+        const keys = new Set();
+        url.searchParams.forEach((_v, key) => {
+            if (key.startsWith("filters[")) keys.add(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
+    }
+
+    removeColumnParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (
+                key.startsWith("column_order") ||
+                key.startsWith("hidden_columns")
+            )
+                keys.push(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
+    }
+
+    removeOrderParams(url) {
+        const keys = [];
+        url.searchParams.forEach((_v, key) => {
+            if (key.startsWith("order[")) keys.push(key);
+        });
+        keys.forEach((key) => url.searchParams.delete(key));
+    }
+
+    parseOrderParams(searchParams) {
+        const order = {};
+        searchParams.forEach((value, key) => {
+            const match = key.match(/^order\[(.+)\]$/);
+            if (match) order[match[1]] = value;
+        });
+        return order;
+    }
+
+    collectFilters() {
+        const filters = this.renderedFilters();
+
+        if (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.selectedFilterColumn
+        ) {
+            const isMultiple = this.mensaAddFilterOutlet.isMultipleMode;
+            const filter = {
+                operator: this.mensaAddFilterOutlet.operator,
+            };
+            if (this.mensaAddFilterOutlet.operatorRequiresValue()) {
+                filter.value = isMultiple
+                    ? this.mensaAddFilterOutlet.selectedValues
+                    : this.mensaAddFilterOutlet.hasValueTarget
+                        ? this.mensaAddFilterOutlet.valueTarget.value
+                        : "";
+            }
+            filters[this.mensaAddFilterOutlet.selectedFilterColumn] = filter;
+        }
+
+        return filters;
+    }
+
+    renderedFilters() {
+        const filters = {};
+
+        this.element
+            .querySelectorAll('[data-controller~="mensa-filter-pill"]')
+            .forEach((pill) => {
+                const columnName = pill.getAttribute(
+                    "data-mensa-filter-pill-column-name-value",
+                );
+                if (!columnName) return;
+
+                const operator = pill.getAttribute(
+                    "data-mensa-filter-pill-operator-value",
+                );
+                const operatorWithoutValue =
+                    pill.getAttribute(
+                        "data-mensa-filter-pill-operator-without-value-value",
+                    ) === "true";
+                const rawValue = pill.getAttribute(
+                    "data-mensa-filter-pill-value-value",
+                );
+
+                if (operatorWithoutValue) {
+                    filters[columnName] = { operator };
+                    return;
+                }
+
+                let value;
+                try {
+                    value = JSON.parse(rawValue);
+                } catch {
+                    value = rawValue;
+                }
+
+                filters[columnName] = {
+                    value,
+                    operator,
+                };
+            });
+
+        return filters;
+    }
+
+    setSearchField(query) {
+        if (this.hasSearchInputTarget) {
+            this.searchInputTarget.value = query || "";
+        }
+        this._monitorResetButton();
+    }
+
+    // The id of the view checked in the views dropdown, "" without views.
+    renderedView() {
+        const root = this.element.closest(".mensa-table");
+        const check = root?.querySelector(
+            '[data-mensa-views-target="view"] .mensa-table__views__option-check:not(.invisible)',
+        );
+        return (
+            check?.closest('[data-mensa-views-target="view"]')?.dataset
+                .viewId || ""
+        );
+    }
+
+    setViewHighlight(view) {
+        if (!view) return;
+
+        const root = this.element.closest(".mensa-table");
+        if (!root) return;
+
+        // Update the views dropdown option checks
+        root.querySelectorAll('[data-mensa-views-target="view"]').forEach(
+            (el) => {
+                const linkView = el.getAttribute("data-view-id") || "";
+                const check = el.querySelector(
+                    ".mensa-table__views__option-check",
+                );
+                if (check) {
+                    check.classList.toggle(
+                        "invisible",
+                        view !== "" && linkView !== view,
+                    );
+                }
+            },
+        );
+
+        // Update the trigger label
+        const triggerLabel = root.querySelector(
+            '[data-mensa-views-target="triggerLabel"]',
+        );
+        if (triggerLabel && view) {
+            const viewEl = root.querySelector(
+                `[data-mensa-views-target="view"][data-view-id="${view}"]`,
+            );
+            if (viewEl) {
+                const name = viewEl.dataset.viewName;
+                if (name) triggerLabel.textContent = name;
+            }
+        }
+
+        this.updateSearchPlaceholder();
+    }
+
+    updateSearchPlaceholder() { }
+
+    _supportsColumnFilters() {
+        return (
+            this.hasMensaAddFilterOutlet &&
+            this.mensaAddFilterOutlet.filterListItemTargets.length > 0
+        );
+    }
+
+    // Whether the table differs from the selected view, so there's something
+    // to save or reset. The server tells whether the rendered filters differ,
+    // as stored filters can equal the view's own.
+    hasUnsavedState() {
+        return (
+            this.filtersCustomizedValue ||
+            this.loadQuery().length > 0 ||
+            Object.keys(this.loadOrder()).length > 0 ||
+            this.loadColumnOrder().length > 0 ||
+            this.loadHiddenColumns().length > 0 ||
+            this.loadGroupBy() !== null ||
+            this.loadAggregates() !== null
+        );
+    }
+
+    // Clears all dirty-state localStorage keys so the view is clean after save.
+    clearPersistedDirtyState() {
+        this.writeStorage(this.filtersStorageKey, null);
+        this.writeStorage(this.searchStorageKey, null);
+        this.writeStorage(this.orderStorageKey, null);
+        this.writeStorage(`mensa:column_order:${this.storageName}`, null);
+        this.writeStorage(`mensa:hidden_columns:${this.storageName}`, null);
+        this.clearPersistedGrouping();
+    }
+
+    clearPersistedGrouping() {
+        this.writeStorage(this.groupByStorageKey, null);
+        this.writeStorage(this.aggregatesStorageKey, null);
+    }
+
+    // null when the user didn't choose, "" for "no grouping"
+    loadGroupBy() {
+        return this.readStorage(this.groupByStorageKey);
+    }
+
+    // null when the user didn't choose, {} for "no aggregates"
+    loadAggregates() {
+        const raw = this.readStorage(this.aggregatesStorageKey);
+        if (raw === null) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Keep these for backward-compatibility with other controllers that look up
+    // the search input via helper methods.
+    searchInputElement() {
+        return this.hasSearchInputTarget ? this.searchInputTarget : null;
+    }
+
+    resetSearchButtonElement() {
+        return this.hasResetSearchButtonTarget
+            ? this.resetSearchButtonTarget
+            : null;
+    }
+
+    // --- Persistence ---
+
+    persistState(state) {
+        if (Object.prototype.hasOwnProperty.call(state, "filters")) {
+            this.persistFilters(state.filters || {});
+        }
+        this.persistQuery(state.query || "");
+        this.persistView(state.view || "");
+        this.persistPage(state.page || "");
+        this.persistOrder(state.order || {});
+    }
+
+    persistFilters(filters) {
+        this.writeStorage(this.filtersStorageKey, JSON.stringify(filters));
+    }
+
+    loadFilters() {
+        const raw = this.readStorage(this.filtersStorageKey);
+        if (!raw) return {};
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return {};
+        }
+    }
+
+    hasPersistedFilters() {
+        return this.readStorage(this.filtersStorageKey) !== null;
+    }
+
+    persistQuery(query) {
+        this.writeStorage(
+            this.searchStorageKey,
+            query && query.length > 0 ? query : null,
+        );
+    }
+
+    loadQuery() {
+        return this.readStorage(this.searchStorageKey) || "";
+    }
+
+    persistView(view) {
+        this.writeStorage(
+            this.viewStorageKey,
+            view && view.length > 0 ? view : null,
+        );
+    }
+
+    loadView() {
+        return this.readStorage(this.viewStorageKey) || "";
+    }
+
+    persistPage(page) {
+        this.writeStorage(
+            this.pageStorageKey,
+            page && page !== "1" ? page : null,
+        );
+    }
+
+    loadPage() {
+        return this.readStorage(this.pageStorageKey) || "";
+    }
+
+    persistOrder(order) {
+        this.writeStorage(
+            this.orderStorageKey,
+            order && Object.keys(order).length > 0
+                ? JSON.stringify(order)
+                : null,
+        );
+    }
+
+    loadOrder() {
+        const raw = this.readStorage(this.orderStorageKey);
+        if (!raw) return {};
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return {};
+        }
+    }
+
+    writeStorage(key, value) {
+        if (!this.hasStorage) return;
+        try {
+            if (value === null) {
+                window.localStorage.removeItem(key);
+            } else {
+                window.localStorage.setItem(key, value);
+            }
+        } catch (e) { }
+    }
+
+    readStorage(key) {
+        if (!this.hasStorage) return null;
+        try {
+            return window.localStorage.getItem(key);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    get hasStorage() {
+        try {
+            return typeof window !== "undefined" && !!window.localStorage;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    loadColumnOrder() {
+        try {
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:column_order:${this.storageName}`,
+                    ),
+                ) || []
+            );
+        } catch (e) {
+            return [];
+        }
+    }
+
+    loadHiddenColumns() {
+        try {
+            return (
+                JSON.parse(
+                    this.readStorage(
+                        `mensa:hidden_columns:${this.storageName}`,
+                    ),
+                ) || []
+            );
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // Tables built with different params keep separate browser state.
+    get storageName() {
+        return this.tableStorageKey || this.storageKeyValue || this.tableNameValue;
+    }
+
+    get filtersStorageKey() {
+        return `mensa:filters:${this.storageName}`;
+    }
+    get searchStorageKey() {
+        return `mensa:search:${this.storageName}`;
+    }
+    get viewStorageKey() {
+        return `mensa:view:${this.storageName}`;
+    }
+    get pageStorageKey() {
+        return `mensa:page:${this.storageName}`;
+    }
+    get orderStorageKey() {
+        return `mensa:order:${this.storageName}`;
+    }
+    get groupByStorageKey() {
+        return `mensa:group_by:${this.storageName}`;
+    }
+    get aggregatesStorageKey() {
+        return `mensa:aggregates:${this.storageName}`;
+    }
+
+    get ourUrl() {
+        return this.mensaTableOutlet.ourUrl;
+    }
+
+    // --- Private ---
+
+    _monitorResetButton() {
+        if (!this.hasSearchInputTarget) return;
+        const hasValue = this.searchInputTarget.value.length > 0;
+        if (this.hasResetSearchButtonTarget) {
+            this.resetSearchButtonTarget.classList.toggle("hidden", !hasValue);
+        }
+    }
+
+    _updateUnsavedState() {
+        if (
+            this.hasMensaTableOutlet &&
+            typeof this.mensaTableOutlet.updateUnsavedState === "function"
+        ) {
+            this.mensaTableOutlet.updateUnsavedState();
+        }
+    }
+
+    _notifyUnsavedState() {
+        if (
+            this.hasMensaTableOutlet &&
+            typeof this.mensaTableOutlet.notifyUnsavedState === "function"
+        ) {
+            this.mensaTableOutlet.notifyUnsavedState();
+        }
+    }
 }

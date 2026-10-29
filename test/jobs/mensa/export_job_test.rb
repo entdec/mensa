@@ -1,9 +1,272 @@
 require "test_helper"
+require "csv"
+require "stringio"
+require "tmpdir"
+require "turbo/broadcastable/test_helper"
+
+class ExportJobCsvBlockTable < Mensa::Base
+  definition do
+    model User
+
+    column(:email) do
+      render do
+        csv { |user| "#{user.email.upcase} #{user_path(user)}" }
+      end
+    end
+  end
+end
 
 module Mensa
   class ExportJobTest < ActiveJob::TestCase
-    # test "the truth" do
-    #   assert true
-    # end
+    include Turbo::Broadcastable::TestHelper
+
+    setup do
+      @user = User.first
+    end
+
+    test "generates a CSV, attaches it and marks the export completed" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "csv_excel", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+      export.reload
+
+      assert export.completed?
+      assert export.asset.attached?
+      assert_equal "text/csv", export.asset.content_type
+      assert_match(/users_export_.*\.csv\z/, export.filename)
+
+      data = export.asset.download.force_encoding("UTF-8")
+      assert data.start_with?("\uFEFF"), "expected a UTF-8 BOM for the Excel format"
+
+      table = Mensa.for_name("users")
+      rows = CSV.parse(data.delete_prefix("\uFEFF"))
+      assert_equal table.display_columns.map { it.name.to_s }, rows.first
+      assert_equal User.count, rows.length - 1
+    end
+
+    test "csv render blocks run, with the app's helpers" do
+      export = Mensa::Export.create!(table_name: "export_job_csv_block", user: @user, format: "plain_csv", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+      rows = CSV.parse(export.reload.asset.download)
+
+      assert export.completed?
+      assert_includes rows.map(&:first), "#{User.first.email.upcase} /users/#{User.first.id}"
+    end
+
+    test "plain CSV format omits the BOM" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+
+      assert_not export.reload.asset.download.force_encoding("UTF-8").start_with?("\uFEFF")
+    end
+
+    test "does not leave export tempfiles behind" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+      tmp_pattern = export_tmp_pattern(export)
+
+      assert_empty Dir.glob(tmp_pattern)
+
+      Mensa::ExportJob.perform_now(export)
+
+      assert_empty Dir.glob(tmp_pattern)
+    end
+
+    test "does not leave export tempfiles behind for password protected zips" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+      tmp_pattern = export_tmp_pattern(export)
+      table = Mensa.for_name("users")
+
+      assert_empty Dir.glob(tmp_pattern)
+
+      table.define_singleton_method(:export_with_password?) { true }
+      original_for_name = Mensa.method(:for_name)
+      Mensa.define_singleton_method(:for_name) { |_name, _config = {}| table }
+
+      Mensa::ExportJob.perform_now(export)
+
+      export.reload
+      assert_equal "application/zip", export.asset.content_type
+      assert_predicate export.password, :present?
+
+      zip_data = export.asset.download
+      Zip::InputStream.open(StringIO.new(zip_data), decrypter: Zip::TraditionalDecrypter.new(export.password)) do |zip|
+        entry = zip.get_next_entry
+        assert_equal export.filename.sub(/\.zip\z/, ".csv"), entry.name
+        rows = CSV.parse(zip.read)
+        assert_equal table.display_columns.map { it.name.to_s }, rows.first
+      end
+
+      assert_raises(Zip::DecompressionError) do
+        Zip::InputStream.open(StringIO.new(zip_data), decrypter: Zip::TraditionalDecrypter.new("wrong-password")) do |zip|
+          zip.get_next_entry
+          zip.read
+        end
+      end
+      assert_empty Dir.glob(tmp_pattern)
+    ensure
+      Mensa.define_singleton_method(:for_name, original_for_name) if original_for_name
+    end
+
+    test "current_page scope only exports the visible page" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "current_page")
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      # The header plus a single (paginated) page of records, which is fewer
+      # than the total number of users.
+      assert_operator rows.length - 1, :<, User.count
+    end
+
+    test "applies the captured filter configuration" do
+      export = Mensa::Export.create!(
+        table_name: "users",
+        user: @user,
+        format: "plain_csv",
+        scope: "all",
+        config: {filters: {role: {value: "admin", operator: "is"}}}
+      )
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      assert_equal User.where(role: "admin").count, rows.length - 1
+    end
+
+    test "exports selected aliased columns such as customer_name" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      customer_name_index = rows.first.index("customer_name")
+      refute_nil customer_name_index
+
+      first_user = User.left_outer_joins(:customer).order(:id).select(:id, "customers.name AS customer_name").first
+      exported_customer_names = rows.drop(1).map { |row| row[customer_name_index] }
+
+      assert_includes exported_customer_names, first_user.customer_name
+      assert exported_customer_names.all?(&:present?)
+    end
+
+    test "applies captured column order and hidden columns" do
+      export = Mensa::Export.create!(
+        table_name: "users",
+        user: @user,
+        format: "plain_csv",
+        scope: "all",
+        config: {column_order: ["email", "first_name", "role"], hidden_columns: ["role"]}
+      )
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      # The ordered columns first, then the ones the order doesn't list
+      assert_equal ["email", "first_name", "last_name", "customer_name", "created_at", "updated_at"], rows.first
+    end
+
+    test "invokes the export callbacks with the export" do
+      started = nil
+      completed = nil
+      Mensa.config.callbacks[:export_started] = ->(export) { started = export }
+      Mensa.config.callbacks[:export_complete] = ->(export) { completed = export }
+
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+      Mensa::ExportJob.perform_now(export)
+
+      assert_equal export.id, started&.id
+      assert_equal export.id, completed&.id
+    ensure
+      Mensa.reset_config!
+    end
+
+    test "broadcasts the refreshed badge and downloads list when finished" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all")
+      stream = Mensa::Export.stream_name("users", @user)
+
+      broadcasts = capture_turbo_stream_broadcasts(stream) do
+        Mensa::ExportJob.perform_now(export)
+      end
+
+      assert_equal 2, broadcasts.size
+      assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.badge_dom_id("users", @user)) }
+      assert broadcasts.any? { |b| b.to_s.include?(Mensa::Export.list_dom_id("users", @user)) }
+    end
+
+    test "stores the latest repeat run time for recurring exports" do
+      export = Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all", repeat: "daily")
+
+      freeze_time do
+        Mensa::ExportJob.perform_now(export)
+        assert_in_delta Time.current.to_f, export.reload.last_repeat_run_at.to_f, 1
+      end
+    end
+
+    private
+
+    def export_tmp_pattern(export)
+      File.join(Dir.tmpdir, "#{export.table_name}_export_#{export.created_at.strftime("%Y-%m-%d-%H%M%S")}*")
+    end
+    test "rebuilds a table that needs params from export.config" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: nil, format: "plain_csv", scope: "all",
+        config: {params: {customer_id: customer.id}})
+
+      Mensa::ExportJob.perform_now(export)
+      export.reload
+
+      assert export.completed?
+      rows = CSV.parse(export.asset.download)
+      assert_equal %w[first_name last_name email role], rows.first
+      assert_equal customer.users.pluck(:email).sort, rows.drop(1).map { it[2] }.sort
+      assert_operator customer.users.count, :<, User.count
+    end
+
+    test "exports the current page of a table that needs params" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: nil, format: "plain_csv", scope: "current_page",
+        config: {params: {customer_id: customer.id}, page: "1", filters: {role: {value: "user"}}})
+
+      Mensa::ExportJob.perform_now(export)
+
+      rows = CSV.parse(export.reload.asset.download)
+      assert export.completed?
+      assert_equal customer.users.where(role: "user").pluck(:email).sort, rows.drop(1).map { it[2] }.sort
+    end
+
+    test "broadcasts to the stream of the export's params" do
+      customer = customers(:asml)
+      export = Mensa::Export.create!(table_name: "customer_users", user: @user, format: "plain_csv", scope: "all",
+        config: {params: {customer_id: customer.id}})
+
+      assert_turbo_stream_broadcasts Mensa::Export.stream_name("customer_users", @user, params: {customer_id: customer.id}) do
+        Mensa::ExportJob.perform_now(export)
+      end
+    end
+
+    test "fails the export when the table's params are missing" do
+      export = Mensa::Export.create!(table_name: "customer_users", user: @user, format: "plain_csv", scope: "all")
+
+      assert_raises(KeyError) { Mensa::ExportJob.perform_now(export) }
+      assert export.reload.failed?
+    end
+
+    test "calls the export_completed callback and the older export_complete name" do
+      called = []
+      original = Mensa.config.callbacks
+      Mensa.config.callbacks = {
+        export_started: ->(export) { called << :export_started },
+        export_completed: ->(export) { called << :export_completed },
+        export_complete: ->(export) { called << :export_complete }
+      }
+
+      Mensa::ExportJob.perform_now(Mensa::Export.create!(table_name: "users", user: @user, format: "plain_csv", scope: "all"))
+
+      assert_equal %i[export_started export_completed export_complete], called
+    ensure
+      Mensa.config.callbacks = original
+    end
   end
 end

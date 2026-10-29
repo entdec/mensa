@@ -1,0 +1,6 @@
+/* Entry point for tailwindcss-rails v4 (Tailwind CSS v4).
+   The host app includes it with: @import "../builds/tailwind/mensa";
+   Imported into the components layer so utility classes still override component styles, as they did in v3 */
+@import "../../stylesheets/mensa/application.css" layer(components);
+
+@source "../../..";

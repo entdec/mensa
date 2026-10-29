@@ -1,0 +1,35 @@
+<div class="mensa-table"
+     id="table-<%= table.table_id %>"
+     data-mensa-table-supports-views-value="<%= table.views? %>"
+     data-mensa-table-table-url-value="<%= table.path(turbo_frame_id: table.table_id, user_params: params) %>"
+     data-mensa-table-save-view-url-value="<%= table.path_with_params(helpers.mensa.table_views_path(table.name)) %>"
+     data-mensa-table-views-url-value="<%= table.path_with_params(helpers.mensa.table_views_path(table.name)) %>"
+     data-mensa-table-exports-url-value="<%= table.path_with_params(helpers.mensa.table_exports_path(table.name)) %>"
+     data-controller="mensa-table mensa-tour"
+     data-mensa-tour-texts-value="<%= I18n.t("mensa.tour").to_json %>"
+     data-mensa-table-storage-key-value="<%= table.storage_key %>"
+     data-action="click@document->mensa-table#saveDropdownOutsideHandler"
+     data-mensa-table-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
+     data-mensa-table-mensa-column-customizer-outlet="[data-controller='mensa-column-customizer']">
+  <div class="mensa-table__toolbar">
+    <div class="mensa-table__search-container">
+      <% if table.show_header? %>
+        <% if table.views? %>
+          <%= render Mensa::Views::Component.new(table: table) %>
+        <% else %>
+          <div id="mensa-views-<%= table.table_id %>"></div>
+        <% end %>
+      <% end %>
+      <div class="flex min-w-0 flex-1" id="filters-<%= table.table_id %>">
+        <%= render Mensa::FilterPillList::Component.new(table: table) %>
+      </div>
+    </div>
+    <%= render Mensa::ControlBar::Component.new(table: table) %>
+  </div>
+  <%= render Mensa::Search::Component.new(table: table) %>
+  <turbo-frame id="<%= table.table_id %>"
+               target="_top"
+               data-mensa-table-target="turboFrame"
+               data-action="turbo:frame-load->mensa-table#captureNavigation turbo:before-frame-render->mensa-table#beforeFrameRender turbo:before-fetch-request->mensa-table#captureScrollPosition click->mensa-table#captureScrollPosition:capture turbo:frame-load->mensa-table#restoreScrollPosition"
+               data-turbo-permanent></turbo-frame>
+</div>

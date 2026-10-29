@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mensa</title>
+    <meta name="turbo-prefetch" content="false">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" type="image/svg" href="/m-solid-full.svg">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind" %>
+    <%= javascript_importmap_tags "mensa" %>
+    <%= javascript_include_tag asset_url("fontawesome.js"), defer: true, nonce: true %>
+    <%= javascript_include_tag asset_url("regular.js"), defer: true, nonce: true %>
+    <%= javascript_include_tag asset_url("brands.js"), defer: true, nonce: true %>
+    <%= javascript_include_tag asset_url("solid.js"), defer: true, nonce: true %>
+  </head>
+
+  <body class="min-h-full mx-10 my-10 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <%= yield %>
+    <div class="pt-2 text-center text-sm text-gray-500 dark:text-gray-500">
+      Timezone: <%= Time.zone %>, Locale: <%= link_to I18n.locale, url_for(locale: I18n.locale.to_sym == :en ? :nl : :en), class: "text-blue-500 hover:underline dark:text-blue-400" %>, Current user: <%= Current.user.first_name %> <%= Current.user.last_name %>, Current customer: <%= Current.customer_name %>
+    </div>
+    <div class="flex justify-center gap-4 pt-2 text-center text-sm text-gray-500 dark:text-gray-500">
+      <%= link_to "Users", users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Customers", customers_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Default filtered users", default_filtered_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Headerless users", headerless_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "No views users", no_views_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Search only users", search_only_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <%= link_to "Scoped users", scoped_users_path, class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <% if (customer = Customer.order(:name).first) %>
+        <%= link_to "Customer users", customer_users_path(customer_id: customer.id), class: "text-blue-500 hover:underline dark:text-blue-400" %>
+      <% end %>
+    </div>
+  </body>
+</html>

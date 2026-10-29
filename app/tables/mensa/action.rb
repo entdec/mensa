@@ -21,10 +21,17 @@ module Mensa
       @config = config
     end
 
+    def icon(record)
+      if @config[:icon].is_a?(Proc)
+        @config[:icon].call(record)
+      else
+        @config[:icon]
+      end
+    end
+
     config_reader :title
     config_reader :link, call: false
     config_reader :link_attributes
-    config_reader :icon
     config_reader :show, call: false
   end
 end

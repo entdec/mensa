@@ -1,22 +1,113 @@
-.mensa-table {
-  &__views {
-    @apply p-2 pl-4 shadow-lg border-b dark:bg-gray-700 dark:border-gray-600;
+.mensa-table__views {
+    @apply relative flex-none;
+}
 
-    a.view {
-      @apply bg-gray-100 text-gray-600 dark:text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded-md px-3 py-1.5 text-sm;
+.mensa-table__views__trigger {
+    @apply h-full flex items-center gap-1.5 px-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 whitespace-nowrap cursor-pointer transition-colors;
+}
+
+.mensa-table__views__trigger-icon {
+    @apply text-gray-500 dark:text-gray-400 text-xs;
+}
+
+.mensa-table__views__dropdown {
+    @apply fixed z-50 min-w-[12rem] rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1;
+}
+
+.mensa-table__views__option {
+    @apply flex items-center justify-between px-1 hover:bg-gray-50 dark:hover:bg-gray-700;
+}
+
+.mensa-table__views__option-btn {
+    @apply flex items-center gap-2 flex-1 px-2 py-1.5 text-sm text-left text-gray-700 dark:text-gray-200 cursor-pointer;
+}
+
+.mensa-table__views__option-check {
+    @apply inline-flex justify-center shrink-0 text-primary-600 text-xs w-4;
+}
+
+.mensa-table__views__option-menu {
+    @apply p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded cursor-pointer opacity-0 transition-opacity;
+}
+
+.mensa-table__views__option:hover .mensa-table__views__option-menu {
+    @apply opacity-100;
+}
+
+.mensa-table__views__option-system {
+    @apply p-1.5 text-gray-400 opacity-0;
+}
+
+.mensa-table__views__option:hover .mensa-table__views__option-system {
+    @apply p-1.5 text-gray-300 opacity-100;
+}
+
+.mensa-table__views__submenu {
+    @apply absolute z-30 min-w-[11rem] rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1;
+}
+
+.mensa-table__views__submenu-item {
+    @apply flex items-center gap-2.5 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer;
+
+    i {
+        @apply w-4 text-gray-400;
     }
+}
 
-    a.view.selected {
-      @apply bg-gray-300 text-gray-800 dark:bg-gray-500 hover:bg-gray-400;
+.mensa-table__views__submenu-item--danger {
+    @apply text-red-600 dark:text-red-400;
+
+    i {
+        @apply text-red-500;
     }
-  }
 }
 
-.tippy-box[data-theme~='mensa'] {
-  @apply bg-gray-200 text-gray-800 dark:text-gray-400;
+.mensa-table__views__rename-dialog {
+    @apply w-80 max-w-[90vw] rounded-xl border-0 p-5 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10;
+
+    &::backdrop {
+        @apply bg-gray-900/40;
+        backdrop-filter: blur(2px);
+    }
 }
 
-.tippy-box[data-theme~='mensa'] .tippy-arrow {
-  @apply text-gray-200;
+.mensa-table__views__rename-form {
+    @apply flex flex-col gap-4;
 }
 
+.mensa-table__views__rename-title {
+    @apply text-base font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.mensa-table__views__rename-label {
+    @apply flex flex-col gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+input.mensa-table__views__rename-input {
+    @apply w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none;
+    border-radius: 0.5rem;
+}
+
+.mensa-table__views__rename-actions {
+    @apply flex justify-end gap-2;
+}
+
+.mensa-table__views__rename-btn {
+    @apply rounded-lg px-3 py-1.5 text-sm font-semibold shadow-sm focus:outline-none transition-colors;
+}
+
+.mensa-table__views__rename-btn--secondary {
+    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600;
+}
+
+.mensa-table__views__rename-btn--primary {
+    @apply bg-primary-600 text-white hover:bg-primary-500;
+}
+
+.tippy-box[data-theme~="mensa"] {
+    @apply bg-gray-200 text-gray-800 dark:text-gray-400;
+}
+
+.tippy-box[data-theme~="mensa"] .tippy-arrow {
+    @apply text-gray-200;
+}

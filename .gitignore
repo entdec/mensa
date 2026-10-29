@@ -6,7 +6,7 @@
 /tmp/
 /test/dummy/db/*.sqlite3
 /test/dummy/db/*.sqlite3-*
-/test/dummy/log/*.log
+/test/dummy/log/*
 /test/dummy/storage/
 /test/dummy/app/assets/builds/
 /test/dummy/tmp/
@@ -20,3 +20,8 @@ test/dummy/config/tailwind.config.js
 .envrc
 
 **/**/.DS_Store
+mise.toml
+todo.md
+
+# Written by .devcontainer/initialize.sh
+.devcontainer/.env

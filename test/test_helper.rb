@@ -26,9 +26,7 @@ class TestTable < Mensa::Base
     column(:role) do
       filter
     end
-    column :customer_id do
-      internal true
-    end
+    internal :customer_id
 
     link { |test| root_path }
 

@@ -1,0 +1,22 @@
+# frozen_string_literal: true
+
+class NonCustomViewUsersTable < Mensa::Base
+  model User
+
+  column(:first_name)
+  column(:last_name)
+  column(:role) do
+    sortable false
+    filter do
+      collection -> { User.ROLES }
+    end
+  end
+
+  supports_custom_views false
+
+  link { |user| edit_user_path(user) }
+
+  scope do
+    User.all
+  end
+end

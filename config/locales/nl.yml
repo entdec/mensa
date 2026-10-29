@@ -1,15 +1,137 @@
 nl:
   mensa:
-    add_filter:
-      component:
-        add_filter: Filter toevoegen
-    search:
-      component:
-        cancel: Annuleer
-        save: Bewaar
-    views:
-      default: Alles
+    tour:
+      ui:
+        next: Volgende
+        previous: Vorige
+        done: Begrepen
+        replay_hint: Beweeg over de tabel en druk op ? om deze uitleg opnieuw te bekijken.
+        progress: "{{current}} van {{total}}"
+      search:
+        title: Zoeken en filteren
+        description: Typ om in de tabel te zoeken, of klik op de plusknop om op een specifieke kolom te filteren. Actieve filters verschijnen als labels die je kunt aanpassen of verwijderen.
+        description_only: Typ om in de tabel te zoeken. Druk op Enter om je zoekopdracht toe te passen.
+      columns:
+        title: Kolommen
+        description: Toon, verberg en herorden kolommen door ze te slepen naar de gewenste volgorde.
+      sorting:
+        title: Sorteren
+        description: Klik op een kolomkop om op die kolom te sorteren. Klik nogmaals om de volgorde om te draaien.
+      group_by:
+        title: Groeperen op
+        description: Groepeer rijen op een kolom en toon eventueel totalen of aantallen per groep.
+      views:
+        title: Weergaven
+        description: Wissel tussen opgeslagen weergaven, of bewaar je huidige filters, zoekopdracht en kolommen als eigen weergave om later opnieuw te gebruiken.
+      export:
+        title: Exporteren
+        description: Download de tabel met je huidige filters toegepast. Druk op Volgende om het exportvenster te openen.
+      export_list:
+        title: Je downloads
+        description: Voltooide exports verschijnen hier, zodat je ze kunt downloaden of verwijderen.
+      export_scope:
+        title: Wat exporteren
+        description: Exporteer alle records die overeenkomen met je huidige filters, of alleen de pagina die je nu bekijkt.
+      export_format:
+        title: Bestandsformaat
+        description: Kies een CSV die geoptimaliseerd is voor spreadsheetprogramma's, of een gewoon CSV-bestand.
+      export_repeat:
+        title: Herhalen
+        description: Exporteer eenmalig, of laat de export automatisch herhalen per dag, week, maand of een ander interval.
+    column_customizer:
+      heading: Kolommen
+    group_by:
+      heading: Groeperen op
+      none: Niet groeperen
+      aggregates: Berekeningen
+    groups:
+      empty: Geen %{column}
+    aggregates:
+      none: Geen
+      count: Aantal
+      sum: Som
+      min: Min
+      max: Max
     tables:
       filters:
-        new:
-          add_filter: Filter toevoegen        
+        show:
+          clear: Annuleren
+    save: Bewaar
+    update_view: Bewaar weergave
+    save_view: Bewaar als nieuwe weergave
+    save_as_new_view: Bewaar als nieuwe weergave
+    operators:
+      is: is
+      isnt: is niet
+      matches: matcht
+      does_not_match: matcht niet
+      is_current: is huidige
+      gt: groter dan
+      lt: kleiner dan
+      gteq: groter dan of gelijk aan
+      lteq: kleiner dan of gelijk aan
+      is_duplicate: is dubbel
+      is_empty: is leeg
+      isnt_empty: is niet leeg
+    add_filter:
+      add: Filter toevoegen
+      component:
+        add_filter: Filter toevoegen
+    filter_pill_list:
+      component:
+        search: Zoeken en filteren
+        search_only: Zoeken
+    search:
+      component:
+        search: Zoek en filter
+        search_in: Zoek in %{view}
+        cancel: Annuleer
+        save: Bewaar
+        save_view_title: Weergave bewaren
+        save_view_subtitle: Bewaar de huidige filters, sortering en zoekopdracht als een herbruikbare weergave.
+        view_name: Naam
+        view_name_placeholder: bijv. Actieve klanten
+        view_description: Omschrijving
+        view_description_placeholder: Optionele notities over deze weergave
+        view_name_required: Vul een naam in voor deze weergave.
+    exports:
+      title: "%{table} exporteren"
+      close: Sluiten
+      available_downloads: Beschikbare downloads
+      empty: Je hebt nog geen downloads. Maak er hieronder een aan.
+      item_name: "%{table} export"
+      repeats_with_interval: "Herhaalt %{interval}"
+      repeat_section: Herhalen
+      repeat: Herhalen
+      repeat_once: "Eenmalig"
+      repeat_repeating: Herhalend
+      repeat_intervals:
+        daily: dagelijks
+        weekly: wekelijks
+        monthly: maandelijks
+        quarterly: per kwartaal
+        bi-yearly: halfjaarlijks
+        yearly: jaarlijks
+      download: Downloaden
+      delete: Export verwijderen
+      processing: Bezig…
+      waiting: Wachtend
+      failed: Mislukt
+      new_export: Nieuwe export
+      scope_all: Alle records (volgens huidige filters)
+      scope_current_page: Huidige pagina
+      export_as: Exporteren als
+      format_excel: CSV voor Excel, Numbers of andere spreadsheetprogramma's
+      format_plain: Eenvoudig CSV-bestand
+      cancel: Annuleer
+      submit: Exporteren
+    paging:
+      info: "%{model} %{from}-%{to} van %{count} weergeven"
+    empty_state:
+      title: Geen %{model} gevonden
+      subtitle: Probeer de filters of zoektermen voor deze weergave te wijzigen
+      clear_button: Zoekopdracht en filters wissen
+    views:
+      default: Alles
+      component:
+        view_name_required: Vul een naam in voor deze weergave.

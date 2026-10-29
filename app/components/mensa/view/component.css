@@ -1,46 +1,122 @@
-@import 'paging.css';
+@import "./paging.css";
+
+.mensa-batch-bar {
+    /* Sits on top of the thead row. Positioned relative to the .overflow-y-auto.relative
+       wrapper, which starts flush with the top of the table. top/left/right cover the
+       full width without any JS width-setting. py-2 + h-4 content mirrors the exact
+       height of the header row (same py-2 padding + h-4 container as thead th). */
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    @apply pt-[7px] pb-2 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600;
+}
+
+.mensa-batch-bar__content {
+    @apply h-5 flex items-center gap-2 pl-2;
+}
+
+.mensa-batch-bar__count {
+    @apply text-xs font-medium text-gray-700 dark:text-gray-200 mr-1;
+}
+
+.mensa-batch-bar__button {
+    @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
+}
 
 .mensa-table {
-  @apply bg-white dark:bg-gray-500 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 dark:border-gray-800;
 
-  .badge {
-    @apply bg-primary-100 text-primary-600 hidden ml-3 rounded-full text-xs font-medium md:inline-block py-0.5 px-2.5;
-  }
-
-  table {
-    @apply min-w-full divide-y divide-gray-50 dark:divide-gray-800 border-0;
-
-    thead {
-      @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400 dark:lowercase;
-
-      /* tr and th moved to header */
+    .mensa-table__checkbox-col {
+        @apply w-7 min-w-7 pl-1 pr-0 text-center;
     }
 
-    tbody {
+    .mensa-table__checkbox-col .container {
+        @apply justify-center;
+    }
 
-      @apply divide-y divide-gray-200 dark:divide-gray-600;
+    .mensa-table__select-all {
+        @apply inline-block h-4 w-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 cursor-pointer;
+        appearance: none;
 
-      tr {
-        @apply cursor-pointer bg-white dark:bg-gray-800 divide-x divide-gray-400 divide-opacity-25 hover:bg-gray-200 dark:hover:bg-gray-700;
-
-        &:nth-child(even) {
-          @apply bg-gray-50 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700;
+        &:hover {
+            @apply border-gray-500 dark:border-gray-400;
         }
-      }
 
-      td {
-        @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
-      }
+        &:checked {
+            &:hover {
+                @apply bg-gray-700 border-gray-700 dark:bg-gray-200 dark:border-gray-200;
+            }
+        }
+
+        &:indeterminate {
+            &:hover {
+                @apply bg-gray-700 border-gray-700 dark:bg-gray-200 dark:border-gray-200;
+            }
+        }
+
+        &:checked {
+            @apply bg-gray-900 border-gray-900 dark:bg-white dark:border-white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        &:indeterminate {
+            @apply bg-gray-900 border-gray-900 dark:bg-white dark:border-white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3E%3C/svg%3E");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        &:focus {
+            @apply outline-none ring-2 ring-offset-1 ring-gray-700 dark:ring-gray-300;
+        }
     }
-  }
 
-  &__condensed {
+    .badge {
+        @apply bg-primary-100 text-primary-600 hidden ml-3 rounded-full text-xs font-medium md:inline-block py-0.5 px-2.5;
+    }
+
     table {
-      tbody {
-        td {
-          @apply pl-4 py-2;
+        @apply min-w-full divide-y divide-gray-50 dark:divide-gray-800 border-0;
+
+        thead {
+            @apply bg-gray-100 top-0 dark:bg-gray-700 dark:font-medium dark:text-gray-400;
+
+            /* tr and th moved to header */
         }
-      }
+
+        tbody {
+            @apply divide-y divide-gray-200 dark:divide-gray-600;
+
+            tr {
+                @apply cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700;
+            }
+
+            td {
+                @apply px-2 pt-[5px] pb-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400;
+
+                &:first-child {
+                    @apply pl-4;
+                }
+
+                &:last-child {
+                    @apply pr-4;
+                }
+            }
+        }
+
+        thead th.mensa-table__checkbox-col,
+        tbody td.mensa-table__checkbox-col {
+            @apply w-7 min-w-7 pl-1 pr-0 text-center;
+        }
+
+        thead th.actions,
+        tbody td.actions {
+            @apply w-px whitespace-nowrap px-2 text-center;
+        }
     }
-  }
 }

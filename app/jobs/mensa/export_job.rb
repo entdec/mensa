@@ -1,110 +1,155 @@
+require "csv"
 require "securerandom"
+require "tempfile"
 
 module Mensa
+  # Generates the CSV for a Mensa::Export, attaches it to the export's +asset+
+  # and broadcasts the refreshed export button badge and downloads list so the
+  # requesting user sees the finished download appear without reloading.
   class ExportJob < ApplicationJob
     queue_as :default
 
-    # export_started: lambda do |user_id, table_name|
-    # end,
-    # export_complete: lambda do |user_id, table_name, attachment|
-    # end
+    # Writes the CSV for +rows+ (Mensa::Row) of +table+ to +io+: a header row
+    # with the display column names, then one line per row.
+    def self.write_csv(io, table, rows)
+      csv = CSV.new(io)
+      csv << table.display_columns.map(&:name)
+      rows.each do |row|
+        csv << table.display_columns.map { |column| Mensa::Cell.new(row: row, column: column).render(:csv) }
+      end
+      csv.flush
+      io
+    end
 
-    def perform(user, table_name)
-      table = Mensa.for_name(table_name)
+    def perform(export)
+      return unless export
+
+      export.update(status: "processing")
+      Mensa.config.run_callback(:export_started, export)
+
+      tempfile, filename, content_type = generate_file(export)
+      unless tempfile
+        finalize(export, status: "failed")
+        return
+      end
+
+      export.asset.purge if export.asset.attached?
+      export.asset.attach(io: tempfile, filename: filename, content_type: content_type)
+      finalize(export, status: "completed", filename: filename)
+
+      Mensa.config.run_callback(:export_completed, export)
+    rescue => e
+      Mensa.config.logger&.error("Mensa::ExportJob failed for export #{export&.id}: #{e.class}: #{e.message}")
+      finalize(export, status: "failed") if export
+      raise
+    ensure
+      tempfile&.close!
+    end
+
+    # Builds the table for +export+ and generates its file. Returns
+    # [tempfile, filename, content_type], or nil when the table isn't
+    # exportable. Doesn't touch the export's record or asset.
+    def generate_file(export)
+      table = build_table(export)
       return unless table.exportable?
 
-      context = Mensa.config.callbacks[:export_started].call(user, table_name)
+      generate(table, export)
+    end
 
-      styles = []
-      default_style = {b: true, bg_color: "3B82F6", fg_color: "FFFFFF", border: {style: :thin, color: "000000"}, sz: 8,
-                       alignment: {vertical: :bottom, horizontal: :left}}
+    private
 
-      p = Axlsx::Package.new
-      p.use_shared_strings = true
+    # Rebuilds the table the export was requested for, layering the view
+    # configuration (if any) underneath the captured request configuration
+    # (params, filters, query, ordering, page) so the generated data matches
+    # what the user saw when they requested the export.
+    def build_table(export)
+      config = {}
 
-      wb = p.workbook
-
-      wb.styles.add_style({format_code: "@", alignment: {horizontal: :left, vertical: :top, wrap_text: true}})
-      nowrap_text = wb.styles.add_style({format_code: "@", alignment: {horizontal: :left, vertical: :top, wrap_text: false}})
-      wb.styles.add_style format_code: "#"
-      wb.styles.add_style format_code: "dddd, d mmmm yyyy hh:mm:ss"
-      wb.styles.add_style format_code: "dddd, d mmmm yyyy"
-
-      # custom_styles = ActionTable.config.format_config.each_with_object({}) { |(key, value), hash| hash[key] = value[:xlsx_style] if value.key?(:xlsx_style) }
-
-      wb.add_worksheet(name: table_name.first(31)) do |sheet|
-        column_widths = []
-        # TODO: Separate display columns for export?
-        table.display_columns.map.with_index do |column, index|
-          styles[index] = sheet.styles.add_style(default_style) # .merge(column.export_style || {}))
-          # width = column.export_style.delete(:width)
-          # column_widths[index] = width if width
-        end
-
-        first_row = sheet.add_row(table.display_columns.map { |c| c.human_name }, style: styles, height: 28)
-
-        first_cell = first_row.first
-        last_row = first_row
-
-        table.export_rows.each do |row|
-          # next if row.reject { |column, value| value.nil? || value == '' }.blank?
-          #
-          # row_types = :string #row.map(&:second)
-          # row_values = row.map(&:third)
-          # options = row.map(&:last)
-          #
-          # row_styles = options.map.with_index { |option, i|
-          #   type = row_types[i]
-          #   value = row_values[i]
-          #   export_style = option.dig(:export, :xlsx_style)
-          #
-          #   if export_style.present?
-          #     wb.styles.add_style(export_style)
-          #   elsif custom_styles[type].present?
-          #     wb.styles.add_style(custom_styles[type])
-          #   elsif [:integer, :float, :decimal, :number].include?(type)
-          #     number_format
-          #   elsif [:datetime, :time, :timestamp].include?(type)
-          #     datetime_format
-          #   elsif type == :date
-          #     date_format
-          #   elsif value.is_a?(Axlsx::RichText) || type == :text
-          #     wrap_text
-          #   else
-          #     nowrap_text
-          #   end
-          # }
-          values = table.display_columns.map { |column| row.value(column) }
-          row_styles = table.display_columns.map { |column| nowrap_text }
-          last_row = sheet.add_row(values, style: row_styles)
-        end
-
-        last_cell = last_row.last
-
-        sheet.column_widths(*column_widths)
-        sheet.auto_filter = Axlsx.cell_range([first_cell, last_cell], false)
+      if export.table_view_id.present?
+        view = Mensa::TableView.find_by(table_name: export.table_name, id: export.table_view_id)
+        config = view.config.deep_symbolize_keys if view&.config
       end
 
-      base_filename = "#{table_name}_export_#{Time.current.strftime("%Y-%m-%d-%H:%M:%S")}"
-      enc = nil
-      password = nil
+      config = config.merge((export.config.compact_blank || {}).deep_symbolize_keys)
+      table = Mensa.for_name(export.table_name, config)
+      table.request = ActionDispatch::Request.new({})
+      table.request.set_header("action_dispatch.request.query_parameters", {"page" => config[:page]})
+      # Render blocks (e.g. csv) run in a view context
+      table.original_view_context = Mensa.offline_view_context
+      table
+    end
+
+    def generate(table, export)
+      base_filename = "#{export.table_name}_export_#{export.created_at.strftime("%Y-%m-%d-%H%M%S")}"
+      csv_file = write_csv_file(table, export, base_filename)
+
       if table.export_with_password?
-        password = SecureRandom.hex(6)
-        enc = Zip::TraditionalEncrypter.new(password)
+        zip_file = write_zip_file(csv_file, export, base_filename)
+        csv_file.close!
+        [zip_file, "#{base_filename}.zip", "application/zip"]
+      else
+        [csv_file, "#{base_filename}.csv", "text/csv"]
       end
-      stringio = Zip::OutputStream.write_buffer(encrypter: enc) do |zio|
-        zio.put_next_entry("#{base_filename}.xlsx")
-        zio.write p.to_stream.read
-      end
-      stringio.rewind
+    end
 
-      attachment = {io: stringio,
-                    content_type: "application/zip", filename: "#{base_filename}.zip"}
-      if password.present?
-        attachment[:password] = password
+    def write_csv_file(table, export, base_filename)
+      tempfile = Tempfile.new([base_filename, ".csv"], binmode: true)
+
+      # A UTF-8 BOM makes spreadsheet programs such as Excel detect the encoding
+      # correctly. The "plain" CSV variant omits it for maximum compatibility
+      # with programmatic consumers.
+      tempfile.write("\uFEFF") if export.format == "csv_excel"
+
+      self.class.write_csv(tempfile, table, export_rows(table, export))
+      tempfile.close
+      tempfile.open
+      tempfile.binmode
+      tempfile.rewind
+      tempfile
+    rescue
+      tempfile&.close!
+      raise
+    end
+
+    def write_zip_file(csv_file, export, base_filename)
+      require "zip"
+
+      zip_file = Tempfile.new([base_filename, ".zip"], binmode: true)
+      zip_path = zip_file.path
+      zip_file.close
+
+      export.password = SecureRandom.hex(6)
+      encrypter = Zip::TraditionalEncrypter.new(export.password)
+      Zip::OutputStream.open(zip_path, encrypter: encrypter) do |zio|
+        zio.put_next_entry("#{base_filename}.csv")
+        csv_file.rewind
+        IO.copy_stream(csv_file, zio)
       end
 
-      Mensa.config.callbacks[:export_completed].call(user, table_name, context, attachment)
+      zip_file.open
+      zip_file.binmode
+      zip_file.rewind
+      zip_file
+    rescue
+      zip_file&.close!
+      raise
+    end
+
+    def export_rows(table, export)
+      scope = (export.scope == "current_page") ? table.paged_scope : table.selected_scope
+      scope.map { |row| Mensa::Row.new(table, row) }
+    end
+
+    def finalize(export, status:, filename: nil)
+      attributes = {status: status}
+      attributes[:filename] = filename if filename
+
+      attributes[:last_repeat_run_at] = Time.current if status == "completed" && export.repeat.present?
+
+      export.update(attributes)
+      # Refresh the export button badge (download count) and the downloads list
+      # inside the export dialog for everyone viewing this table.
+      Mensa::Export.broadcast_refresh(export.table_name, export.user, params: export.table_params)
     end
   end
 end

@@ -1,6 +1,55 @@
 require "test_helper"
 require "pry"
 
+class InitializeExplodingScopeTable < Mensa::Base
+  model User
+
+  column(:first_name)
+
+  scope do
+    raise "scope should not run during initialize"
+  end
+end
+
+# A read-only model backed by a subquery, without an id column.
+class RoleCount < ApplicationRecord
+  self.table_name = "role_counts"
+
+  def self.load_schema!
+    @columns_hash = {}
+  end
+
+  def self.column_names
+    %w[role total]
+  end
+
+  def self.subquery
+    from(User.group(:role).select("role, COUNT(*) AS total"), :role_counts)
+  end
+end
+
+class RoleCountsTable < Mensa::Base
+  model RoleCount
+
+  column(:role)
+  column(:total)
+
+  scope { RoleCount.subquery }
+end
+
+class UnnamedDefaultViewTable < Mensa::Base
+  model User
+
+  column(:first_name)
+  column(:role)
+
+  view :default do
+    filter :role do
+      value "user"
+    end
+  end
+end
+
 class TableTest < ActiveSupport::TestCase
   test "it returns the right column" do
     t = TestTable.new({})
@@ -40,7 +89,7 @@ class TableTest < ActiveSupport::TestCase
 
     t = TestTable.new(result)
     result = t.send(:order_hash, {first_name: nil})
-    assert_equal({}, result)
+    assert_equal({first_name: ""}, result)
   end
 
   test "it sets order correctly" do
@@ -56,51 +105,149 @@ class TableTest < ActiveSupport::TestCase
     assert_equal 1, result.arity
   end
 
-  test "it uses default order when no order params are given" do
-    t = TestWithDefaultOrderTable.new({})
-    result = t.send(:order_hash)
-    assert_equal({name: :desc}, result)
+  test "it automatically adds internal fk columns for joined associations" do
+    t = UsersTable.new({})
+
+    assert t.column(:customer_id).internal?
+    assert_includes t.display_columns.map(&:name), :customer_name
+    assert_not_includes t.display_columns.map(&:name), :customer_id
   end
 
-  test "it reflects default order in sort_direction for default-ordered column" do
-    t = TestWithDefaultOrderTable.new({})
-    subject = t.column(:name)
-    assert_equal :desc, subject.sort_direction
+  test "internal helper disables filtering on the generated column" do
+    t = TestTable.new({})
+    column = t.column(:customer_id)
+
+    assert_equal true, column.internal?
+    assert_equal false, column.filter?
+    assert_nil column.filter
   end
 
-  test "it reflects no sort_direction for columns not in default order" do
-    t = TestWithDefaultOrderTable.new({})
-    assert_nil t.column(:first_name).sort_direction
-    assert_nil t.column(:last_name).sort_direction
+  test "next_record and previous_record follow table ordering" do
+    t = TestTable.new({order: {email: :asc}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    middle_record = User.find(ordered_ids[1])
+
+    assert_equal ordered_ids[2], t.next_record(middle_record)&.id
+    assert_equal ordered_ids[0], t.previous_record(middle_record)&.id
   end
 
-  test "it overrides default order when explicit order param is given" do
-    t = TestWithDefaultOrderTable.new({order: {first_name: :asc}})
-    result = t.send(:order_hash)
-    assert_equal({first_name: :asc}, result)
+  test "next_record and previous_record respect active filters" do
+    t = CustomerTable.new({order: {name: :asc}, filters: {country: {value: "NL"}}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    middle_record = Customer.find(ordered_ids[1])
+
+    assert_equal ordered_ids[2], t.next_record(middle_record)&.id
+    assert_equal ordered_ids[0], t.previous_record(middle_record)&.id
+
+    outside_filtered_scope = customers(:sap)
+    assert_nil t.next_record(outside_filtered_scope)
+    assert_nil t.previous_record(outside_filtered_scope)
   end
 
-  test "it merges explicit order on top of default order when calling order_hash with new params" do
-    t = TestWithDefaultOrderTable.new({})
-    result = t.send(:order_hash, {first_name: :asc})
-    assert_equal({name: :desc, first_name: :asc}, result)
+  test "next_record and previous_record ignore pagination" do
+    unpaged_table = TestTable.new({order: {email: :asc}})
+    paged_table = TestTable.new({order: {email: :asc}, page: 2})
+    target_record = User.find(unpaged_table.ordered_scope.pluck(:id)[5])
+
+    assert_equal unpaged_table.next_record(target_record)&.id, paged_table.next_record(target_record)&.id
+    assert_equal unpaged_table.previous_record(target_record)&.id, paged_table.previous_record(target_record)&.id
   end
 
-  test "it clears default order column when explicitly set to nil" do
-    t = TestWithDefaultOrderTable.new({})
-    result = t.send(:order_hash, {name: nil})
-    assert_equal({}, result)
+  test "next_record and previous_record return nil at boundaries" do
+    t = TestTable.new({order: {email: :asc}})
+    ordered_ids = t.ordered_scope.pluck(:id)
+    first_record = User.find(ordered_ids.first)
+    last_record = User.find(ordered_ids.last)
+
+    assert_nil t.previous_record(first_record)
+    assert_nil t.next_record(last_record)
   end
 
-  test "it can change direction of default-ordered column" do
-    t = TestWithDefaultOrderTable.new({order: {name: :asc}})
-    result = t.send(:order_hash)
-    assert_equal({name: :asc}, result)
+  test "unknown column names in browser state are ignored" do
+    t = TestTable.new({
+      column_order: %w[gone last_name first_name],
+      hidden_columns: %w[gone role],
+      order: {gone: :asc, last_name: :desc},
+      filters: {gone: {value: "x"}}
+    })
+
+    # Columns the order doesn't list (:name) follow the ones it does
+    assert_equal %i[last_name first_name name], t.display_columns.map(&:name)
+    assert_empty t.active_filters
+    assert_nothing_raised { t.ordered_scope.to_a }
+    assert_no_match(/gone/, t.ordered_scope.to_sql)
   end
 
-  test "it reflects overridden order in sort_direction" do
-    t = TestWithDefaultOrderTable.new({order: {first_name: :asc}})
-    assert_equal :asc, t.column(:first_name).sort_direction
-    assert_nil t.column(:name).sort_direction
+  test "filters are customized only when they differ from the view's" do
+    view = DefaultFilteredUsersTable.new.default_system_view
+    table = ->(config) { DefaultFilteredUsersTable.new(config).tap { |t| t.table_view = view } }
+
+    refute table.call(filters: {customer_name: {operator: "is", value: "Audi"}}).filters_customized?
+    refute table.call(filters: {customer_name: {value: ["Audi"]}}).filters_customized?
+    assert table.call(filters: {customer_name: {operator: "is", value: "BMW"}}).filters_customized?
+    assert table.call(filters: {}).filters_customized?
+    assert table.call(filters: {customer_name: {value: "Audi"}, role: {value: "guest"}}).filters_customized?
+  end
+
+  test "a column_order with only unknown names falls back to all columns" do
+    t = TestTable.new({column_order: %w[gone]})
+
+    assert_equal %i[first_name last_name name role], t.display_columns.map(&:name)
+  end
+
+  test "order on a model attribute that isn't a column is kept" do
+    t = TestTable.new({order: {email: :asc}})
+
+    assert_match(/email asc/i, t.ordered_scope.to_sql)
+  end
+
+  test "selected_scope only selects id when the relation has that column" do
+    assert_match(/"id"|\bid\b/, TestTable.new({}).selected_scope.to_sql)
+
+    t = RoleCountsTable.new({})
+    assert_no_match(/\bid\b/, t.selected_scope.to_sql)
+    assert_equal User.distinct.count(:role), t.selected_scope.to_a.size
+  end
+
+  test "path_with_params carries the table's params and storage_key ignores them" do
+    customer = customers(:asml)
+    t = Mensa.for_name("customer_users", params: {customer_id: customer.id})
+
+    assert_equal "/x?params%5Bcustomer_id%5D=#{customer.id}", t.path_with_params("/x")
+    assert_equal "customer_users", t.storage_key
+    assert_equal "/x", TestTable.new({}).path_with_params("/x")
+  end
+
+  test "a redefined default view without a name keeps the translated name" do
+    view = UnnamedDefaultViewTable.new({}).default_system_view
+
+    assert_equal I18n.t("mensa.views.default"), view.name
+    assert_equal "user", view.config.dig(:filters, :role, :value)
+  end
+
+  test "a redefined default view can set its own name" do
+    assert_equal "All users", Mensa.for_name("users").default_system_view.name
+  end
+
+  test "ordering on a column with a custom attribute expression" do
+    t = TestTable.new({order: {name: :desc}})
+    expected = User.order(Arel.sql("CONCAT(first_name, last_name) DESC")).pluck(:id)
+
+    assert_nothing_raised { t.ordered_scope.to_a }
+    assert_equal expected, t.ordered_scope.pluck(:id)
+  end
+
+  test "order direction is case insensitive" do
+    t = TestTable.new({order: {first_name: "DESC"}})
+
+    assert_match(/"first_name" desc NULLS LAST/, t.ordered_scope.to_sql[/ORDER BY.*/])
+  end
+
+  test "unknown order directions are ignored" do
+    t = TestTable.new({order: {first_name: "asc; DROP TABLE users", last_name: :asc}})
+    sql = t.ordered_scope.to_sql
+
+    assert_no_match(/DROP/, sql)
+    assert_equal 'ORDER BY "users"."last_name" asc NULLS LAST', sql[/ORDER BY.*/]
   end
 end

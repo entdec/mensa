@@ -1,0 +1,34 @@
+<tr class="mensa-table__group-header"
+    data-mensa-groups-target="header"
+    data-group-key="<%= group.key %>"
+    data-action="click->mensa-groups#toggle"
+    aria-expanded="true">
+  <td colspan="<%= leading_cells + title_columns.size %>">
+    <div class="mensa-table__group-header__title">
+      <span class="mensa-table__group-header__toggle"><i class="<%= Mensa.config.icons[:group_toggle] %>"></i></span>
+      <span class="mensa-table__group-header__value"><%= group.title %></span>
+      <% if group.count %>
+        <span class="mensa-table__group-header__count"><%= group.count %></span>
+      <% end %>
+      <% title_columns.select { |column| aggregate?(column) }.each do |column| %>
+        <span class="mensa-table__group-header__aggregate">
+          <span class="mensa-table__group-header__aggregate-label"><%= group.aggregate_label(column) %></span>
+          <%= group.aggregate(column) %>
+        </span>
+      <% end %>
+    </div>
+  </td>
+  <% aggregate_columns.each do |column| %>
+    <td>
+      <% if aggregate?(column) %>
+        <span class="mensa-table__group-header__aggregate">
+          <span class="mensa-table__group-header__aggregate-label"><%= group.aggregate_label(column) %></span>
+          <%= group.aggregate(column) %>
+        </span>
+      <% end %>
+    </td>
+  <% end %>
+  <% if trailing_cells.positive? %>
+    <td></td>
+  <% end %>
+</tr>

@@ -1,15 +1,137 @@
 en:
   mensa:
-    add_filter:
-      component:
-        add_filter: Add filter
-    search:
-      component:
-        cancel: Cancel
-        save: Save
-    views:
-      default: All
+    tour:
+      ui:
+        next: Next
+        previous: Previous
+        done: Got it
+        replay_hint: Hover over the table and press ? to see this tour again.
+        progress: "{{current}} of {{total}}"
+      search:
+        title: Search and filter
+        description: Type to search the table, or click the plus button to filter on a specific column. Active filters appear as pills that you can edit or remove.
+        description_only: Type to search the table. Press Enter to apply your search.
+      columns:
+        title: Columns
+        description: Show, hide and reorder the columns by dragging them into the order you prefer.
+      sorting:
+        title: Sorting
+        description: Click a column header to sort by that column. Click again to reverse the order.
+      group_by:
+        title: Group by
+        description: Group rows by a column and optionally show totals or counts per group.
+      views:
+        title: Views
+        description: Switch between saved views, or save your current filters, search and columns as a custom view to reuse later.
+      export:
+        title: Export
+        description: Download the table with your current filters applied. Press Next to open the export dialog.
+      export_list:
+        title: Your downloads
+        description: Finished exports show up here so you can download or delete them.
+      export_scope:
+        title: What to export
+        description: Export all records matching your current filters, or only the page you are looking at.
+      export_format:
+        title: File format
+        description: Choose a CSV optimised for spreadsheet programs, or a plain CSV file.
+      export_repeat:
+        title: Repeat
+        description: Export once, or have the export repeat automatically at a daily, weekly, monthly or other interval.
+    column_customizer:
+      heading: Columns
+    group_by:
+      heading: Group by
+      none: No grouping
+      aggregates: Calculations
+    groups:
+      empty: No %{column}
+    aggregates:
+      none: None
+      count: Count
+      sum: Sum
+      min: Min
+      max: Max
     tables:
       filters:
-        new:
-          add_filter: Add filter
+        show:
+          clear: Cancel
+    save: Save
+    update_view: Update view
+    save_view: Save as new view
+    save_as_new_view: Save as new view
+    operators:
+      is: is
+      isnt: isn't
+      matches: matches
+      does_not_match: doesn't match
+      is_current: is current
+      gt: greater than
+      lt: less than
+      gteq: greater than or equal to
+      lteq: less than or equal to
+      is_duplicate: is duplicate
+      is_empty: is empty
+      isnt_empty: is not empty
+    add_filter:
+      add: Add filter
+      component:
+        add_filter: Add filter
+    filter_pill_list:
+      component:
+        search: Search and filter
+        search_only: Search
+    search:
+      component:
+        search: Search and filter
+        search_in: Search in %{view}
+        cancel: Cancel
+        save: Save
+        save_view_title: Save view
+        save_view_subtitle: Save the current filters, ordering and search as a reusable view.
+        view_name: Name
+        view_name_placeholder: e.g. Active customers
+        view_description: Description
+        view_description_placeholder: Optional notes about this view
+        view_name_required: Please enter a name for this view.
+    exports:
+      title: "Export %{table}"
+      close: Close
+      available_downloads: Available downloads
+      empty: You have no downloads yet. Create one below.
+      item_name: "%{table} export"
+      repeats_with_interval: "Repeats %{interval}"
+      repeat_section: Repeat
+      repeat: Repeat
+      repeat_once: "Only once"
+      repeat_repeating: Repeating
+      repeat_intervals:
+        daily: daily
+        weekly: weekly
+        monthly: monthly
+        quarterly: quarterly
+        bi-yearly: bi-yearly
+        yearly: yearly
+      download: Download
+      delete: Delete export
+      processing: Preparing…
+      waiting: Waiting
+      failed: Failed
+      new_export: New export
+      scope_all: All records (matching current filters)
+      scope_current_page: Current page
+      export_as: Export as
+      format_excel: CSV for Excel, Numbers, or other spreadsheet programs
+      format_plain: Plain CSV file
+      cancel: Cancel
+      submit: Export
+    paging:
+      info: Displaying %{model} %{from}-%{to} of %{count}
+    empty_state:
+      title: No %{model} found
+      subtitle: Try changing the filters or search terms for this view
+      clear_button: Clear search and filters
+    views:
+      default: All
+      component:
+        view_name_required: Please enter a name for this view.

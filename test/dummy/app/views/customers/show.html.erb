@@ -7,6 +7,15 @@
 
   <h1 class="font-bold text-4xl">Showing customer</h1>
 
+  <div class="mt-3">
+    <% if @previous_customer %>
+      <%= link_to "Previous customer", customer_path(@previous_customer, @mensa_navigation_params), class: "rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+    <% end %>
+    <% if @next_customer %>
+      <%= link_to "Next customer", customer_path(@next_customer, @mensa_navigation_params), class: "ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+    <% end %>
+  </div>
+
   <%= render @customer %>
 
   <%= link_to "Edit this customer", edit_customer_path(@customer), class: "mt-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>

@@ -1,0 +1,47 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "server",
+      "type": "shell",
+      "command": "if [ -f tmp/pids/server.pid ]; then pid=$(cat tmp/pids/server.pid); kill \"$pid\" 2>/dev/null || true; rm -f tmp/pids/server.pid; fi; mise exec -- bin/rails server -p 3000 -b 0.0.0.0",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "icon": {
+        "id": "server"
+      }
+    },
+    {
+      "label": "css",
+      "type": "shell",
+      "command": "cd test/dummy && mise exec -- bin/rails tailwindcss:config && mise exec -- bin/rails tailwindcss:watch",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "icon": {
+        "id": "json"
+      }
+    },
+    {
+      "label": "start all",
+      "dependsOn": [
+        "server",
+        "css"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}

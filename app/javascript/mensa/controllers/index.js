@@ -1,25 +1,46 @@
-import { application } from "mensa/controllers/application"
+import { application } from "mensa/controllers/application";
 
-// import AddFilterComponentController from 'components/add_filter/component_controller';
-// application.register('mensa-add-filter', AddFilterComponentController)
+import LinkController from "mensa/controllers/link_controller";
+application.register("mensa-link", LinkController);
 
-// import AddFilterComponentController from "mensa/components/add_filter/component_controller";
-// application.register("mensa-add-filter", AddFilterComponentController);
+import AddFilterComponentController from "mensa/components/add_filter/component_controller";
+application.register("mensa-add-filter", AddFilterComponentController);
 
 import FilterPillComponentController from "mensa/components/filter_pill/component_controller";
 application.register("mensa-filter-pill", FilterPillComponentController);
 
 import FilterPillListComponentController from "mensa/components/filter_pill_list/component_controller";
-application.register("mensa-filter-pill-list", FilterPillListComponentController);
+application.register(
+    "mensa-filter-pill-list",
+    FilterPillListComponentController,
+);
 
 import SearchComponentController from "mensa/components/search/component_controller";
 application.register("mensa-search", SearchComponentController);
 
-import TableComponentController from 'mensa/components/table/component_controller'
+import TableComponentController from "mensa/components/table/component_controller";
 application.register("mensa-table", TableComponentController);
 
-import ViewsComponentController from 'mensa/components/views/component_controller'
+import TourController from "mensa/components/table/tour_controller";
+application.register("mensa-tour", TourController);
+
+import ViewsComponentController from "mensa/components/views/component_controller";
 application.register("mensa-views", ViewsComponentController);
+
+import SelectionComponentController from "mensa/components/selection/component_controller";
+application.register("mensa-selection", SelectionComponentController);
+
+import ColumnCustomizerController from "mensa/components/column_customizer/component_controller";
+application.register("mensa-column-customizer", ColumnCustomizerController);
+
+import GroupByComponentController from "mensa/components/group_by/component_controller";
+application.register("mensa-group-by", GroupByComponentController);
+
+import GroupHeaderComponentController from "mensa/components/group_header/component_controller";
+application.register("mensa-groups", GroupHeaderComponentController);
+
+import CopyableComponentController from "mensa/components/copyable/component_controller";
+application.register("mensa-copyable", CopyableComponentController);
 
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 // import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"

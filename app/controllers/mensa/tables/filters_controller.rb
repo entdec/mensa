@@ -10,17 +10,20 @@ module Mensa
       end
 
       def index
-        config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+        config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}, params: {}).to_h)
         @table = Mensa.for_name(params[:table_id], config)
         @table.original_view_context = helpers
       end
 
       # Returns the filter information on the column-name
       def show
-        config = {}.merge(params.permit(:id, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}).to_h)
+        config = {}.merge(params.permit(:id, :value, :operator, :page, :table_id, :target, :table_view_id, :turbo_frame_id, order: {}, filters: {}, params: {}).to_h)
         @table = Mensa.for_name(params[:table_id], config)
         @table.original_view_context = helpers
         @column = @table.column(params[:id])
+        @operator = params[:operator].presence || "is"
+        @multiple = @column.filter.multiple?
+        @values = Array(params[:value]).flatten.compact
         respond_to do |format|
           format.turbo_stream
           format.html

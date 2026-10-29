@@ -1,0 +1,69 @@
+<div data-mensa-table-target="view"
+     data-group-by="<%= table.group_column&.name %>"
+     data-aggregates="<%= table.current_aggregates.to_json %>">
+  <div class="overflow-y-auto relative"
+       data-mensa-table-target="scrollContainer"
+       data-controller="mensa-selection"
+       data-mensa-selection-batch-url-value="<%= table.batch_actions? ? table.path_with_params(helpers.mensa.table_batch_actions_path(table.name)) : "" %>">
+    <% if table.batch_actions? %>
+      <div class="mensa-batch-bar hidden" data-mensa-selection-target="batchBar">
+        <div class="mensa-batch-bar__content">
+          <input class="mensa-table__select-all" type="checkbox" data-action="click->mensa-selection#deselectAll" data-mensa-selection-target="batchAllCheckbox">
+          <span class="mensa-batch-bar__count" data-mensa-selection-target="selectedCount"></span>
+          <% table.batch_actions.each do |batch_action| %>
+            <button class="mensa-batch-bar__button" type="button" data-action="click->mensa-selection#executeBatch" data-mensa-selection-batch-action-param="<%= batch_action.name %>">
+              <%= batch_action.title %>
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <table class="w-full"
+           <% if table.grouped? %>
+             data-controller="mensa-groups"
+             data-mensa-groups-column-value="<%= table.group_column.name %>"
+           <% end %>>
+      <% if table.show_header? %>
+        <thead>
+          <tr>
+            <% if table.batch_actions? %>
+              <th class="mensa-table__checkbox-col">
+                <div class="container">
+                  <input class="mensa-table__select-all" type="checkbox" data-action="change->mensa-selection#toggleAll" data-mensa-selection-target="headerCheckbox">
+                </div>
+              </th>
+            <% end %>
+            <% if table.actions? && Mensa.config.row_actions_position == :front %>
+              <th class="actions" aria-label="Actions"><i class="<%= Mensa.config.icons[:action_column_header] %>" aria-hidden="true"></i></th>
+            <% end %>
+            <%= render(Mensa::Header::Component.with_collection(table.display_columns, table: table)) %>
+            <% if table.actions? && Mensa.config.row_actions_position == :back %>
+              <th class="actions" aria-label="Actions"><i class="<%= Mensa.config.icons[:action_column_header] %>" aria-hidden="true"></i></th>
+            <% end %>
+          </tr>
+        </thead>
+      <% end %>
+      <tbody>
+        <% if table.grouped? %>
+          <% table.rows.chunk_while { |a, b| a.group_value == b.group_value }.each do |rows| %>
+            <% group = table.group_for(rows.first) %>
+            <%= render Mensa::GroupHeader::Component.new(table: table, group: group) %>
+            <%= render(Mensa::TableRow::Component.with_collection(rows, table: table, group: group)) %>
+          <% end %>
+        <% else %>
+          <%= render(Mensa::TableRow::Component.with_collection(table.rows, table: table)) %>
+        <% end %>
+      </tbody>
+    </table>
+    <% if table.pagy_details&.count == 0 %>
+      <%= render Mensa::EmptyState::Component.new(table: table) %>
+    <% end %>
+  </div>
+
+  <% if table.pagy_details&.count != 0 && table.pagy_details&.last > 1 %>
+    <div class="paging">
+      <span><%= t("mensa.paging.info", model: model_name_plural, from: table.pagy_details.from, to: table.pagy_details.to, count: table.pagy_details.count) %></span>
+      <%== table.pagy_details.series_nav(anchor_string: 'data-turbo-frame="_self"') %>
+    </div>
+  <% end %>
+</div>

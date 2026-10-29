@@ -1,0 +1,39 @@
+/* Dark mode for the driver.js tour popover. driver.css is vendored unmodified, so the
+   overrides live here and must be imported after it. */
+.driver-popover {
+    @apply dark:bg-gray-800 dark:text-gray-100 dark:ring-1 dark:ring-white/10;
+}
+
+.driver-popover-description {
+    @apply dark:text-gray-300;
+}
+
+.driver-popover-progress-text {
+    @apply dark:text-gray-400;
+}
+
+.driver-popover-close-btn {
+    @apply dark:text-gray-500 dark:hover:text-gray-200 dark:focus:text-gray-200;
+}
+
+.driver-popover-footer button {
+    @apply dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:[text-shadow:none] dark:hover:bg-gray-600 dark:focus:bg-gray-600;
+}
+
+/* The arrow is a border triangle: only the side pointing at the element is coloured,
+   the other three stay transparent. */
+.driver-popover-arrow-side-left {
+    @apply dark:border-l-gray-800;
+}
+
+.driver-popover-arrow-side-right {
+    @apply dark:border-r-gray-800;
+}
+
+.driver-popover-arrow-side-top {
+    @apply dark:border-t-gray-800;
+}
+
+.driver-popover-arrow-side-bottom {
+    @apply dark:border-b-gray-800;
+}

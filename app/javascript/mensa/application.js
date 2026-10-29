@@ -1,2 +1,2 @@
-import "@hotwired/turbo-rails"
-import "mensa/controllers"
+import "@hotwired/turbo-rails";
+import "mensa/controllers";

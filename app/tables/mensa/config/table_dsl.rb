@@ -5,7 +5,7 @@
 #     render do # default Standard components
 #       html # Mensa::TableComponent::Default
 #       json # Mensa::JsonRenderer::Default
-#       xlsx # Mensa::XlsxRenderer::Default
+#       csv # Mensa::CsvRenderer::Default
 #     end
 #
 #     column(:first_name) do
@@ -30,8 +30,6 @@
 #     order last_name: :asc
 #     link { |user| edit_user_path(user) }
 #
-#     supports_views true
-#     supports_filters true
 #
 #     action :activate do
 #       link { |user| edit_user_path(user) }
@@ -48,6 +46,7 @@ module Mensa::Config
   class TableDsl
     include DslLogic
 
+    option :params, default: {}
     option :model, default: -> {
       begin
         self.class.name.demodulize.to_s.classify.gsub("Table", "").singularize.constantize
@@ -55,6 +54,7 @@ module Mensa::Config
         raise "No model found for #{self.class.name}"
       end
     }
+    option :scope, default: -> { model.all }
     option :column, dsl_hash: Mensa::Config::ColumnDsl
     option :link
 
@@ -67,22 +67,32 @@ module Mensa::Config
     # Order of columns in the table
     option :column_order
 
+    # Group rows by this column, e.g. `group_by :status`
+    option :group_by
+    # Aggregates shown per group, e.g. `aggregates market_cap: :sum`
+    option :aggregates
+
     # Actions
     option :action, dsl_hash: Mensa::Config::ActionDsl
 
+    option :batch, dsl_hash: Mensa::Config::BatchDsl
+
     option :render, dsl: Mensa::Config::RenderDsl
 
-    option :supports_views, default: false
-    option :supports_custom_views, default: false
-    option :supports_filters, default: true
+    option :supports_custom_views, default: true
     option :show_header, default: true
     # Whether the table allows to change column ordering
     option :view_columns_ordering, default: true
-    # Whether to show a condensed view by default
-    option :view_condensed, default: false
-    # Whether to show the toggle for condensed view
-    option :view_condensed_toggle, default: true
 
     option :view, dsl_hash: Mensa::Config::ViewDsl
+
+    # Syntactic sugar for `column :carrier_id do internal true end`.
+    def internal(name, &block)
+      column(name) do
+        internal true
+        filter false
+        instance_exec(&block) if block
+      end
+    end
   end
 end
