@@ -1,11 +1,17 @@
-name: mensa
+name: ${COMPOSE_PROJECT_NAME:-mensa}
 
 services:
   app:
     image: ghcr.io/rails/devcontainer/images/ruby:4.0.5
 
     volumes:
-      - ../..:/workspaces
+      # .env is written by initialize.sh, the defaults are for the main checkout
+      - ${WORKSPACES_ROOT:-../..}:/workspaces
+      # A worktree's .git file points here by absolute path
+      - ${GIT_COMMON_DIR:-../.git}:${GIT_COMMON_DIR:-/workspaces/mensa/.git}
+
+    environment:
+      CAPYBARA_APP_HOST: http://app.${COMPOSE_PROJECT_NAME:-mensa}.orb.local
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity

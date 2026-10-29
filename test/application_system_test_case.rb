@@ -27,7 +27,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       Capybara.server = :puma, {Silent: true, Threads: "0:10", queue_requests: false}
       Capybara.server_port = 3100
       Capybara.server_host = "0.0.0.0"
-      Capybara.app_host = "http://app.mensa.orb.local"
+      Capybara.app_host = ENV.fetch("CAPYBARA_APP_HOST", "http://app.mensa.orb.local")
       Rails.application.routes.default_url_options[:host] = Capybara.app_host
       Rails.application.routes.default_url_options[:port] = Capybara.server_port
     end

@@ -24,11 +24,16 @@
         "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
     ],
+    "initializeCommand": ".devcontainer/initialize.sh",
     "postStartCommand": ".devcontainer/postStart.sh",
     "containerEnv": {
         "VISUAL": "vi",
         "SSH_AUTH_SOCK": "/ssh-agent"
     },
+    // Credentials for the GitHub Packages gem source in the Gemfile
+    "remoteEnv": {
+        "BUNDLE_RUBYGEMS__PKG__GITHUB__COM": "${localEnv:BUNDLE_RUBYGEMS__PKG__GITHUB__COM}"
+    },
     "customizations": {},
-    "workspaceFolder": "/workspaces/mensa"
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
 }

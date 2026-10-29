@@ -11,3 +11,5 @@ sudo chmod 666 /ssh-agent
 "$MISE" exec -- bundle install
 "$MISE" exec --cd test/dummy -- rake db:prepare
 "$MISE" exec --cd test/dummy -- rake tailwindcss:config
+# Propshaft only serves app/assets/builds when it exists at boot
+"$MISE" exec --cd test/dummy -- rake tailwindcss:build
