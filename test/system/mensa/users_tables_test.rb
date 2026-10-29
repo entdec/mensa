@@ -653,6 +653,35 @@ class UsersTablesTest < ApplicationSystemTestCase
     assert_no_selector "thead th", text: "Role"
   end
 
+  test "filters changed on one view don't carry over to a view selected afterwards" do
+    view = Mensa::TableView.create!(
+      table_name: "default_filtered_users",
+      name: "BMW users",
+      config: {filters: {customer_name: {operator: "is", value: "BMW"}}}
+    )
+
+    visit default_filtered_users_url
+    assert_selector "tbody", text: "Audi", wait: 3
+    add_filter(column: "role", value: "guest")
+    assert_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+
+    open_views_dropdown
+    find("li[data-view-id='#{view.id}'] button[data-action='mensa-views#select']").click
+    assert_no_selector ".mensa-filter-pill__column", text: "Role", visible: :all, wait: 3
+    rows_in_view = all("tbody tr", wait: 3).size
+
+    click_link "Users"
+    click_link "Default filtered users"
+
+    assert_selector ".mensa-table__views__trigger-label", text: "BMW users", wait: 3
+    assert_selector "tbody tr", count: rows_in_view, wait: 3
+    assert_selector "tbody", text: "BMW"
+    assert_no_selector "tbody", text: "Audi"
+    assert_no_selector ".mensa-filter-pill__column", text: "Role", visible: :all
+  ensure
+    view&.destroy
+  end
+
   test "filters added to a selected view survive navigating back to the table" do
     view = Mensa::TableView.create!(
       table_name: "default_filtered_users",

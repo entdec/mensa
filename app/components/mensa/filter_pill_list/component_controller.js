@@ -180,7 +180,10 @@ export default class FilterPillListComponentController extends ApplicationContro
             page: "",
         };
         this.persistState(state);
-        // The selected view brings its own grouping
+        // The selected view brings its own filters and grouping. Stored filters
+        // hold the previous view's pills (its defaults included), which would
+        // otherwise be replayed onto this view when the page is visited again.
+        this.writeStorage(this.filtersStorageKey, null);
         this.clearPersistedGrouping();
         this.setSearchField("");
         this.updateSearchPlaceholder();
