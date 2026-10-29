@@ -318,6 +318,10 @@ end
 - Run `direnv allow`
 - Run `overmind s`
 
+### Development environments
+
+See [.devcontainer/README.md](.devcontainer/README.md).
+
 ### Docs
 
 Using the following in your view will render Mensa::Table::Component

@@ -6,7 +6,7 @@
     "service": "app",
     "features": {
         "ghcr.io/devcontainers/features/node:2": {},
-        "ghcr.io/devcontainers/features/common-utils:2": {
+        "ghcr.io/devcontainers/features/common-utils:2.7.1": {
             "configureZshAsDefaultShell": true,
             "installOhMyZsh": false,
             "installOhMyZshConfig": false
@@ -24,16 +24,22 @@
         "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
     ],
-    "initializeCommand": ".devcontainer/initialize.sh",
+    "initializeCommand": "bin/de initialize",
+    // Closing the editor leaves the environment running, bin/de down stops it
+    "shutdownAction": "none",
     "postStartCommand": ".devcontainer/postStart.sh",
     "containerEnv": {
         "VISUAL": "vi",
         "SSH_AUTH_SOCK": "/ssh-agent"
     },
-    // Credentials for the GitHub Packages gem source in the Gemfile
     "remoteEnv": {
-        "BUNDLE_RUBYGEMS__PKG__GITHUB__COM": "${localEnv:BUNDLE_RUBYGEMS__PKG__GITHUB__COM}"
+        // Credentials for the GitHub Packages gem source in the Gemfile
+        "BUNDLE_RUBYGEMS__PKG__GITHUB__COM": "${localEnv:BUNDLE_RUBYGEMS__PKG__GITHUB__COM}",
+        // The repository's bin/, so `rails test` works in terminals
+        "PATH": "${containerWorkspaceFolder}/bin:${containerEnv:PATH}"
     },
     "customizations": {},
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+    // Where docker-compose.yml mounts this checkout, see env_init in bin/de.
+    // /workspaces/mensa links here too, but only once the container runs.
+    "workspaceFolder": "/workspaces${localWorkspaceFolder}"
 }
