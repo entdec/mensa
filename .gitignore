@@ -25,3 +25,4 @@ mise.local.toml
 todo.md
 
 .devcontainer/.env
+.devcontainer/de-host/

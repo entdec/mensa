@@ -320,7 +320,7 @@ end
 
 ### Development environments
 
-See [.devcontainer/README.md](.devcontainer/README.md).
+See [de](https://github.com/tdegrunt/de#readme).
 
 ### Docs
 

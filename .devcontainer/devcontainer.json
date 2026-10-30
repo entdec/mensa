@@ -18,7 +18,10 @@
         "ghcr.io/devcontainers/features/github-cli:1": {},
         "ghcr.io/devcontainers/features/docker-in-docker:2": {
             "moby": false
-        }
+        },
+        // Your own tools from ~/.config/de/config.json, written by bin/de
+        // initialize, see https://github.com/tdegrunt/de#your-own-tools
+        "./de-host": {}
     },
     "mounts": [
         "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind,consistency=cached",

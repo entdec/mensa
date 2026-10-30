@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # de: development environments for this repository. Run without arguments
 # for help. Repository specific settings live in .devcontainer/env.conf, this
-# script is generic and can be copied as-is between repositories.
+# script is generic: it comes from the de repository, whose `de init` copies
+# it into a repository as bin/de, the same everywhere. Run from the de
+# repository itself (e.g. linked onto the PATH as `de`), it sets repositories
+# up and hands every other command to the bin/de of the current checkout.
 #
 # Every checkout (main checkout or git worktree) gets its own environment: a
 # Docker Compose project named after the branch, labelled with
@@ -15,15 +18,28 @@
 # Cleanup selects resources by these labels, never by name.
 set -euo pipefail
 
-DE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+# Through symlinks, e.g. ~/.local/bin/de to the de repository's bin/de
+DE_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd -P)"
+# Set when running from the de repository rather than a repository's copy
+DE_TEMPLATE=""
+DE_DOCS="https://github.com/tdegrunt/de#readme"
+# Your own tools for every environment, see env_write_host_feature
+DE_CONFIG="${DE_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/de/config.json}"
 # `de exec` passes a SELENIUM_URL from the caller on, see env.conf. Unset it
 # so env.conf's value isn't exported to the commands this script runs.
 ENV_SELENIUM_URL_GIVEN="${SELENIUM_URL:-}"
 unset SELENIUM_URL
 UP_COMMAND=()
 PRIMARY_BRANCHES=(main master)
-# shellcheck source=../.devcontainer/env.conf
-source "$DE_ROOT/.devcontainer/env.conf"
+if [ -f "$DE_ROOT/.devcontainer/env.conf" ]; then
+  # shellcheck source=../.devcontainer/env.conf
+  source "$DE_ROOT/.devcontainer/env.conf"
+elif [ -d "$DE_ROOT/template" ]; then
+  DE_TEMPLATE="$DE_ROOT/template"
+else
+  printf 'error: %s has neither .devcontainer/env.conf nor template/\n' "$DE_ROOT" >&2
+  exit 1
+fi
 
 usage() {
   cat <<EOF
@@ -56,10 +72,6 @@ Commands:
                      --destroy-persistent is given and its name confirmed.
   prune [--yes]      Remove ephemeral environments whose worktree or branch
                      is gone. --yes skips the confirmation.
-  init <repository> [--force]
-                     Set up this devcontainer setup in another repository, or
-                     update its bin/de. Repository specific files that already
-                     exist there are kept, unless --force is given.
   help               Show this help.
 
 Examples:
@@ -68,7 +80,31 @@ Examples:
   SELENIUM_URL=http://host.docker.internal:4444/ HEADLESS=0 bin/de exec bin/rails test:system
   bin/de code main
 
-Settings: .devcontainer/env.conf, docs: .devcontainer/README.md
+Settings: .devcontainer/env.conf, your own tools: $DE_CONFIG,
+docs: $DE_DOCS. To update bin/de, run \`de init\` from the de repository.
+EOF
+}
+
+# Help when running from the de repository
+usage_source() {
+  cat <<EOF
+Usage: de <command> [arguments]
+
+Development environments, one devcontainer per checkout. This is the de
+repository's copy ($DE_ROOT): it sets repositories up, and hands every other
+command to the bin/de of the checkout you're in.
+
+Commands:
+  init [<repository>] [--force]
+                     Set up development environments in a repository (default
+                     the current one), or update its bin/de. Repository
+                     specific files that already exist there are kept, unless
+                     --force is given.
+  help               Show this help.
+  <command>          Any bin/de command, run by the current checkout's bin/de,
+                     e.g. de up, de exec bin/rails test. See bin/de help there.
+
+Your own tools for every environment: $DE_CONFIG
 EOF
 }
 
@@ -279,66 +315,62 @@ checkouts() {
 
 # --- Commands -----------------------------------------------------------
 
+# Writes the local feature devcontainer.json includes as ./de-host, from
+# $DE_CONFIG on the host: your own editor extensions, npm packages and
+# features for every environment of every repository, e.g.
+#
+#   {
+#     "extensions": ["anthropic.claude-code", "openai.chatgpt"],
+#     "npm": ["@anthropic-ai/claude-code", "@openai/codex"],
+#     "features": { "ghcr.io/devcontainers/features/python:1": {} }
+#   }
+#
+# A feature, so the editor installs its extensions in the container whoever
+# opens it, and its packages are part of the image. Changes apply on the next
+# build, bin/de up --rebuild.
+env_write_host_feature() {
+  local dir="$ENV_PATH/.devcontainer/de-host" config='{}'
+  if [ -f "$DE_CONFIG" ]; then
+    command -v jq >/dev/null 2>&1 || die "reading $DE_CONFIG needs jq"
+    config="$(jq -e 'if type == "object" then . else error("not an object") end' "$DE_CONFIG")" ||
+      die "$DE_CONFIG isn't a JSON object"
+  fi
+  mkdir -p "$dir"
+  if [ "$config" = '{}' ]; then
+    printf '{ "id": "de-host", "version": "1.0.0", "name": "Nothing from %s" }\n' "$DE_CONFIG" > "$dir/devcontainer-feature.json"
+    printf '#!/bin/sh\n# Written by bin/de, %s has nothing to install\n' "$DE_CONFIG" > "$dir/install.sh"
+  else
+    jq --arg config "$DE_CONFIG" '{
+        id: "de-host",
+        version: "1.0.0",
+        name: "Your own tools from \($config), written by bin/de",
+        installsAfter: ["ghcr.io/devcontainers/features/node"],
+        customizations: { vscode: { extensions: (.extensions // []) } }
+      } + (if (.features // {}) != {} then { dependsOn: .features } else {} end)' <<<"$config" > "$dir/devcontainer-feature.json"
+    {
+      printf '#!/bin/sh\n# Written by bin/de from %s, do not edit\nset -e\n' "$DE_CONFIG"
+      jq -r '.npm // [] | if length > 0 then "npm install --global --no-fund --no-audit " + (map(@sh) | join(" ")) else empty end' <<<"$config"
+    } > "$dir/install.sh"
+  fi
+  chmod +x "$dir/install.sh"
+}
+
 # Runs on the host before the containers start, see initializeCommand in
 # devcontainer.json, so opening a checkout from an editor works too
 cmd_initialize() {
   # docker-compose.yml mounts it, and Docker refuses a missing bind source
   mkdir -p "$HOME/.config/git"
   env_write_dotenv
+  env_write_host_feature
   log "Environment $ENV_NAME ($ENV_KIND)"
 }
 
-# Prints an env.conf for a repository named $1, with this repository's
-# settings as defaults
-env_conf_for() {
-  local repo="$1" target="$2" up_command
-  if [ -d "$target/test/dummy" ] && [ -x "$target/bin/rails" ]; then
-    up_command="env RAILS_ENV=test bin/rails app:db:prepare"
-  elif [ -x "$target/bin/rails" ]; then
-    up_command="env RAILS_ENV=test bin/rails db:prepare"
-  else
-    up_command=""
-  fi
-  cat <<EOF
-# Per-repository settings for bin/de, which is generic and can be copied as-is
-# between repositories.
-
-# Prefix of every environment name, and the folder the checkout appears at
-# inside the container (/workspaces/<ENV_REPO>, see devcontainer.json).
-ENV_REPO=$repo
-
-# Branches whose environments are persistent: they keep their volumes and are
-# never removed by bin/de prune. Every other branch gets an ephemeral one.
-PERSISTENT_BRANCHES=(${PERSISTENT_BRANCHES[*]})
-
-# Branches whose environment is named just ENV_REPO, e.g. reachable as
-# app.$repo.orb.local. Always persistent.
-PRIMARY_BRANCHES=(${PRIMARY_BRANCHES[*]})
-
-# Selenium the system tests drive: the environment's own container. To watch
-# a test in a browser on the Mac instead, override it for one command:
-#
-#   SELENIUM_URL=http://host.docker.internal:4444/ HEADLESS=0 bin/de exec bin/rails test:system
-SELENIUM_URL="$SELENIUM_URL"
-
-# Run in the container at the end of bin/de up, from the checkout root, e.g.
-# to prepare the test database (postStart.sh prepares the development one).
-# A Rails engine runs it from the engine root, so its own migrations are
-# included.
-UP_COMMAND=($up_command)
-
-# Version of @devcontainers/cli to run through npx when \`devcontainer\` isn't
-# installed.
-DEVCONTAINER_CLI_VERSION=$DEVCONTAINER_CLI_VERSION
-EOF
-}
-
-# Copies this setup into another repository. bin/de and the docs are generic
-# and always updated; the rest is repository specific, a starting point that
-# is only copied when missing, or with --force.
+# Copies the setup into a repository, from the de repository. bin/de is
+# generic and always updated; the template is repository
+# specific, a starting point that is only copied when missing, or with --force.
 cmd_init() {
-  local target="" force=false arg rel common repo entry
-  local usage_line="usage: bin/de init <repository> [--force]"
+  local target="" force=false arg rel src common repo up_command entry
+  local usage_line="usage: de init [<repository>] [--force]"
   for arg in "$@"; do
     case "$arg" in
       --force) force=true ;;
@@ -346,48 +378,56 @@ cmd_init() {
       *) [ -z "$target" ] || die "$usage_line"; target="$arg" ;;
     esac
   done
-  [ -n "$target" ] || die "$usage_line"
+  target="${target:-$PWD}"
   [ -d "$target" ] || die "$target doesn't exist"
   target="$(cd "$(git -C "$target" rev-parse --show-toplevel 2>/dev/null)" && pwd -P)" ||
     die "$target isn't a git checkout"
-  [ "$target" != "$ENV_PATH" ] || die "$target is this checkout"
+  [ "$target" != "$DE_ROOT" ] || die "$target is the de repository itself"
 
   common="$(cd "$target" && cd "$(git rev-parse --git-common-dir)" && pwd -P)"
   repo="$(env_sanitize "$(basename "$(dirname "$common")")")"
+  if [ -d "$target/test/dummy" ] && [ -x "$target/bin/rails" ]; then
+    up_command="env RAILS_ENV=test bin/rails app:db:prepare"
+  elif [ -x "$target/bin/rails" ]; then
+    up_command="env RAILS_ENV=test bin/rails db:prepare"
+  else
+    up_command=""
+  fi
   log "Setting up development environments in $target ($repo)"
 
-  # Generic: always the same as here
-  for rel in bin/de .devcontainer/README.md; do
-    if cmp -s "$ENV_PATH/$rel" "$target/$rel"; then
-      printf '  %-36s up to date\n' "$rel" >&2
-      continue
-    fi
-    run mkdir -p "$(dirname "$target/$rel")"
-    run cp -p "$ENV_PATH/$rel" "$target/$rel"
-  done
+  # Generic: always the same as in the de repository
+  if cmp -s "$DE_ROOT/bin/de" "$target/bin/de"; then
+    printf '  %-36s up to date\n' bin/de >&2
+  else
+    run mkdir -p "$target/bin"
+    run cp -p "$DE_ROOT/bin/de" "$target/bin/de"
+  fi
+  # The docs used to be copied too, they live in the de repository now
+  if [ -f "$target/.devcontainer/README.md" ] && grep -q '^`bin/de` manages them' "$target/.devcontainer/README.md"; then
+    log "Removing .devcontainer/README.md, the docs are at $DE_DOCS"
+    run rm "$target/.devcontainer/README.md"
+  fi
 
   # Repository specific: services, image, setup steps and settings
-  for rel in "$ENV_PATH"/.devcontainer/* .worktreeinclude; do
-    rel="${rel#"$ENV_PATH"/}"
-    case "$rel" in .devcontainer/.env | .devcontainer/env.conf | .devcontainer/README.md) continue ;; esac
-    [ -e "$ENV_PATH/$rel" ] || continue
+  while IFS= read -r rel; do
+    rel="${rel#./}"
     if [ -e "$target/$rel" ] && ! $force; then
       printf '  %-36s exists, kept (--force to replace)\n' "$rel" >&2
       continue
     fi
     run mkdir -p "$(dirname "$target/$rel")"
-    run cp -p "$ENV_PATH/$rel" "$target/$rel"
-  done
-  if [ -e "$target/.devcontainer/env.conf" ] && ! $force; then
-    printf '  %-36s exists, kept (--force to replace)\n' .devcontainer/env.conf >&2
-  else
-    log "Writing $target/.devcontainer/env.conf"
-    env_conf_for "$repo" "$target" > "$target/.devcontainer/env.conf"
+    run cp -p "$DE_TEMPLATE/$rel" "$target/$rel"
+    sed -i '' -e "s|@REPO@|$repo|g" -e "s|@UP_COMMAND@|$up_command|g" "$target/$rel"
+  done < <(cd "$DE_TEMPLATE" && find . -type f | sort)
+
+  if ! grep -q '"\./de-host"' "$target/.devcontainer/devcontainer.json"; then
+    warn "add \"./de-host\": {} to the features in .devcontainer/devcontainer.json, for your own tools from $DE_CONFIG"
   fi
 
-  # Never commit the generated .env or local secrets
-  for entry in .devcontainer/.env mise.local.toml; do
-    git -C "$target" check-ignore -q --no-index -- "$entry" && continue
+  # Never commit generated files or local secrets
+  for entry in .devcontainer/.env .devcontainer/de-host/ mise.local.toml; do
+    # A file inside, as a directory entry like de-host/ only matches what's in it
+    git -C "$target" check-ignore -q --no-index -- "${entry%/}$([ "${entry%/}" = "$entry" ] || echo /x)" && continue
     log "Adding $entry to .gitignore"
     printf '%s\n' "$entry" >> "$target/.gitignore"
   done
@@ -398,14 +438,14 @@ Done. Review the repository specific files for $repo, then start it:
 
   .devcontainer/env.conf            ENV_REPO, PERSISTENT_BRANCHES, UP_COMMAND
   .devcontainer/docker-compose.yml  services, keep the x-env-labels and mounts
-  .devcontainer/Dockerfile          the image
   .devcontainer/postStart.sh        installing dependencies, the dev database
-  .devcontainer/devcontainer.json   features and editor extensions
+  .devcontainer/devcontainer.json   features, keep ./de-host and the mounts
   .worktreeinclude                  ignored files new worktrees need
+  orca.yaml                         Orca's worktree hooks
 
   cd $target && bin/de up
 
-Run bin/de init again later to update bin/de there.
+Run de init there again later to update its bin/de.
 EOF
 }
 
@@ -514,6 +554,7 @@ cmd_up() {
 
   log "Writing $ENV_DOTENV"
   env_write_dotenv
+  env_write_host_feature
 
   log "Building and starting the devcontainer"
   devcontainer_cli up --workspace-folder "$ENV_PATH" ${up_args[@]+"${up_args[@]}"}
@@ -745,9 +786,22 @@ cmd_prune() {
 command="${1:-help}"
 [ "$#" -gt 0 ] && shift
 
+if [ -n "$DE_TEMPLATE" ]; then
+  case "$command" in
+    help | -h | --help) usage_source; exit ;;
+    init) cmd_init "$@"; exit ;;
+  esac
+  # Everything else is for the checkout the current directory is in
+  checkout="$(git rev-parse --show-toplevel 2>/dev/null)" || die "not inside a git checkout"
+  [ -f "$checkout/.devcontainer/env.conf" ] && [ -x "$checkout/bin/de" ] ||
+    die "$checkout has no development environments, set them up with: de init"
+  exec "$checkout/bin/de" "$command" "$@"
+fi
+
 case "$command" in
   help | -h | --help) usage; exit ;;
-  init | initialize | new | up | exec | status | code | down | prune) ;;
+  initialize | new | up | exec | status | code | down | prune) ;;
+  init) die "run de init from the de repository, which bin/de comes from" ;;
   *) usage >&2; die "unknown command: $command" ;;
 esac
 
