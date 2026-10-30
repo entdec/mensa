@@ -21,6 +21,7 @@ DE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 ENV_SELENIUM_URL_GIVEN="${SELENIUM_URL:-}"
 unset SELENIUM_URL
 UP_COMMAND=()
+PRIMARY_BRANCHES=(main master)
 # shellcheck source=../.devcontainer/env.conf
 source "$DE_ROOT/.devcontainer/env.conf"
 
@@ -30,8 +31,9 @@ Usage: bin/de <command> [arguments]
 
 Every checkout of this repository, the main one and each git worktree, gets
 its own development environment: a devcontainer with its own services,
-volumes and network. Environments for ${PERSISTENT_BRANCHES[*]} are persistent
-and keep their data, all others are ephemeral.
+volumes and network. Environments for ${PRIMARY_BRANCHES[*]} ${PERSISTENT_BRANCHES[*]} are
+persistent and keep their data, all others are ephemeral. A primary branch
+(${PRIMARY_BRANCHES[*]}) gets one named $ENV_REPO, the others $ENV_REPO-<branch>.
 
 Commands:
   new <branch> [folder] [--from <ref>]
@@ -99,8 +101,18 @@ env_sanitize() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | tr -s '-' | sed 's/^-//; s/-$//'
 }
 
+env_is_primary_branch() {
+  local branch
+  for branch in "${PRIMARY_BRANCHES[@]}"; do
+    [ "$1" = "$branch" ] && return 0
+  done
+  return 1
+}
+
+# Primary branches are always persistent
 env_is_persistent_branch() {
   local branch
+  env_is_primary_branch "$1" && return 0
   for branch in "${PERSISTENT_BRANCHES[@]}"; do
     [ "$1" = "$branch" ] && return 0
   done
@@ -111,7 +123,9 @@ env_is_persistent_branch() {
 env_name_for() {
   local dir="$1" branch name
   branch="$(git -C "$dir" symbolic-ref --short -q HEAD || true)"
-  if [ -n "$branch" ]; then
+  if [ -n "$branch" ] && env_is_primary_branch "$branch"; then
+    name="$(env_sanitize "$ENV_REPO")"
+  elif [ -n "$branch" ]; then
     name="$(env_sanitize "$ENV_REPO-$branch")"
   else
     name="$(env_sanitize "$ENV_REPO-detached-$(basename "$dir")")"
@@ -296,6 +310,10 @@ ENV_REPO=$repo
 # Branches whose environments are persistent: they keep their volumes and are
 # never removed by bin/de prune. Every other branch gets an ephemeral one.
 PERSISTENT_BRANCHES=(${PERSISTENT_BRANCHES[*]})
+
+# Branches whose environment is named just ENV_REPO, e.g. reachable as
+# app.$repo.orb.local. Always persistent.
+PRIMARY_BRANCHES=(${PRIMARY_BRANCHES[*]})
 
 # Selenium the system tests drive: the environment's own container. To watch
 # a test in a browser on the Mac instead, override it for one command:

@@ -12,20 +12,23 @@ usage.
 
 ## Kinds
 
-The branch decides the kind (`PERSISTENT_BRANCHES` in `env.conf`):
+The branch decides the kind (`PRIMARY_BRANCHES` and `PERSISTENT_BRANCHES` in
+`env.conf`):
 
-- **Persistent**, e.g. `main`, `staging` and `develop`. Their data survives
-  restarts and `bin/de down`, and `bin/de prune` never touches them.
+- **Persistent**: the primary branches `main` and `master`, and e.g.
+  `staging` and `develop`. Their data survives restarts and `bin/de down`,
+  and `bin/de prune` never touches them.
 - **Ephemeral**: any other branch. They start from an empty database, filled
   only from the repository's schema, migrations and seeds, and are removed
   completely when the worktree is done.
 
 An environment is named `<repo>-<branch>` (`ENV_REPO` in `env.conf`, the
 branch lowercased with anything but letters, digits and dashes replaced), e.g.
-`myapp-fix-login`. That's its Docker Compose project, and every container,
-volume and network carries the labels `dev.env.name`, `dev.env.kind`,
-`dev.env.branch`, `dev.env.path` and `dev.env.gitdir`. Cleanup selects by
-these labels only. Services are reachable from the Mac as
+`myapp-fix-login`, or just `<repo>` for a primary branch, e.g. `myapp`, which
+makes the app `app.myapp.orb.local`. That's its Docker Compose project, and
+every container, volume and network carries the labels `dev.env.name`,
+`dev.env.kind`, `dev.env.branch`, `dev.env.path` and `dev.env.gitdir`.
+Cleanup selects by these labels only. Services are reachable from the Mac as
 `<service>.<env>.orb.local`, e.g. `postgres.myapp-fix-login.orb.local:5432`;
 no host ports are published.
 
@@ -117,8 +120,8 @@ replaced with `--force`. `env.conf` is written for the target repository, and
 `.devcontainer/.env` and `mise.local.toml` are added to its `.gitignore`.
 Then adapt:
 
-- `env.conf`: `ENV_REPO`, `PERSISTENT_BRANCHES`, `SELENIUM_URL` and
-  `UP_COMMAND`.
+- `env.conf`: `ENV_REPO`, `PERSISTENT_BRANCHES`, `PRIMARY_BRANCHES`,
+  `SELENIUM_URL` and `UP_COMMAND`.
 - `docker-compose.yml`: the services. Keep the `x-env-labels` anchor on every
   service, volume and network, the two `/workspaces` mounts of the `app`
   service, and `restart: ${ENV_RESTART:-no}`.
