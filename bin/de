@@ -25,6 +25,8 @@ DE_TEMPLATE=""
 DE_DOCS="https://github.com/tdegrunt/de#readme"
 # Your own tools for every environment, see env_write_host_feature
 DE_CONFIG="${DE_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/de/config.json}"
+# Where the folders "home" in DE_CONFIG lists are kept, shared by every environment
+DE_HOME_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/de/home"
 # `de exec` passes a SELENIUM_URL from the caller on, see env.conf. Unset it
 # so env.conf's value isn't exported to the commands this script runs.
 ENV_SELENIUM_URL_GIVEN="${SELENIUM_URL:-}"
@@ -322,31 +324,45 @@ checkouts() {
 #   {
 #     "extensions": ["anthropic.claude-code", "openai.chatgpt"],
 #     "npm": ["@anthropic-ai/claude-code", "@openai/codex"],
-#     "features": { "ghcr.io/devcontainers/features/python:1": {} }
+#     "features": { "ghcr.io/devcontainers/features/python:1": {} },
+#     "home": [".claude", ".codex"],
+#     "env": { "CLAUDE_CONFIG_DIR": "/home/vscode/.claude" }
 #   }
+#
+# "home" lists folders in the container's home directory that every
+# environment shares, kept on the host in $DE_HOME_STATE, e.g. logins. "env"
+# sets environment variables in the container.
 #
 # A feature, so the editor installs its extensions in the container whoever
 # opens it, and its packages are part of the image. Changes apply on the next
 # build, bin/de up --rebuild.
 env_write_host_feature() {
-  local dir="$ENV_PATH/.devcontainer/de-host" config='{}'
+  local dir="$ENV_PATH/.devcontainer/de-host" config='{}' path
   if [ -f "$DE_CONFIG" ]; then
     command -v jq >/dev/null 2>&1 || die "reading $DE_CONFIG needs jq"
     config="$(jq -e 'if type == "object" then . else error("not an object") end' "$DE_CONFIG")" ||
       die "$DE_CONFIG isn't a JSON object"
   fi
+  # Docker refuses a missing bind source
+  while IFS= read -r path; do
+    case "$path" in "" | /* | *..*) die "home in $DE_CONFIG takes paths inside the home directory, not $path" ;; esac
+    mkdir -p "$DE_HOME_STATE/$path"
+  done < <([ "$config" = '{}' ] || jq -r '.home // [] | .[]' <<<"$config")
   mkdir -p "$dir"
   if [ "$config" = '{}' ]; then
     printf '{ "id": "de-host", "version": "1.0.0", "name": "Nothing from %s" }\n' "$DE_CONFIG" > "$dir/devcontainer-feature.json"
     printf '#!/bin/sh\n# Written by bin/de, %s has nothing to install\n' "$DE_CONFIG" > "$dir/install.sh"
   else
-    jq --arg config "$DE_CONFIG" '{
+    jq --arg config "$DE_CONFIG" --arg state "$DE_HOME_STATE" '{
         id: "de-host",
         version: "1.0.0",
         name: "Your own tools from \($config), written by bin/de",
         installsAfter: ["ghcr.io/devcontainers/features/node"],
         customizations: { vscode: { extensions: (.extensions // []) } }
-      } + (if (.features // {}) != {} then { dependsOn: .features } else {} end)' <<<"$config" > "$dir/devcontainer-feature.json"
+      }
+      + (if (.features // {}) != {} then { dependsOn: .features } else {} end)
+      + (if (.home // []) != [] then { mounts: [.home[] | { type: "bind", source: "\($state)/\(.)", target: "/home/vscode/\(.)" }] } else {} end)
+      + (if (.env // {}) != {} then { containerEnv: .env } else {} end)' <<<"$config" > "$dir/devcontainer-feature.json"
     {
       printf '#!/bin/sh\n# Written by bin/de from %s, do not edit\nset -e\n' "$DE_CONFIG"
       jq -r '.npm // [] | if length > 0 then "npm install --global --no-fund --no-audit " + (map(@sh) | join(" ")) else empty end' <<<"$config"
@@ -429,6 +445,10 @@ cmd_init() {
     # A file inside, as a directory entry like de-host/ only matches what's in it
     git -C "$target" check-ignore -q --no-index -- "${entry%/}$([ "${entry%/}" = "$entry" ] || echo /x)" && continue
     log "Adding $entry to .gitignore"
+    # Not onto the last line when the file doesn't end in a newline
+    if [ -s "$target/.gitignore" ] && [ -n "$(tail -c1 "$target/.gitignore")" ]; then
+      echo >> "$target/.gitignore"
+    fi
     printf '%s\n' "$entry" >> "$target/.gitignore"
   done
 
