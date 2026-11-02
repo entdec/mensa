@@ -28,14 +28,21 @@
         <% end %>
       </ul>
     <% else %>
-      <input class="mensa-table__add_filter__popover_container__input"
-             type="<%= @column.filter.input_type %>"
-             value="<%= @values.first %>"
-             autocomplete="off"
-             inputmode="<%= @column.type == :integer ? 'numeric' : nil %>"
-             step="<%= @column.type == :integer ? 1 : (@column.type == :datetime ? 1 : nil) %>"
-             data-mensa-add-filter-target="value"
-             data-action="input->mensa-add-filter#manualValueChanged keydown.enter->mensa-add-filter#applyManualValue">
+      <% range = @column.filter.operators.any? { |operator_name, *| operator_name == :between } %>
+      <% between = range && @operator == "between" %>
+      <div class="mensa-table__add_filter__popover_container__range" data-range="<%= 'true' if between %>">
+        <% [[:value, @values.first, t("mensa.filters.from")], ([:valueTo, (@values.second if between), t("mensa.filters.to")] if range)].compact.each do |target, value, placeholder| %>
+          <input class="mensa-table__add_filter__popover_container__input"
+                 type="<%= @column.filter.input_type %>"
+                 value="<%= value %>"
+                 autocomplete="off"
+                 inputmode="<%= @column.type == :integer ? 'numeric' : nil %>"
+                 step="<%= @column.type == :integer ? 1 : (@column.type == :datetime ? 1 : nil) %>"
+                 <% if range %>placeholder="<%= placeholder if target == :valueTo || between %>" data-range-placeholder="<%= placeholder %>"<% end %>
+                 data-mensa-add-filter-target="<%= target %>"
+                 data-action="input->mensa-add-filter#manualValueChanged keydown.enter->mensa-add-filter#applyManualValue">
+        <% end %>
+      </div>
     <% end %>
     <hr class="mensa-table__add_filter__popover_container__separator">
   <% end %>

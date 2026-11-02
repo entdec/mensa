@@ -287,7 +287,7 @@ module Mensa
     # Operator and value per column, the value only when the operator takes one
     def comparable_filters(filters)
       filters.to_h do |filter|
-        value = Array(filter.value).map(&:to_s).reject(&:blank?).sort if filter.operator_with_value?
+        value = filter.comparable_value if filter.operator_with_value?
         [filter.column.name, [filter.operator, value]]
       end
     end

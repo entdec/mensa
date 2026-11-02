@@ -471,16 +471,11 @@ export default class FilterPillListComponentController extends ApplicationContro
             this.hasMensaAddFilterOutlet &&
             this.mensaAddFilterOutlet.selectedFilterColumn
         ) {
-            const isMultiple = this.mensaAddFilterOutlet.isMultipleMode;
             const filter = {
                 operator: this.mensaAddFilterOutlet.operator,
             };
             if (this.mensaAddFilterOutlet.operatorRequiresValue()) {
-                filter.value = isMultiple
-                    ? this.mensaAddFilterOutlet.selectedValues
-                    : this.mensaAddFilterOutlet.hasValueTarget
-                        ? this.mensaAddFilterOutlet.valueTarget.value
-                        : "";
+                filter.value = this.mensaAddFilterOutlet.filterValue;
             }
             filters[this.mensaAddFilterOutlet.selectedFilterColumn] = filter;
         }

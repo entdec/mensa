@@ -602,6 +602,8 @@ module Mensa
     def filter_value(column, operator, with_value, values)
       return unless with_value
       return values if column.filter.multiple? && %i[is isnt].include?(operator)
+      # Both ends of the range, so both comparisons run
+      return [values.first, values.first] if operator == :between
 
       values.first
     end

@@ -36,6 +36,15 @@ input.mensa-table__add_filter__popover_container__input {
     @apply w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none;
 }
 
+/* The second input of a range (between) shows only while that operator is selected */
+.mensa-table__add_filter__popover_container__range {
+    @apply flex flex-col gap-2;
+}
+
+.mensa-table__add_filter__popover_container__range:not([data-range="true"]) > input:nth-of-type(2) {
+    @apply hidden;
+}
+
 .mensa-table__add_filter__popover_container__separator {
     @apply border-t border-gray-200 dark:border-gray-600 my-3 -mx-4;
 }

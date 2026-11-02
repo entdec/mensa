@@ -25,13 +25,7 @@ module Mensa
         view_filter = view_filter.to_h.with_indifferent_access
         return false if view_filter[:operator].present? && view_filter[:operator].to_sym != filter.operator
 
-        comparable(view_filter[:value]) == comparable(filter.value)
-      end
-
-      private
-
-      def comparable(value)
-        Array(value).map(&:to_s).reject(&:blank?).sort
+        Mensa::Filter.comparable_value(filter.operator, view_filter[:value]) == filter.comparable_value
       end
     end
   end

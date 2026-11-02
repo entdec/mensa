@@ -16,7 +16,7 @@ module Mensa
 
     # Types that ILIKE works on, nil is an attribute without a type
     TEXT_TYPES = [:string, :text, :citext, nil].freeze
-    # Types with a meaningful order, for gt, gteq, lt and lteq
+    # Types with a meaningful order, for gt, gteq, lt, lteq and between
     RANGE_TYPES = %i[integer bigint float decimal money date datetime timestamp timestamptz time interval].freeze
     # Types where an exact match on a value is of little use
     POINT_IN_TIME_TYPES = %i[date datetime timestamp timestamptz].freeze
@@ -34,11 +34,23 @@ module Mensa
           [:gteq, I18n.t("mensa.operators.gteq"), true],
           [:lt, I18n.t("mensa.operators.lt"), true],
           [:lteq, I18n.t("mensa.operators.lteq"), true],
+          [:between, I18n.t("mensa.operators.between"), true],
           [:is_duplicate, I18n.t("mensa.operators.is_duplicate"), false],
           [:is_current, I18n.t("mensa.operators.is_current"), false],
           [:is_empty, I18n.t("mensa.operators.is_empty"), false],
           [:isnt_empty, I18n.t("mensa.operators.isnt_empty"), false]
         ].freeze
+      end
+
+      # A value in a form to compare filters with, e.g. a view's with the
+      # current one. The ends of a range keep their place, other values are a set.
+      def comparable_value(operator, value)
+        if operator&.to_sym == :between
+          from, to = Array(value)
+          return [from.to_s, to.to_s]
+        end
+
+        Array(value).map(&:to_s).reject(&:blank?).sort
       end
     end
 
@@ -80,7 +92,13 @@ module Mensa
     def formatted_value
       options = collection_options
 
-      if value.is_a?(Array)
+      if operator == :between
+        from, to = range_values.map { |entry| label_for_value(entry, options) }
+        return from if to.blank?
+        return to if from.blank?
+
+        I18n.t("mensa.filters.between_value", from: from, to: to)
+      elsif value.is_a?(Array)
         value.map { |entry| label_for_value(entry, options) }.join(", ")
       else
         label_for_value(value, options)
@@ -112,11 +130,11 @@ module Mensa
       else
         operators.delete_if { |op| op[0] == :is_current } unless Current.method_defined?(column.name, false)
         type = column.type
-        operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } if collection.present?
+        operators.delete_if { |op| [:matches, :does_not_match, :between].include?(op[0]) } if collection.present?
         # Only these operators work for the column's type in SQL, the others
         # raise, e.g. LIKE on a boolean
         operators.delete_if { |op| [:matches, :does_not_match].include?(op[0]) } unless TEXT_TYPES.include?(type)
-        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq].include?(op[0]) } unless RANGE_TYPES.include?(type)
+        operators.delete_if { |op| [:gt, :lt, :gteq, :lteq, :between].include?(op[0]) } unless RANGE_TYPES.include?(type)
         operators.delete_if { |op| [:is, :isnt].include?(op[0]) } if POINT_IN_TIME_TYPES.include?(type) || STRUCTURED_TYPES.include?(type)
         # json has no equality, so duplicates can't be grouped
         operators.delete_if { |op| op[0] == :is_duplicate } if type == :json
@@ -127,6 +145,8 @@ module Mensa
     # Used in the where clause
     def query_and_hash_for_operator
       col = "(#{column.attribute_for_condition})"
+      return range_query_and_hash(col) if operator == :between
+
       hash = {value: normalize(value)}
       hash[:value] = hash[:value].compact_blank if hash[:value].is_a?(Array)
 
@@ -163,8 +183,19 @@ module Mensa
       [query, hash]
     end
 
+    # A range with one end open reads as the comparison it is
     def operator_label
-      Mensa::Filter.OPERATORS.find { |op| op[0] == operator }[1]
+      label_operator = operator
+      if operator == :between
+        from, to = range_values
+        label_operator = :gteq if to.blank? && from.present?
+        label_operator = :lteq if from.blank? && to.present?
+      end
+      Mensa::Filter.OPERATORS.find { |op| op[0] == label_operator }[1]
+    end
+
+    def comparable_value
+      self.class.comparable_value(operator, value)
     end
 
     def operator_with_value?
@@ -187,6 +218,21 @@ module Mensa
     end
 
     private
+
+    # The from and to of a between filter, either can be blank for an open end
+    def range_values
+      from, to = Array(value)
+      [from.presence, to.presence]
+    end
+
+    # Both ends are inclusive, a blank end leaves that side open
+    def range_query_and_hash(col)
+      from, to = range_values.map { |entry| normalize(entry) }
+      conditions = []
+      conditions << "#{col} >= :from" if from.present?
+      conditions << "#{col} <= :to" if to.present?
+      [conditions.join(" AND "), {from: from, to: to}]
+    end
 
     def validate_operators!
       valid_keys = Mensa::Filter.OPERATORS.map(&:first)

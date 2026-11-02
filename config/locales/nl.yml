@@ -60,6 +60,10 @@ nl:
     update_view: Bewaar weergave
     save_view: Bewaar als nieuwe weergave
     save_as_new_view: Bewaar als nieuwe weergave
+    filters:
+      between_value: "%{from} en %{to}"
+      from: Van
+      to: Tot en met
     operators:
       is: is
       isnt: is niet
@@ -70,6 +74,7 @@ nl:
       lt: kleiner dan
       gteq: groter dan of gelijk aan
       lteq: kleiner dan of gelijk aan
+      between: tussen
       is_duplicate: is dubbel
       is_empty: is leeg
       isnt_empty: is niet leeg

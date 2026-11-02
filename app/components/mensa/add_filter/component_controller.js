@@ -13,6 +13,7 @@ export default class AddFilterComponentController extends ApplicationController 
         "description", // contains the filter description in the "tab"
         "valuePopover", // contains the filter-value
         "value",
+        "valueTo", // the end of a range, for the between operator
         "valueOption", // individual value list items in the popover
         "operatorOption", // individual operator list items
     ];
@@ -245,7 +246,7 @@ export default class AddFilterComponentController extends ApplicationController 
             );
         }
         if (!item) {
-            if (this.hasValueTarget && this.valueTarget.value) {
+            if (this._hasManualValue) {
                 this._applyManualValue();
             }
             return;
@@ -308,6 +309,22 @@ export default class AddFilterComponentController extends ApplicationController 
                 : [];
         }
         return this.hasValueTarget ? this.valueTarget.value : "";
+    }
+
+    // The value to filter on: the selected values, or what was typed, as
+    // [from, to] for a range
+    get filterValue() {
+        if (this.isRange)
+            return [this.valueTarget.value, this.valueToTarget.value];
+        return this.selectedValues;
+    }
+
+    get isRange() {
+        return (
+            this.operator === "between" &&
+            this.hasValueTarget &&
+            this.hasValueToTarget
+        );
     }
 
     get hasHighlightedValue() {
@@ -425,6 +442,8 @@ export default class AddFilterComponentController extends ApplicationController 
             }
         });
 
+        this._updateRangeInputs();
+
         const requiresValue = this.operatorRequiresValue(
             selected.dataset.operator,
         );
@@ -445,8 +464,14 @@ export default class AddFilterComponentController extends ApplicationController 
         this._updateDescription();
 
         // Apply to the table immediately when a value is already selected.
+        // A range waits for both ends, Enter applies it
         if (!requiresValue) {
             this.mensaFilterPillListOutlet.refreshFilters();
+        } else if (this.isRange) {
+            const input = [this.valueTarget, this.valueToTarget].find(
+                (i) => !i.value,
+            );
+            input?.focus({ preventScroll: true });
         } else if (this.isMultipleMode) {
             if (this.selectedValues.length > 0) {
                 _pendingMultiReopen = {
@@ -517,6 +542,10 @@ export default class AddFilterComponentController extends ApplicationController 
                       .map((opt) => opt.dataset.label || opt.dataset.value)
                 : [];
             valueLabel = labels.length > 0 ? labels.join(", ") : null;
+        } else if (this.isRange) {
+            const [from, to] = this.filterValue;
+            if (from && to) valueLabel = `${from} – ${to}`;
+            else valueLabel = from || to || null;
         } else {
             const value = this.hasValueTarget ? this.valueTarget.value : "";
             if (value) {
@@ -582,7 +611,7 @@ export default class AddFilterComponentController extends ApplicationController 
     }
 
     _applyManualValue() {
-        if (!this.hasValueTarget || !this.valueTarget.value) return;
+        if (!this._hasManualValue) return;
         this._updateDescription();
         this._removePendingPill();
         this.mensaFilterPillListOutlet.refreshFilters();
@@ -667,6 +696,30 @@ export default class AddFilterComponentController extends ApplicationController 
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;");
+    }
+
+    get _hasManualValue() {
+        if (this.isRange)
+            return this.filterValue.some((value) => value);
+        return this.hasValueTarget && !!this.valueTarget.value;
+    }
+
+    // Shows the end of the range only for between, the placeholders tell
+    // the two inputs apart
+    _updateRangeInputs() {
+        if (!this.hasValueToTarget) return;
+
+        const range = this.valueTarget.closest(
+            ".mensa-table__add_filter__popover_container__range",
+        );
+        if (this.isRange) {
+            range.dataset.range = "true";
+            this.valueTarget.placeholder =
+                this.valueTarget.dataset.rangePlaceholder;
+        } else {
+            delete range.dataset.range;
+            this.valueTarget.placeholder = "";
+        }
     }
 
     get _manualValueInput() {

@@ -288,6 +288,41 @@ class FilterTest < ActiveSupport::TestCase
     assert_equal Customer.count - 4, filtered_scope({number_of_employees: {value: 10, operator: :lteq}}).count
   end
 
+  test "between filters on both ends of the range, inclusive" do
+    Customer.update_all(number_of_employees: 10)
+    Customer.where(country: "NL").update_all(number_of_employees: 1000)
+
+    assert_equal 4, filtered_scope({number_of_employees: {value: ["100", "1000"], operator: :between}}).count
+    assert_equal Customer.count, filtered_scope({number_of_employees: {value: ["10", "1000"], operator: :between}}).count
+    assert_equal 0, filtered_scope({number_of_employees: {value: ["11", "999"], operator: :between}}).count
+  end
+
+  test "between with a blank end leaves that side open" do
+    Customer.update_all(number_of_employees: 10)
+    Customer.where(country: "NL").update_all(number_of_employees: 1000)
+
+    assert_equal 4, filtered_scope({number_of_employees: {value: ["100", ""], operator: :between}}).count
+    assert_equal Customer.count - 4, filtered_scope({number_of_employees: {value: ["", "100"], operator: :between}}).count
+    assert_equal Customer.count, filtered_scope({number_of_employees: {value: ["", ""], operator: :between}}).count
+  end
+
+  test "between with a value the column can't hold matches nothing" do
+    assert_equal [], filtered_scope({number_of_employees: {value: ["1", "abc"], operator: :between}}).to_a
+  end
+
+  test "a between filter describes its range, or the comparison when one end is open" do
+    filter = ->(value) { CustomerFilterTable.new(filters: {number_of_employees: {value: value, operator: :between}}).active_filters.first }
+
+    assert_equal "Number of employees between 10 and 20", filter.call(%w[10 20]).to_s
+    assert_equal "Number of employees greater than or equal to 10", filter.call(["10", ""]).to_s
+    assert_equal "Number of employees less than or equal to 20", filter.call(["", "20"]).to_s
+  end
+
+  test "a between filter keeps the ends of the range apart when comparing" do
+    refute_equal Mensa::Filter.comparable_value(:between, ["10", ""]), Mensa::Filter.comparable_value(:between, ["", "10"])
+    assert_equal Mensa::Filter.comparable_value(:between, ["10"]), Mensa::Filter.comparable_value(:between, ["10", ""])
+  end
+
   test "filters work on columns with a custom attribute expression" do
     assert_equal 4, filtered_scope({country_code: {value: "nl"}}).count
     assert_equal Customer.count - 4, filtered_scope({country_code: {value: "nl", operator: :isnt}}).count

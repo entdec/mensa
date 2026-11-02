@@ -198,14 +198,14 @@ end
 ```
 
 The operators are `is`, `isnt`, `matches`, `does_not_match`, `gt`, `gteq`, `lt`,
-`lteq`, `is_duplicate`, `is_current`, `is_empty` and `isnt_empty`. Without an
+`lteq`, `between`, `is_duplicate`, `is_current`, `is_empty` and `isnt_empty`. Without an
 `operators` list, a column gets the ones that work for its type in SQL:
 
 | Column type | Operators besides `is_duplicate`, `is_empty` and `isnt_empty` |
 |---|---|
 | string, text, citext, or an `attribute` without `type` | `is`, `isnt`, `matches`, `does_not_match` |
-| integer, float, decimal, time | `is`, `isnt`, `gt`, `gteq`, `lt`, `lteq` |
-| date, datetime | `gt`, `gteq`, `lt`, `lteq` |
+| integer, float, decimal, time | `is`, `isnt`, `gt`, `gteq`, `lt`, `lteq`, `between` |
+| date, datetime | `gt`, `gteq`, `lt`, `lteq`, `between` |
 | boolean, uuid, enums and other types | `is`, `isnt` |
 | jsonb, json | none (json also has no `is_duplicate`) |
 
@@ -214,7 +214,12 @@ The operators are `is`, `isnt`, `matches`, `does_not_match`, `gt`, `gteq`, `lt`,
 column is empty (NULL). The value is taken literally: `%`, `_` and `\` are matched as
 characters, not as wildcards. A blank value matches only empty strings.
 
-`matches` and `does_not_match` are left out when the filter has a `collection`, and
+`between` takes the range as `[from, to]` and includes both ends. A blank end leaves
+that side open, so `["2026-01-01", ""]` finds everything from 1 January 2026 on. In
+the filter popover it shows a second input for the end of the range, and the pill reads
+e.g. "Created at between 2026-01-01 and 2026-03-31".
+
+`matches`, `does_not_match` and `between` are left out when the filter has a `collection`, and
 `is_current` is only offered when `Current` has a method named after the column.
 
 Mensa reads the type from the database column. Give an `attribute` that isn't text a

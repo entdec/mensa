@@ -60,6 +60,10 @@ en:
     update_view: Update view
     save_view: Save as new view
     save_as_new_view: Save as new view
+    filters:
+      between_value: "%{from} and %{to}"
+      from: From
+      to: To
     operators:
       is: is
       isnt: isn't
@@ -70,6 +74,7 @@ en:
       lt: less than
       gteq: greater than or equal to
       lteq: less than or equal to
+      between: between
       is_duplicate: is duplicate
       is_empty: is empty
       isnt_empty: is not empty

@@ -61,8 +61,8 @@ end
 
 class FilterOperatorsTest < ActiveSupport::TestCase
   TEXT = %i[is isnt matches does_not_match is_duplicate is_empty isnt_empty].freeze
-  NUMBER = %i[is isnt gt gteq lt lteq is_duplicate is_empty isnt_empty].freeze
-  POINT_IN_TIME = %i[gt gteq lt lteq is_duplicate is_empty isnt_empty].freeze
+  NUMBER = %i[is isnt gt gteq lt lteq between is_duplicate is_empty isnt_empty].freeze
+  POINT_IN_TIME = %i[gt gteq lt lteq between is_duplicate is_empty isnt_empty].freeze
   EQUALITY = %i[is isnt is_duplicate is_empty isnt_empty].freeze
 
   def operators(column_name)
