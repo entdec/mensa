@@ -86,6 +86,23 @@ module Mensa::Config
 
     option :view, dsl_hash: Mensa::Config::ViewDsl
 
+    # Reusable part of a view, which views apply with `include :name`:
+    #
+    #   partial :open do
+    #     filter :state do
+    #       operator :isnt
+    #       value ["completed", "cancelled"]
+    #     end
+    #   end
+    def partial(name, &block)
+      partials[name.to_sym] = block
+    end
+
+    def view(name = nil, &block)
+      config[:views] ||= {}
+      config[:views][name] = Mensa::Config::ViewDsl.new(nil, partials: partials, &block).config
+    end
+
     # Syntactic sugar for `column :carrier_id do internal true end`.
     def internal(name, &block)
       column(name) do
@@ -93,6 +110,12 @@ module Mensa::Config
         filter false
         instance_exec(&block) if block
       end
+    end
+
+    private
+
+    def partials
+      @partials ||= {}
     end
   end
 end

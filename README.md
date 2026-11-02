@@ -114,6 +114,49 @@ You can show your tables on the page using the following:
 <%= table :users %>
 ```
 
+#### Composing views
+
+Views often share filters. Define the shared part once with `partial` and `include` it in the views that need it.
+An include acts as if the partial's contents were written there, so what follows it overrides it, e.g. a filter on the same column.
+A partial can contain anything a view can (filters, `hidden_columns`, `column_order`, `group_by`, ...) and must be defined before the views that include it.
+
+```ruby
+partial :open do
+  filter :state do
+    operator :isnt
+    value ["completed", "cancelled"]
+  end
+end
+
+view :default do
+  include :open
+end
+
+view :sales_orders do
+  name -> { Orders::SalesOrder.model_name.human(count: 2) }
+  include :open
+  filter :type do
+    operator :is
+    value "Orders::SalesOrder"
+  end
+end
+```
+
+`include` also takes a block, so a plain Ruby constant works too:
+
+```ruby
+OPEN = proc do
+  filter :state do
+    operator :isnt
+    value ["completed", "cancelled"]
+  end
+end
+
+view :default do
+  include OPEN
+end
+```
+
 #### Custom views
 
 Custom views are views not defined by the developer (SystemViews) but by the end-user by adding/removing filters.

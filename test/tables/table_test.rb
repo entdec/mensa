@@ -50,7 +50,56 @@ class UnnamedDefaultViewTable < Mensa::Base
   end
 end
 
+class PartialViewsTable < Mensa::Base
+  model User
+
+  column(:first_name)
+  column(:role)
+  column(:email)
+
+  ADMINS = proc do
+    filter :role do
+      value "admin"
+    end
+  end
+
+  partial :users do
+    filter :role do
+      value "user"
+    end
+    hidden_columns [:email]
+  end
+
+  view :default do
+    include :users
+  end
+
+  view :admins do
+    include :users
+    include ADMINS
+  end
+end
+
 class TableTest < ActiveSupport::TestCase
+  test "views include partials and blocks, later definitions override them" do
+    views = PartialViewsTable.new({}).system_views.index_by(&:id)
+
+    assert_equal "user", views[:default].config.dig(:filters, :role, :value)
+    assert_equal [:email], views[:default].config[:hidden_columns]
+    assert_equal "admin", views[:admins].config.dig(:filters, :role, :value)
+    assert_equal [:email], views[:admins].config[:hidden_columns]
+  end
+
+  test "including an unknown partial raises" do
+    error = assert_raises(ArgumentError) do
+      Class.new(Mensa::Base) do
+        model User
+        view(:default) { include :missing }
+      end
+    end
+    assert_match(/Unknown view partial :missing/, error.message)
+  end
+
   test "it returns the right column" do
     t = TestTable.new({})
     subject = t.column(:first_name)
