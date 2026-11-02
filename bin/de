@@ -54,20 +54,23 @@ persistent and keep their data, all others are ephemeral. A primary branch
 (${PRIMARY_BRANCHES[*]}) gets one named $ENV_REPO, the others $ENV_REPO-<branch>.
 
 Commands:
-  new <branch> [folder] [--from <ref>]
+  new <branch> [folder] [--from <ref>] [--no-trust]
                      Create a worktree for a branch (next to the main checkout
                      as $ENV_REPO-<branch> unless a folder is given) and start
                      its environment. New branches start from the default
-                     branch, or from --from.
-  up [--rebuild]     Create or start this checkout's environment and prepare
+                     branch, or from --from. --no-trust as for up.
+  up [--rebuild] [--no-trust]
+                     Create or start this checkout's environment and prepare
                      its databases. --rebuild recreates the containers after
-                     changing .devcontainer/, keeping the data.
+                     changing .devcontainer/, keeping the data. Trusts the
+                     checkout's mise config on the host, unless --no-trust.
   exec <command...>  Run a command in this checkout's devcontainer, in the same
                      directory relative to the checkout.
   status             Show the environment's containers, health and URLs.
   code [<checkout>]  Open a checkout in VS Code inside its devcontainer,
                      starting it first if needed. <checkout> is a branch,
-                     environment name or worktree folder, default this one.
+                     environment name, worktree folder name or a path in
+                     it, default this one.
   down [--destroy-persistent]
                      Remove an ephemeral environment with its data. A
                      persistent one is only stopped, unless
@@ -373,6 +376,19 @@ env_write_host_feature() {
 
 # Runs on the host before the containers start, see initializeCommand in
 # devcontainer.json, so opening a checkout from an editor works too
+# The Mac's mise refuses a checkout's config until it's trusted, also for
+# commands this script runs there, like npx. Trust is per path, so every
+# worktree needs it, the container trusts its own copy in postStart.sh.
+env_trust_mise() {
+  local file
+  command -v mise >/dev/null 2>&1 || return 0
+  for file in mise.toml mise.local.toml .mise.toml .mise.local.toml; do
+    [ -f "$ENV_PATH/$file" ] || continue
+    log "Trusting $file on the host (--no-trust to skip)"
+    run mise trust --quiet "$ENV_PATH/$file"
+  done
+}
+
 cmd_initialize() {
   # docker-compose.yml mounts it, and Docker refuses a missing bind source
   mkdir -p "$HOME/.config/git"
@@ -470,21 +486,23 @@ EOF
 }
 
 cmd_new() {
-  local branch="" folder="" from="" file dest
+  local branch="" folder="" from="" file dest up_args=()
+  local usage_line="usage: bin/de new <branch> [folder] [--from <ref>] [--no-trust]"
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      --from) [ "$#" -ge 2 ] || die "usage: bin/de new <branch> [folder] [--from <ref>]"; from="$2"; shift 2 ;;
-      -*) die "usage: bin/de new <branch> [folder] [--from <ref>]" ;;
+      --from) [ "$#" -ge 2 ] || die "$usage_line"; from="$2"; shift 2 ;;
+      --no-trust) up_args+=(--no-trust); shift ;;
+      -*) die "$usage_line" ;;
       *)
         if [ -z "$branch" ]; then branch="$1"
         elif [ -z "$folder" ]; then folder="$1"
-        else die "usage: bin/de new <branch> [folder] [--from <ref>]"
+        else die "$usage_line"
         fi
         shift
         ;;
     esac
   done
-  [ -n "$branch" ] || die "usage: bin/de new <branch> [folder] [--from <ref>]"
+  [ -n "$branch" ] || die "$usage_line"
   git check-ref-format --branch "$branch" >/dev/null || die "$branch isn't a valid branch name"
 
   [ -n "$folder" ] || folder="$(dirname "$ENV_MAIN_CHECKOUT")/$(env_sanitize "$ENV_REPO-$branch")"
@@ -518,7 +536,12 @@ cmd_new() {
     done
   fi
 
-  run "$folder/bin/de" up
+  # A branch's older bin/de may not know --no-trust
+  if [ "${#up_args[@]}" -gt 0 ] && ! grep -q -- '--no-trust' "$folder/bin/de"; then
+    warn "$branch's bin/de doesn't support --no-trust, it won't trust mise config anyway"
+    up_args=()
+  fi
+  run "$folder/bin/de" up ${up_args[@]+"${up_args[@]}"}
 
   cat <<EOF
 
@@ -532,11 +555,12 @@ EOF
 }
 
 cmd_up() {
-  local up_args=() arg other entry health deadline
+  local up_args=() trust=true arg other entry health deadline
   for arg in "$@"; do
     case "$arg" in
       --rebuild) up_args=(--remove-existing-container) ;;
-      *) die "usage: bin/de up [--rebuild]" ;;
+      --no-trust) trust=false ;;
+      *) die "usage: bin/de up [--rebuild] [--no-trust]" ;;
     esac
   done
 
@@ -570,6 +594,10 @@ cmd_up() {
         run cp -pR "$ENV_MAIN_CHECKOUT/$entry" "$ENV_PATH/$entry"
       done < "$ENV_MAIN_CHECKOUT/.worktreeinclude"
     fi
+  fi
+
+  if $trust; then
+    env_trust_mise
   fi
 
   log "Writing $ENV_DOTENV"
@@ -668,7 +696,7 @@ EOF
 cmd_code() {
   local target="$ENV_PATH" path branch name host_hex
   if [ "$#" -gt 1 ]; then
-    die "usage: bin/de code [branch | environment | folder]"
+    die "usage: bin/de code [branch | environment | folder | path]"
   elif [ "$#" -eq 1 ]; then
     target=""
     while IFS=$'\t' read -r path branch; do
@@ -678,6 +706,11 @@ cmd_code() {
         break
       fi
     done < <(checkouts)
+    # Or any folder in a checkout, e.g. the absolute path Orca's "Open in" adds
+    if [ -z "$target" ] && [ -d "$1" ]; then
+      target="$(cd "$(git -C "$1" rev-parse --show-toplevel)" && pwd -P)" ||
+        die "$1 is not inside a git checkout"
+    fi
 
     if [ -z "$target" ]; then
       warn "no checkout of $ENV_REPO matches $1, these exist:"
@@ -811,6 +844,12 @@ if [ -n "$DE_TEMPLATE" ]; then
     help | -h | --help) usage_source; exit ;;
     init) cmd_init "$@"; exit ;;
   esac
+  # `code <folder>` (Orca's "Open in" runs it from /) opens the checkout that
+  # folder is in, from inside it, so a checkout's older bin/de handles it too
+  if [ "$command" = code ] && [ "$#" -eq 1 ] && [ -d "$1" ]; then
+    cd "$1"
+    shift
+  fi
   # Everything else is for the checkout the current directory is in
   checkout="$(git rev-parse --show-toplevel 2>/dev/null)" || die "not inside a git checkout"
   [ -f "$checkout/.devcontainer/env.conf" ] && [ -x "$checkout/bin/de" ] ||
