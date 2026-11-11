@@ -10,7 +10,7 @@
      data-mensa-table-storage-key-value="<%= table.storage_key %>"
      data-action="click@document->mensa-table#saveDropdownOutsideHandler"
      data-mensa-table-mensa-filter-pill-list-outlet="#mensa-filter-pill-list-<%= table.table_id %>"
-     data-mensa-table-mensa-column-customizer-outlet="[data-controller='mensa-column-customizer']">
+     data-mensa-table-mensa-column-customizer-outlet="#table-<%= table.table_id %> [data-controller='mensa-column-customizer']">
   <div class="mensa-table__toolbar">
     <div class="mensa-table__search-container">
       <% if table.show_header? %>

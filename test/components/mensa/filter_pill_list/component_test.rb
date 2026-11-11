@@ -56,4 +56,24 @@ class FilterPillListComponentTest < ViewComponent::TestCase
     assert_selector ".mensa-filter-pill__value", text: "Admin, User"
     assert_no_selector ".mensa-filter-pill__value", text: "admin, user"
   end
+
+  test "fills the search field with the table's query, not the request's" do
+    with_request_url "/users/1?query=other" do
+      render_inline(Mensa::FilterPillList::Component.new(table: TestTable.new({})))
+      assert_selector "input.mensa-table__search-bar__input[value='']"
+
+      render_inline(Mensa::FilterPillList::Component.new(table: TestTable.new(query: "mine")))
+      assert_selector "input.mensa-table__search-bar__input[value='mine']"
+    end
+  end
+
+  test "scopes its outlets to its own table" do
+    table = TestTable.new(turbo_frame_id: "users-abc")
+
+    render_inline(Mensa::FilterPillList::Component.new(table: table))
+
+    list = page.find("#mensa-filter-pill-list-users-abc")
+    assert_equal "#mensa-filter-pill-list-users-abc .mensa-filter-pill", list["data-mensa-filter-pill-list-mensa-filter-pill-outlet"]
+    assert_equal "#mensa-filter-pill-list-users-abc [data-controller=mensa-add-filter]", list["data-mensa-filter-pill-list-mensa-add-filter-outlet"]
+  end
 end
