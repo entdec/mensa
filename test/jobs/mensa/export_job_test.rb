@@ -253,6 +253,13 @@ module Mensa
       assert export.reload.failed?
     end
 
+    test "fails the export when there is no table by its name" do
+      export = Mensa::Export.create!(table_name: "no_such_things", user: @user, format: "plain_csv", scope: "all")
+
+      assert_raises(NotImplementedError) { Mensa::ExportJob.perform_now(export) }
+      assert export.reload.failed?
+    end
+
     test "calls the export_completed callback and the older export_complete name" do
       called = []
       original = Mensa.config.callbacks

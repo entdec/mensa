@@ -63,7 +63,7 @@
 }
 
 .mensa-table__views__rename-dialog {
-    @apply w-80 max-w-[90vw] rounded-xl border-0 p-5 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10;
+    @apply m-auto w-80 max-w-[90vw] rounded-xl border-0 p-5 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10;
 
     &::backdrop {
         @apply bg-gray-900/40;

@@ -11,7 +11,7 @@ input.mensa-table__search__input {
 }
 
 .mensa-table__save-view-dialog {
-    @apply w-[26rem] max-w-[90vw] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
+    @apply m-auto w-[26rem] max-w-[90vw] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
 
     &::backdrop {
         @apply bg-gray-900/40;

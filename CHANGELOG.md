@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.8
+
+- The export, save-view and rename-view dialogs are in the middle of the
+  window again. A modal `<dialog>` is centred by the browser's
+  `margin: auto`, which Tailwind v4's preflight resets to 0, so they showed
+  at the top left; they now have `m-auto`.
+- An export whose table can't be found (`NotImplementedError: No '…' table
+  defined`, e.g. when the worker can't load the table's class) is marked
+  failed. Before, that error, not a `StandardError`, slipped past the export
+  job's `rescue` and left the export processing, its dialog preparing for
+  good.
+
 ## 0.9.3
 
 - A Mensa table can be rendered inside a host `<form>`, such as a tab on an

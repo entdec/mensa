@@ -19,7 +19,7 @@
 }
 
 .mensa-table__export-dialog {
-    @apply w-[34rem] max-w-[92vw] max-h-[85vh] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
+    @apply m-auto w-[34rem] max-w-[92vw] max-h-[85vh] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
 
     &::backdrop {
         @apply bg-gray-900/40;

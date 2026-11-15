@@ -38,7 +38,9 @@ module Mensa
       finalize(export, status: "completed", filename: filename)
 
       Mensa.config.run_callback(:export_completed, export)
-    rescue => e
+    # NotImplementedError (no table by the export's name, e.g. one the
+    # worker can't load) isn't a StandardError, and would leave it processing
+    rescue StandardError, NotImplementedError => e
       Mensa.config.logger&.error("Mensa::ExportJob failed for export #{export&.id}: #{e.class}: #{e.message}")
       finalize(export, status: "failed") if export
       raise
