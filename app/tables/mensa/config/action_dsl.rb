@@ -9,6 +9,7 @@ module Mensa::Config
     option :show, default: ->(record) { true }
     option :link
     option :link_attributes, default: {}
+    option :process
 
     delegate :t, to: :I18n
   end

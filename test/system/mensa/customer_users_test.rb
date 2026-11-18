@@ -28,6 +28,17 @@ class CustomerUsersTest < ApplicationSystemTestCase
     assert_no_selector "tbody", text: users(:sap_user).last_name
   end
 
+  test "runs a row action's process with the record" do
+    user = users(:ahold_user)
+    visit customer_users_url(customer_id: user.customer_id)
+    assert_selector "tbody tr", wait: 10
+
+    find("tbody a.action[title='Make admin']").click
+
+    assert_no_selector "tbody a.action[title='Make admin']", wait: 5
+    assert_equal "admin", user.reload.role
+  end
+
   test "filters a table that needs params" do
     visit customer_users_url(customer_id: @customer.id)
     assert_selector "tbody tr", wait: 10

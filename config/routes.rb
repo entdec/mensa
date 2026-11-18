@@ -4,6 +4,7 @@ Mensa::Engine.routes.draw do
       resources :filters
       resources :views, only: [:create, :update, :destroy]
       resources :batch_actions, only: [:create]
+      post "row_actions/:name/:record_id", to: "row_actions#create", as: :row_action
       resources :exports, only: [:index, :create, :destroy] do
         member do
           get :download

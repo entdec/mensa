@@ -15,6 +15,14 @@ class CustomerUsersTable < Mensa::Base
     end
   end
 
+  action :promote do
+    title "Make admin"
+    show ->(user) { user.role != "admin" }
+    process do |user|
+      user.update!(role: "admin")
+    end
+  end
+
   scope do
     customer.users
   end

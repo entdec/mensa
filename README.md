@@ -75,6 +75,18 @@ class UserTable < ApplicationTable
     show ->(user) { true }
   end
 
+  # Or run a bit of code with the record, without a controller of your own.
+  # Mensa POSTs to its own endpoint, which finds the record through the table's
+  # scope (and only runs the action when `show` allows it), then redirects back.
+  action :activate do
+    title "Activate"
+    icon "fa-regular fa-check"
+    show ->(user) { !user.active? }
+    process do |user|
+      user.activate!
+    end
+  end
+
   link { |user| edit_user_path(user) }
 
   show_header true

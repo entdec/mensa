@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.9
+
+- A row action can `process` the record instead of linking somewhere, for
+  small actions that don't need a controller of their own:
+  `action(:activate) { process { |user| user.activate! } }`. It renders as a
+  Turbo POST link (so it works in a table inside a host form) to a Mensa
+  endpoint, which finds the record through the table's scope and its params,
+  runs the block when the action's `show` allows it, and redirects back.
+  `link_attributes` still apply, e.g. for a `turbo_confirm`.
+
 ## 0.9.8
 
 - The export, save-view and rename-view dialogs are in the middle of the
