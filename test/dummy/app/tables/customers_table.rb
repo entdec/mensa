@@ -46,6 +46,12 @@ class CustomersTable < Mensa::Base
     end
   end
 
+  batch :count do
+    process do |customers, batch|
+      batch.redirect_to customers_path, notice: "#{customers.count} customers"
+    end
+  end
+
   scope do
     Customer.joins(:users).group(:id)
   end

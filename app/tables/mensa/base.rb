@@ -126,14 +126,25 @@ module Mensa
       @actions ||= config[:actions].keys.map { |action_name| Mensa::Action.new(action_name, config: config.dig(:actions, action_name), table: self) }
     end
 
+    # True when the table has batch actions the user may run
     def batch_actions?
-      config[:batches].present?
+      visible_batch_actions.present?
     end
 
     def batch_actions
       return @batch_actions if @batch_actions
 
-      @batch_actions ||= config[:batches].keys.map { |batch_name| Mensa::BatchAction.new(batch_name, config: config.dig(:batches, batch_name), table: self) }
+      @batch_actions ||= (config[:batches] || {}).keys.map { |batch_name| Mensa::BatchAction.new(batch_name, config: config.dig(:batches, batch_name), table: self) }
+    end
+
+    # The batch actions whose show allows them, remembered once there's a view
+    # context to check them in
+    def visible_batch_actions
+      return @visible_batch_actions if @visible_batch_actions
+
+      view_context = @original_view_context || component&.original_view_context
+      visible = batch_actions.select { |batch_action| batch_action.show?(view_context) }
+      view_context ? (@visible_batch_actions = visible) : visible
     end
 
     # Returns the current path with configuration

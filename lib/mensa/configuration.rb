@@ -81,6 +81,9 @@ module Mensa
       exports_list_delete: "fa-solid fa-trash",
       exports_list_download: "fa-solid fa-download",
       exports_list_processing: "fa-solid fa-spinner fa-spin",
+      batch_select_all: "fa-solid fa-check-double",
+      batch_select_page: "fa-solid fa-check",
+      batch_dialog_close: "fa-solid fa-xmark",
       tables_standard_error: "fa-solid fa-circle-exclamation"
     }
     # PRO
@@ -117,6 +120,9 @@ module Mensa
     #   exports_list_delete: "fa-light fa-trash",
     #   exports_list_download: "fa-light fa-download",
     #   exports_list_processing: "fa-light fa-spinner fa-spin",
+    #   batch_select_all: "fa-light fa-check-double",
+    #   batch_select_page: "fa-light fa-check",
+    #   batch_dialog_close: "fa-light fa-xmark",
     #   tables_standard_error: "fa-light fa-circle-exclamation"
     # }
 

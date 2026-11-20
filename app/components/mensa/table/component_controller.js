@@ -589,6 +589,21 @@ export default class TableComponentController extends ApplicationController {
                 ? this._exportField("repeat") || ""
                 : "";
 
+        post(this.exportsUrlValue, {
+            body: JSON.stringify({
+                scope,
+                export_format: exportFormat,
+                repeat,
+                ...this.requestState(),
+            }),
+            contentType: "application/json",
+            responseKind: "turbo-stream",
+        });
+    }
+
+    // The table as the user sees it, for endpoints that rebuild it (exports,
+    // batch actions on all matching rows)
+    requestState() {
         const state = this.currentViewState();
         const nav = this.hasMensaFilterPillListOutlet
             ? this.mensaFilterPillListOutlet.currentRequestState()
@@ -597,23 +612,16 @@ export default class TableComponentController extends ApplicationController {
             ? this.mensaFilterPillListOutlet.loadView() || nav.view
             : "";
 
-        post(this.exportsUrlValue, {
-            body: JSON.stringify({
-                scope,
-                export_format: exportFormat,
-                repeat,
-                table_view_id: view,
-                page: nav.page,
-                query: state.query || nav.query,
-                filters: state.filters,
-                order: state.order,
-                column_order: state.column_order,
-                hidden_columns: state.hidden_columns,
-                group_by: state.group_by,
-            }),
-            contentType: "application/json",
-            responseKind: "turbo-stream",
-        });
+        return {
+            table_view_id: view,
+            page: nav.page,
+            query: state.query || nav.query,
+            filters: state.filters,
+            order: state.order,
+            column_order: state.column_order,
+            hidden_columns: state.hidden_columns,
+            group_by: state.group_by,
+        };
     }
 
     deleteExport(event) {

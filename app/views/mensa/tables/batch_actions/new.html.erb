@@ -1,0 +1,38 @@
+<turbo-frame id="<%= Mensa::Tables::BatchActionsController::DIALOG_FRAME %>">
+  <%= form_with model: @batch, scope: :batch, url: @table.path_with_params(mensa.table_batch_actions_path(@table.name)), method: :post, class: "mensa-batch-dialog__panel" do |f| %>
+    <%= hidden_field_tag :batch_action_name, @batch_action.name, id: nil %>
+
+    <header class="mensa-batch-dialog__header">
+      <h2 class="mensa-batch-dialog__title"><%= @batch_action.title %></h2>
+      <button class="mensa-batch-dialog__close" type="button" data-mensa-batch-dialog-close aria-label="<%= t("mensa.batch_actions.dialog.close") %>">
+        <i class="<%= Mensa.config.icons[:batch_dialog_close] %>"></i>
+      </button>
+    </header>
+
+    <div class="mensa-batch-dialog__body">
+      <% if @batch_action.description.present? %>
+        <p class="mensa-batch-dialog__description"><%= @batch_action.description %></p>
+      <% end %>
+      <p class="mensa-batch-dialog__count"><%= t("mensa.batch_actions.dialog.count", count: number_with_delimiter(@batch.count)) %></p>
+
+      <% if @batch.errors.any? %>
+        <ul class="mensa-batch-dialog__errors" role="alert">
+          <% @batch.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <%= render partial: @batch_action.form, locals: {f: f, table: @table, count: @batch.count, batch: @batch} %>
+    </div>
+
+    <footer class="mensa-batch-dialog__actions">
+      <button class="mensa-batch-dialog__button mensa-batch-dialog__button--secondary" type="button" data-mensa-batch-dialog-close>
+        <%= t("mensa.batch_actions.dialog.cancel") %>
+      </button>
+      <button class="mensa-batch-dialog__button mensa-batch-dialog__button--primary" type="submit">
+        <%= @batch_action.title %>
+      </button>
+    </footer>
+  <% end %>
+</turbo-frame>

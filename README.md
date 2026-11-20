@@ -114,6 +114,21 @@ class UserTable < ApplicationTable
     end
   end
 
+  # Give a batch action a form and Mensa shows it in a dialog first, see
+  # "Batch actions" below
+  batch :archive do
+    title "Archive"
+    form "users/archive_form"
+    show { |table| table.current_user.admin? }
+    process do |users, batch|
+      reason = batch.params[:reason]
+      next batch.errors.add(:reason, :blank) if reason.blank?
+
+      users.update_all(archived_reason: reason)
+      batch.redirect_to users_path, notice: "#{batch.count} users archived"
+    end
+  end
+
   scope do
     User.all
   end
@@ -436,6 +451,96 @@ are sent along whenever Mensa rebuilds the table: paging, filters, views, batch
 actions and exports (including recurring exports, which store them on the
 `Mensa::Export`). Exports and the state the browser remembers (filters, order,
 columns) are kept per table *and* params.
+
+### Batch actions
+
+A table with batch actions gets a checkbox per row and a bar with one button
+per action. Once every row on the page is checked, the bar offers to select
+all rows matching the current search and filters, not only those on the page,
+and then to go back to only the page. An action without a form asks to confirm
+before it runs on all matching rows, as those are more than the user sees.
+
+`process` gets the selected records, always limited to the table's scope: ids
+of records the table doesn't show are ignored.
+
+```ruby
+batch :confirm do
+  title "Confirm"
+  confirm "Confirm the selected users?"
+  process do |users|
+    users.each(&:confirm!)
+  end
+end
+```
+
+A block that only takes the records gets them as an Array, as before. One that
+also takes the `batch` gets a relation, so it can use `find_each` or
+`update_all` on thousands of records:
+
+```ruby
+process do |users, batch|
+  users.update_all(confirmed_at: Time.current)
+end
+```
+
+The block runs in a view context, so route helpers such as `users_path` work
+in it, like in links.
+
+#### Dialogs
+
+Give a batch action a `form` partial and Mensa shows it in a dialog before
+running the action:
+
+```ruby
+batch :archive do
+  title "Archive"
+  form "users/archive_form"
+  process do |users, batch|
+    reason = batch.params[:reason]
+    next batch.errors.add(:reason, :blank) if reason.blank?
+
+    users.update_all(archived_reason: reason)
+    batch.redirect_to users_path, notice: "#{batch.count} users archived"
+  end
+end
+```
+
+The partial is rendered in Mensa's form with your app's form builder, so you
+can use your own inputs:
+
+```erb
+<%# app/views/users/_archive_form.html.erb %>
+<%= f.label :reason %>
+<%= f.text_area :reason %>
+```
+
+It gets `f` (scoped to `batch`), `table`, `count` (the number of selected
+records) and `batch` as locals. The dialog is added to the page's `<body>`, so
+it also works for a table inside a host `<form>`.
+
+What the form submits is in `batch.params`, which only holds the fields under
+`batch[...]`. The table's own params are in `batch.table.params`.
+
+Adding to `batch.errors` keeps the dialog open and shows the errors, with the
+values that were filled in. Without errors, Mensa redirects back to the table,
+or to where the action sends it:
+
+```ruby
+batch.redirect_to users_path, notice: "#{batch.count} users archived"
+batch.redirect_to notice: "Done" # back to the table, with a notice
+```
+
+`batch` also has `user`, `table`, `count` and `records`.
+
+#### Showing batch actions
+
+`show` decides who sees a batch action. It's called with the table, in a view
+context. Mensa checks it again when the action is submitted, so it also guards
+the endpoint:
+
+```ruby
+show { |table| table.current_user.admin? }
+```
 
 ### Exports
 

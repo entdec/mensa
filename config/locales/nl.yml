@@ -38,6 +38,16 @@ nl:
       export_repeat:
         title: Herhalen
         description: Exporteer eenmalig, of laat de export automatisch herhalen per dag, week, maand of een ander interval.
+    batch_actions:
+      selected: "%{count} geselecteerd"
+      all_selected: "Alle %{count} geselecteerd"
+      select_all: "Selecteer alle (%{count})"
+      select_page: "Alleen deze pagina (%{count})"
+      confirm_all: "%{action}: alle %{count} geselecteerde rijen?"
+      dialog:
+        count: "Geldt voor %{count} geselecteerde rijen"
+        cancel: Annuleren
+        close: Sluiten
     column_customizer:
       heading: Kolommen
     group_by:

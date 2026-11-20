@@ -76,6 +76,18 @@ class UsersTable < Mensa::Base
     end
   end
 
+  batch :archive do
+    title "Archive"
+    form "users/archive_form"
+    process do |users, batch|
+      reason = batch.params[:reason]
+      next batch.errors.add(:reason, :blank) if reason.blank?
+
+      users.update_all(archived_reason: reason)
+      batch.redirect_to users_path, notice: "#{batch.count} users archived"
+    end
+  end
+
   scope do
     scope = User.all.left_outer_joins(:customer)
     scope = scope.where(customers: {name: params[:customer_name]}) if params[:customer_name]

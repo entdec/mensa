@@ -4,14 +4,30 @@
   <div class="overflow-y-auto relative"
        data-mensa-table-target="scrollContainer"
        data-controller="mensa-selection"
-       data-mensa-selection-batch-url-value="<%= table.batch_actions? ? table.path_with_params(helpers.mensa.table_batch_actions_path(table.name)) : "" %>">
+       <% if table.batch_actions? %>
+         data-mensa-selection-batch-url-value="<%= table.path_with_params(helpers.mensa.table_batch_actions_path(table.name)) %>"
+         data-mensa-selection-new-url-value="<%= table.path_with_params(helpers.mensa.new_table_batch_action_path(table.name)) %>"
+         data-mensa-selection-total-value="<%= table.pagy_details&.count.to_i %>"
+         data-mensa-selection-texts-value="<%= %i[selected all_selected select_all select_page confirm_all].to_h { |key| [key, t("mensa.batch_actions.#{key}", count: "{count}", action: "{action}")] }.to_json %>"
+       <% end %>>
     <% if table.batch_actions? %>
       <div class="mensa-batch-bar hidden" data-mensa-selection-target="batchBar">
         <div class="mensa-batch-bar__content">
           <input class="mensa-table__select-all" type="checkbox" data-action="click->mensa-selection#deselectAll" data-mensa-selection-target="batchAllCheckbox">
           <span class="mensa-batch-bar__count" data-mensa-selection-target="selectedCount"></span>
-          <% table.batch_actions.each do |batch_action| %>
-            <button class="mensa-batch-bar__button" type="button" data-action="click->mensa-selection#executeBatch" data-mensa-selection-batch-action-param="<%= batch_action.name %>">
+          <button class="mensa-batch-bar__select-all hidden" type="button" data-action="click->mensa-selection#toggleAllMatching" data-mensa-selection-target="selectAllButton">
+            <span data-mensa-selection-target="selectAllIcon"><i class="<%= Mensa.config.icons[:batch_select_all] %>"></i></span>
+            <span data-mensa-selection-target="selectPageIcon" hidden><i class="<%= Mensa.config.icons[:batch_select_page] %>"></i></span>
+            <span data-mensa-selection-target="selectAllLabel"></span>
+          </button>
+          <span class="mensa-batch-bar__divider" aria-hidden="true"></span>
+          <% table.visible_batch_actions.each do |batch_action| %>
+            <button class="mensa-batch-bar__button" type="button"
+                    data-action="click->mensa-selection#executeBatch"
+                    data-mensa-selection-batch-action-param="<%= batch_action.name %>"
+                    data-mensa-selection-form-param="<%= batch_action.form? %>"
+                    data-mensa-selection-title-param="<%= batch_action.title %>"
+                    <% if batch_action.confirm.present? %>data-mensa-selection-confirm-param="<%= batch_action.confirm %>"<% end %>>
               <%= batch_action.title %>
             </button>
           <% end %>

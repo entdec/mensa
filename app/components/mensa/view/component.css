@@ -17,11 +17,80 @@
 }
 
 .mensa-batch-bar__count {
-    @apply text-xs font-medium text-gray-700 dark:text-gray-200 mr-1;
+    @apply text-xs font-medium text-gray-700 dark:text-gray-200;
+}
+
+/* Changes the selection, so it looks different from the action buttons, and
+   is set apart from them by a divider. The bar's gap spaces both sides of it
+   equally, so neither has a margin. */
+.mensa-batch-bar__select-all {
+    @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium leading-none text-primary-700 dark:text-primary-200 bg-primary-50 dark:bg-primary-800 ring-1 ring-inset ring-primary-200 dark:ring-primary-600 hover:bg-primary-100 dark:hover:bg-primary-700 focus:outline-none transition-colors cursor-pointer;
+}
+
+.mensa-batch-bar__divider {
+    @apply h-4 w-px bg-gray-300 dark:bg-gray-600;
 }
 
 .mensa-batch-bar__button {
     @apply inline-flex items-center gap-1 rounded px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-500 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none transition-colors cursor-pointer leading-none;
+}
+
+/* Added to <body> by the selection controller, so not inside .mensa-table */
+.mensa-batch-dialog {
+    @apply m-auto w-[34rem] max-w-[92vw] max-h-[85vh] rounded-2xl border-0 p-0 bg-white dark:bg-gray-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-gray-900 dark:text-gray-100;
+
+    &::backdrop {
+        @apply bg-gray-900/40;
+        backdrop-filter: blur(2px);
+    }
+}
+
+.mensa-batch-dialog__panel {
+    @apply flex flex-col max-h-[85vh] overflow-hidden;
+}
+
+.mensa-batch-dialog__header {
+    @apply flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.mensa-batch-dialog__title {
+    @apply text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100;
+}
+
+.mensa-batch-dialog__close {
+    @apply cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none;
+}
+
+.mensa-batch-dialog__body {
+    @apply flex flex-col gap-4 p-6 min-h-0 overflow-y-auto;
+}
+
+.mensa-batch-dialog__description {
+    @apply text-sm text-gray-700 dark:text-gray-300;
+}
+
+.mensa-batch-dialog__count {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+.mensa-batch-dialog__errors {
+    @apply list-disc rounded-lg bg-red-50 dark:bg-red-900/30 py-3 pr-3 pl-8 text-sm text-red-700 dark:text-red-300;
+}
+
+.mensa-batch-dialog__actions {
+    @apply flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-700;
+}
+
+.mensa-batch-dialog__button {
+    @apply inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors cursor-pointer;
+}
+
+.mensa-batch-dialog__button--secondary {
+    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-gray-400;
+}
+
+.mensa-batch-dialog__button--primary {
+    @apply bg-primary-600 text-white hover:bg-primary-500 focus:ring-primary-500;
 }
 
 .mensa-table {

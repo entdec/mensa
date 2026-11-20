@@ -38,6 +38,16 @@ en:
       export_repeat:
         title: Repeat
         description: Export once, or have the export repeat automatically at a daily, weekly, monthly or other interval.
+    batch_actions:
+      selected: "%{count} selected"
+      all_selected: "All %{count} selected"
+      select_all: "Select all (%{count})"
+      select_page: "Only this page (%{count})"
+      confirm_all: "%{action} all %{count} selected rows?"
+      dialog:
+        count: "Applies to %{count} selected rows"
+        cancel: Cancel
+        close: Close
     column_customizer:
       heading: Columns
     group_by:

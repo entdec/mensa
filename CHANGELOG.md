@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.10.0
+
+- Batch actions can work on every row matching the current search and filters:
+  once the whole page is checked, the batch bar offers "Select all (N)", and
+  then "Only this page" to go back. Mensa finds those rows again from
+  the table's state, like exports do. An action without a form asks to
+  confirm before it runs on all of them.
+- The records a batch action gets are always limited to the table's scope.
+  Before, they were looked up by the submitted ids in the whole model, so a
+  tampered request could reach records the table doesn't show.
+- A batch action can have a `form` partial, which Mensa shows in a dialog
+  before running the action, rendered with the app's form builder. Its
+  `process` can take a second argument, `batch`, with the submitted fields
+  (`batch.params`), `errors` that keep the dialog open, and
+  `redirect_to(url, notice:)`. Such a block gets the records as a relation;
+  one that only takes the records still gets an Array.
+- Batch actions can `confirm` before running, and `show` decides who sees and
+  may run them.
+- `process` blocks of batch actions run in a view context, so route helpers
+  work in them.
+
 ## 0.9.9
 
 - A row action can `process` the record instead of linking somewhere, for

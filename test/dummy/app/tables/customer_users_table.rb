@@ -23,6 +23,19 @@ class CustomerUsersTable < Mensa::Base
     end
   end
 
+  batch :make_guests do
+    title "Make guests"
+    confirm "Make the selected users guests?"
+    process do |users|
+      users.each { |user| user.update!(role: "guest") }
+    end
+  end
+
+  batch :remove do
+    show ->(table) { false }
+    process { |users| users.each(&:destroy!) }
+  end
+
   scope do
     customer.users
   end

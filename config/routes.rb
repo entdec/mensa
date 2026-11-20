@@ -3,7 +3,7 @@ Mensa::Engine.routes.draw do
     scope module: :tables do
       resources :filters
       resources :views, only: [:create, :update, :destroy]
-      resources :batch_actions, only: [:create]
+      resources :batch_actions, only: [:new, :create]
       post "row_actions/:name/:record_id", to: "row_actions#create", as: :row_action
       resources :exports, only: [:index, :create, :destroy] do
         member do
