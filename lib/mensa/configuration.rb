@@ -150,6 +150,8 @@ module Mensa
     option :row_actions_position, default: :back
     # It's either :basic or :fuzzy, for fuzzy search you need to have `pg_trgm` extension installed
     option :search, default: :basic
+    # Explain the table's features the first time a user sees them (and on ?)
+    option :tour, default: true
     # Default options for Mensa::Verifier (and so `rails mensa:verify`), called
     # with the table class. Return a hash with any of user:, account:,
     # context: (Current attributes), params: and label:, or an array of them
