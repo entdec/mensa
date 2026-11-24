@@ -3,7 +3,7 @@
 <dialog class="mensa-table__export-dialog" data-mensa-table-target="exportDialog" data-action="click->mensa-table#exportDialogBackdrop">
   <div class="mensa-table__export-dialog__panel">
     <header class="mensa-table__export-dialog__header">
-      <h2 class="mensa-table__export-dialog__title"><%= t("mensa.exports.title", default: "Export %{table}", table: table.name.to_s.humanize) %></h2>
+      <h2 class="mensa-table__export-dialog__title"><%= t("mensa.exports.title", default: "Export %{table}", table: table.human_name) %></h2>
       <button class="mensa-table__export-dialog__close" type="button" data-action="mensa-table#cancelExport" aria-label="<%= t("mensa.exports.close", default: "Close") %>">
         <i class="<%= Mensa.config.icons[:exports_dialog_close] %>"></i>
       </button>

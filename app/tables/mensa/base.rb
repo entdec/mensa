@@ -33,6 +33,17 @@ module Mensa
       end
     end
 
+    # The table's name for people, in a sentence: its model's, in the plural
+    # ("automations" for agito_automations), else its own name humanized
+    def human_name
+      return name.to_s.humanize.downcase unless model.respond_to?(:model_name)
+
+      name = model.model_name
+      # Without a translation human gives the singular, whatever the count
+      translated = model.respond_to?(:i18n_scope) && I18n.exists?("#{model.i18n_scope}.models.#{name.i18n_key}")
+      (translated ? name.human(count: 2) : name.human.pluralize).downcase_first
+    end
+
     def column_order
       order = config[:column_order].presence || config[:columns]&.keys
       order = order&.map(&:to_sym)

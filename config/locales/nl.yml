@@ -110,7 +110,7 @@ nl:
         view_description_placeholder: Optionele notities over deze weergave
         view_name_required: Vul een naam in voor deze weergave.
     exports:
-      title: "%{table} exporteren"
+      title: "Exporteer %{table}"
       close: Sluiten
       available_downloads: Beschikbare downloads
       empty: Je hebt nog geen downloads. Maak er hieronder een aan.
