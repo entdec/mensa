@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.1
+
+- The export dialog names a table by its model's name in the plural
+  ("Export automations"), not by the table's own name humanized ("Export agito
+  automations"). Dutch: "Exporteer automatiseringen".
+- `Mensa.config.tour = false` switches off the table tour.
+
 ## 0.10.0
 
 - Batch actions can work on every row matching the current search and filters:
